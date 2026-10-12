@@ -1,0 +1,4 @@
+name,slug,category,extra_categories,summary,description,address,location,lat,lng,service_modes,areas,whatsapp,phone,instagram,website,maps_url,price_min,price_max,price_unit,price_note,keywords,attributes,status,verification,source_url
+[TEMPLAT] Katering Contoh,,catering,,Katering nasi kapau dan masakan Padang,,Jl. Contoh No. 1,lubuk-begalung,,,di tempat|panggilan,,0812-0000-0001,,@kateringcontoh,,,"35.000","60.000",per orang,Minimal 50 porsi,nasi kapau|masakan padang,min_order=50,draf,belum,
+[TEMPLAT] Servis AC Contoh,,ac-repair,,Servis dan cuci AC panggilan,,,padang,,,panggilan,padang|kab-padang-pariaman,0812-0000-0002,,,,,"75.000",,per kunjungan,,cuci ac|isi freon,,draf,kontak dicek,
+[TEMPLAT] Gedung Contoh,,event-venue,,Gedung serbaguna kapasitas besar,,Jl. Contoh No. 2,padang-barat,-0.95,100.36,di tempat,,0812-0000-0003,,,,,"5.000.000","12.000.000",per acara,,aula|gedung pernikahan,capacity=500,draf,dicek langsung,

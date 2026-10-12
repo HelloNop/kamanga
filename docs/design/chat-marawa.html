@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kamanga AI · prototipe Marawa + Itiak Pulang Patang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Tiga warna adat Minang (hitam, merah, kuning emas) dalam suasana angkasa: bola besar bermotif pucuk rebung. */
+  :root {
+    --bg: #080607;
+    --text: #fbf6ef;
+    --muted: #b8aa9f;
+    --gold: #ffc928;
+    --gold-hi: #ffe27a;
+    --red: #e3141a;
+    --maroon: #8a0d12;
+    --amber: #ffb000;
+    --line: rgba(255, 255, 255, .14);
+    --line-gold: rgba(255, 201, 40, .5);
+    --glass: rgba(255, 255, 255, .07);
+    --f: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--f); font-size: 16px; line-height: 1.5; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 999px; }
+
+  /* ───── latar: bola besar ───── */
+  .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; transition: opacity .7s, transform .7s; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(60px); }
+  .glow.l { left: -14%; top: -8%; width: 52vw; height: 62vh; background: radial-gradient(closest-side, rgba(120, 6, 12, .9), transparent); }
+  .glow.r { right: -12%; top: -12%; width: 50vw; height: 56vh; background: radial-gradient(closest-side, rgba(255, 190, 30, .55), transparent); }
+  .planet {
+    position: absolute; left: 50%; top: 150px; width: min(158vw, 2300px); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 205, 70, .52) 0%, rgba(240, 70, 30, .34) 14%, rgba(190, 14, 22, .34) 34%, rgba(70, 6, 12, .55) 58%, rgba(8, 6, 7, .92) 80%);
+    box-shadow:
+      inset 0 2px 1px rgba(255, 226, 140, .6),
+      inset 0 46px 100px -30px rgba(255, 190, 60, .38),
+      0 -26px 120px -10px rgba(255, 120, 30, .3);
+  }
+  .planet::after { /* Itiak Pulang Patang: tali berpilin khas ukiran Minang */
+    content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: .17;
+    background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2290%22 height=%22120%22 viewBox=%220 0 90 120%22%3E%3Cpath d=%22M-90.0 134.0 L-84.3 136.8 L-78.4 137.6 L-72.4 137.3 L-66.5 136.0 L-60.7 133.9 L-55.2 131.2 L-49.9 127.9 L-44.9 124.1 L-40.2 120.0 L-35.8 115.6 L-31.7 110.9 L-27.9 106.2 L-24.3 101.3 L-21.1 96.5 L-18.0 91.7 L-15.3 87.0 L-12.8 82.5 L-10.5 78.3 L-8.4 74.5 L-6.8 71.4 L-5.5 69.4 L-3.8 66.9 L-2.2 64.6 L-0.5 62.3 L1.2 60.1 L2.9 57.9 L4.7 55.8 L6.5 53.7 L8.4 51.7 L10.4 49.7 L12.5 47.7 L14.8 45.8 L17.1 43.8 L19.6 41.9 L22.2 40.0 L25.0 38.0 L27.9 36.1 L31.1 34.1 L34.4 32.2 L37.9 30.2 L41.6 28.1 L45.6 25.9 L49.7 23.5 L54.0 20.0 L54.0 20.0 L48.9 17.6 L44.1 16.5 L39.3 15.9 L34.7 15.5 L30.1 15.4 L25.6 15.6 L21.2 16.0 L17.0 16.6 L12.8 17.5 L8.7 18.5 L4.7 19.8 L0.7 21.2 L-3.1 22.9 L-6.7 24.7 L-10.3 26.8 L-13.8 29.0 L-17.1 31.3 L-20.3 33.9 L-23.4 36.6 L-26.4 39.4 L-29.2 42.4 L-31.9 45.5 L-34.5 48.7 L-37.2 52.6 L-39.9 57.1 L-42.2 61.4 L-44.5 65.8 L-46.7 70.4 L-48.9 75.1 L-51.1 79.8 L-53.2 84.6 L-55.3 89.3 L-57.5 93.9 L-59.7 98.4 L-61.9 102.8 L-64.2 107.0 L-66.5 111.0 L-69.0 114.8 L-71.6 118.3 L-74.4 121.7 L-77.5 124.8 L-81.1 127.7 L-85.2 130.5 L-90.0 134.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M-116.0 118.0 L-110.2 121.7 L-104.0 123.0 L-97.7 123.0 L-91.4 122.0 L-85.2 120.1 L-79.3 117.5 L-73.6 114.2 L-68.3 110.5 L-63.2 106.4 L-58.5 101.9 L-54.1 97.3 L-50.1 92.5 L-46.3 87.6 L-42.9 82.8 L-39.8 78.0 L-36.9 73.3 L-34.3 68.8 L-32.0 64.7 L-30.0 60.9 L-28.5 58.1 L-27.4 56.3 L-25.9 53.9 L-24.4 51.7 L-22.9 49.5 L-21.4 47.3 L-19.9 45.2 L-18.3 43.2 L-16.6 41.2 L-14.9 39.1 L-13.2 37.2 L-11.3 35.2 L-9.3 33.2 L-7.2 31.2 L-4.9 29.1 L-2.5 27.1 L0.1 25.0 L2.9 22.9 L5.8 20.7 L9.0 18.5 L12.4 16.2 L16.0 13.8 L19.8 11.2 L23.8 8.3 L28.0 4.0 L28.0 4.0 L22.8 0.8 L17.9 -0.8 L13.0 -1.8 L8.2 -2.5 L3.5 -2.9 L-1.1 -3.0 L-5.7 -2.8 L-10.2 -2.3 L-14.6 -1.6 L-18.9 -0.7 L-23.1 0.4 L-27.2 1.8 L-31.2 3.4 L-35.1 5.3 L-38.9 7.3 L-42.6 9.5 L-46.2 11.9 L-49.6 14.5 L-52.8 17.3 L-56.0 20.2 L-59.0 23.3 L-61.8 26.5 L-64.5 29.8 L-67.5 33.9 L-70.3 38.7 L-72.6 43.0 L-74.9 47.5 L-77.1 52.1 L-79.2 56.8 L-81.2 61.5 L-83.2 66.2 L-85.2 70.9 L-87.1 75.5 L-89.0 80.1 L-90.9 84.4 L-92.8 88.6 L-94.8 92.7 L-96.9 96.5 L-99.1 100.2 L-101.5 103.7 L-104.3 107.0 L-107.4 110.3 L-111.3 113.6 L-116.0 118.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M0.0 134.0 L5.7 136.8 L11.6 137.6 L17.6 137.3 L23.5 136.0 L29.3 133.9 L34.8 131.2 L40.1 127.9 L45.1 124.1 L49.8 120.0 L54.2 115.6 L58.3 110.9 L62.1 106.2 L65.7 101.3 L68.9 96.5 L72.0 91.7 L74.7 87.0 L77.2 82.5 L79.5 78.3 L81.6 74.5 L83.2 71.4 L84.5 69.4 L86.2 66.9 L87.8 64.6 L89.5 62.3 L91.2 60.1 L92.9 57.9 L94.7 55.8 L96.5 53.7 L98.4 51.7 L100.4 49.7 L102.5 47.7 L104.8 45.8 L107.1 43.8 L109.6 41.9 L112.2 40.0 L115.0 38.0 L117.9 36.1 L121.1 34.1 L124.4 32.2 L127.9 30.2 L131.6 28.1 L135.6 25.9 L139.7 23.5 L144.0 20.0 L144.0 20.0 L138.9 17.6 L134.1 16.5 L129.3 15.9 L124.7 15.5 L120.1 15.4 L115.6 15.6 L111.2 16.0 L107.0 16.6 L102.8 17.5 L98.7 18.5 L94.7 19.8 L90.7 21.2 L86.9 22.9 L83.3 24.7 L79.7 26.8 L76.2 29.0 L72.9 31.3 L69.7 33.9 L66.6 36.6 L63.6 39.4 L60.8 42.4 L58.1 45.5 L55.5 48.7 L52.8 52.6 L50.1 57.1 L47.8 61.4 L45.5 65.8 L43.3 70.4 L41.1 75.1 L38.9 79.8 L36.8 84.6 L34.7 89.3 L32.5 93.9 L30.3 98.4 L28.1 102.8 L25.8 107.0 L23.5 111.0 L21.0 114.8 L18.4 118.3 L15.6 121.7 L12.5 124.8 L8.9 127.7 L4.8 130.5 L0.0 134.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M-26.0 118.0 L-20.2 121.7 L-14.0 123.0 L-7.7 123.0 L-1.4 122.0 L4.8 120.1 L10.7 117.5 L16.4 114.2 L21.7 110.5 L26.8 106.4 L31.5 101.9 L35.9 97.3 L39.9 92.5 L43.7 87.6 L47.1 82.8 L50.2 78.0 L53.1 73.3 L55.7 68.8 L58.0 64.7 L60.0 60.9 L61.5 58.1 L62.6 56.3 L64.1 53.9 L65.6 51.7 L67.1 49.5 L68.6 47.3 L70.1 45.2 L71.7 43.2 L73.4 41.2 L75.1 39.1 L76.8 37.2 L78.7 35.2 L80.7 33.2 L82.8 31.2 L85.1 29.1 L87.5 27.1 L90.1 25.0 L92.9 22.9 L95.8 20.7 L99.0 18.5 L102.4 16.2 L106.0 13.8 L109.8 11.2 L113.8 8.3 L118.0 4.0 L118.0 4.0 L112.8 0.8 L107.9 -0.8 L103.0 -1.8 L98.2 -2.5 L93.5 -2.9 L88.9 -3.0 L84.3 -2.8 L79.8 -2.3 L75.4 -1.6 L71.1 -0.7 L66.9 0.4 L62.8 1.8 L58.8 3.4 L54.9 5.3 L51.1 7.3 L47.4 9.5 L43.8 11.9 L40.4 14.5 L37.2 17.3 L34.0 20.2 L31.0 23.3 L28.2 26.5 L25.5 29.8 L22.5 33.9 L19.7 38.7 L17.4 43.0 L15.1 47.5 L12.9 52.1 L10.8 56.8 L8.8 61.5 L6.8 66.2 L4.8 70.9 L2.9 75.5 L1.0 80.1 L-0.9 84.4 L-2.8 88.6 L-4.8 92.7 L-6.9 96.5 L-9.1 100.2 L-11.5 103.7 L-14.3 107.0 L-17.4 110.3 L-21.3 113.6 L-26.0 118.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M90.0 134.0 L95.7 136.8 L101.6 137.6 L107.6 137.3 L113.5 136.0 L119.3 133.9 L124.8 131.2 L130.1 127.9 L135.1 124.1 L139.8 120.0 L144.2 115.6 L148.3 110.9 L152.1 106.2 L155.7 101.3 L158.9 96.5 L162.0 91.7 L164.7 87.0 L167.2 82.5 L169.5 78.3 L171.6 74.5 L173.2 71.4 L174.5 69.4 L176.2 66.9 L177.8 64.6 L179.5 62.3 L181.2 60.1 L182.9 57.9 L184.7 55.8 L186.5 53.7 L188.4 51.7 L190.4 49.7 L192.5 47.7 L194.8 45.8 L197.1 43.8 L199.6 41.9 L202.2 40.0 L205.0 38.0 L207.9 36.1 L211.1 34.1 L214.4 32.2 L217.9 30.2 L221.6 28.1 L225.6 25.9 L229.7 23.5 L234.0 20.0 L234.0 20.0 L228.9 17.6 L224.1 16.5 L219.3 15.9 L214.7 15.5 L210.1 15.4 L205.6 15.6 L201.2 16.0 L197.0 16.6 L192.8 17.5 L188.7 18.5 L184.7 19.8 L180.7 21.2 L176.9 22.9 L173.3 24.7 L169.7 26.8 L166.2 29.0 L162.9 31.3 L159.7 33.9 L156.6 36.6 L153.6 39.4 L150.8 42.4 L148.1 45.5 L145.5 48.7 L142.8 52.6 L140.1 57.1 L137.8 61.4 L135.5 65.8 L133.3 70.4 L131.1 75.1 L128.9 79.8 L126.8 84.6 L124.7 89.3 L122.5 93.9 L120.3 98.4 L118.1 102.8 L115.8 107.0 L113.5 111.0 L111.0 114.8 L108.4 118.3 L105.6 121.7 L102.5 124.8 L98.9 127.7 L94.8 130.5 L90.0 134.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M64.0 118.0 L69.8 121.7 L76.0 123.0 L82.3 123.0 L88.6 122.0 L94.8 120.1 L100.7 117.5 L106.4 114.2 L111.7 110.5 L116.8 106.4 L121.5 101.9 L125.9 97.3 L129.9 92.5 L133.7 87.6 L137.1 82.8 L140.2 78.0 L143.1 73.3 L145.7 68.8 L148.0 64.7 L150.0 60.9 L151.5 58.1 L152.6 56.3 L154.1 53.9 L155.6 51.7 L157.1 49.5 L158.6 47.3 L160.1 45.2 L161.7 43.2 L163.4 41.2 L165.1 39.1 L166.8 37.2 L168.7 35.2 L170.7 33.2 L172.8 31.2 L175.1 29.1 L177.5 27.1 L180.1 25.0 L182.9 22.9 L185.8 20.7 L189.0 18.5 L192.4 16.2 L196.0 13.8 L199.8 11.2 L203.8 8.3 L208.0 4.0 L208.0 4.0 L202.8 0.8 L197.9 -0.8 L193.0 -1.8 L188.2 -2.5 L183.5 -2.9 L178.9 -3.0 L174.3 -2.8 L169.8 -2.3 L165.4 -1.6 L161.1 -0.7 L156.9 0.4 L152.8 1.8 L148.8 3.4 L144.9 5.3 L141.1 7.3 L137.4 9.5 L133.8 11.9 L130.4 14.5 L127.2 17.3 L124.0 20.2 L121.0 23.3 L118.2 26.5 L115.5 29.8 L112.5 33.9 L109.7 38.7 L107.4 43.0 L105.1 47.5 L102.9 52.1 L100.8 56.8 L98.8 61.5 L96.8 66.2 L94.8 70.9 L92.9 75.5 L91.0 80.1 L89.1 84.4 L87.2 88.6 L85.2 92.7 L83.1 96.5 L80.9 100.2 L78.5 103.7 L75.7 107.0 L72.6 110.3 L68.7 113.6 L64.0 118.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%223.4%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E") 0 0 / 84px 112px repeat;
+    -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0, rgba(0,0,0,.45) 14%, transparent 30%); mask-image: radial-gradient(circle at 50% 0%, #000 0, rgba(0,0,0,.45) 14%, transparent 30%);
+  }
+  .star { position: absolute; width: 14px; height: 14px; color: var(--gold-hi); opacity: .8; animation: twinkle 5s ease-in-out infinite; }
+  .star:nth-child(odd) { animation-delay: -2s; width: 10px; height: 10px; }
+  @keyframes twinkle { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: .95; transform: scale(1.05); } }
+  .is-chat .bg { opacity: .45; transform: translateY(18%); }
+
+  /* ───── navigasi ───── */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 8; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 18px clamp(16px, 4vw, 44px); }
+  .is-chat .nav { background: linear-gradient(to bottom, var(--bg) 45%, transparent); }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.25rem; letter-spacing: -.02em; justify-self: start; }
+  .brand svg { width: 30px; height: 30px; color: var(--gold); }
+  .links { display: flex; gap: clamp(18px, 3vw, 44px); }
+  .links a { color: var(--text); text-decoration: none; font-size: .92rem; opacity: .86; }
+  .links a:hover { opacity: 1; }
+  .cta {
+    justify-self: end; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: .9rem; color: var(--text);
+    background: linear-gradient(#0b0810, #0b0810) padding-box, linear-gradient(110deg, rgba(242, 184, 75, .9), rgba(224, 57, 46, .6), rgba(242, 184, 75, .15)) border-box;
+    border: 1.5px solid transparent; box-shadow: 0 6px 28px -8px rgba(242, 150, 60, .5);
+  }
+  .btn-new { display: none; justify-self: end; min-height: 40px; padding: 0 16px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); cursor: pointer; font-size: .88rem; }
+  .is-chat .btn-new { display: inline-block; } .is-chat .cta { display: none; }
+  .is-chat .links { display: none; } .is-chat .nav { grid-template-columns: 1fr auto; }
+  @media (max-width: 760px) { .links { display: none; } .nav { grid-template-columns: 1fr auto; } .cta { padding: 0 14px; } }
+
+  /* ───── kerangka dan layar awal ───── */
+  .shell { position: relative; z-index: 2; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 84px 20px 12vh; }
+  .is-chat .shell { justify-content: flex-start; padding: 76px 0 0; align-items: stretch; }
+  .hero { text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .is-chat .hero { display: none; }
+  .orb {
+    width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 8px;
+    background: radial-gradient(circle at 35% 30%, #ffe27a 0%, #ffb000 22%, #e3141a 58%, #4a0508 100%);
+    box-shadow: 0 0 0 5px rgba(255, 190, 110, .1), 0 0 46px 6px rgba(255, 90, 30, .6);
+  }
+  .orb svg { width: 30px; height: 30px; color: #fff; filter: drop-shadow(0 0 6px rgba(255, 255, 255, .8)); }
+  .orb-label { font-weight: 600; font-size: 1.05rem; margin-bottom: 30px; position: relative; }
+  .orb-label sup { position: absolute; top: -6px; right: -34px; font-size: .58rem; font-weight: 500; padding: 1px 7px; border-radius: 6px; background: rgba(255, 255, 255, .14); }
+  h1 { margin: 0; font-weight: 700; letter-spacing: -.035em; line-height: 1.12; font-size: clamp(2rem, 5.6vw, 3.6rem); }
+  h1 .fade { display: block; background: linear-gradient(90deg, #fff 0%, #fff 34%, #ffd75e 66%, #ff5b3c 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rise { opacity: 0; transform: translateY(14px); animation: rise .8s cubic-bezier(.2, .7, .2, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* ───── kolom tulis berbentuk pil ───── */
+  .composer-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 34px; }
+  .is-chat .composer-wrap { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; margin: 0; padding: 36px 16px 14px; background: linear-gradient(to top, var(--bg) 55%, transparent); }
+  .pill {
+    width: min(660px, 100%); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 20px; border-radius: 999px;
+    background: rgba(255, 255, 255, .085); border: 1px solid var(--line); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow: 0 18px 60px -20px rgba(0, 0, 0, .8); transition: border-color .2s, box-shadow .2s;
+  }
+  .pill:focus-within { border-color: var(--line-gold); box-shadow: 0 18px 60px -20px rgba(0, 0, 0, .8), 0 0 0 4px rgba(242, 184, 75, .12); }
+  .pill .spark { flex: none; width: 22px; height: 22px; color: #fff; opacity: .9; }
+  .pill input { flex: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: transparent; font-size: 1rem; }
+  .pill input::placeholder { color: rgba(251, 246, 239, .55); }
+  .go {
+    flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: .95rem;
+    background: rgba(255, 255, 255, .06); border: 1.5px solid rgba(255, 255, 255, .55); transition: background .2s, border-color .2s, opacity .2s;
+  }
+  .go:hover:not(:disabled) { background: rgba(242, 184, 75, .18); border-color: var(--gold); }
+  .go:disabled { opacity: .5; cursor: not-allowed; }
+  .go svg { width: 16px; height: 16px; }
+
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px; max-width: 700px; }
+  .chip { min-height: 38px; padding: 0 15px; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); cursor: pointer; font-size: .86rem; color: rgba(251, 246, 239, .9); transition: border-color .2s, background .2s; }
+  .chip:hover { border-color: var(--line-gold); background: rgba(242, 184, 75, .1); }
+  .is-chat #chips { display: none; }
+  .how { margin-top: 20px; display: inline-flex; align-items: center; gap: 10px; color: var(--text); font-size: .9rem; text-decoration: none; opacity: .85; }
+  .how i { width: 22px; height: 22px; border: 1.5px solid currentColor; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: .55rem; padding-left: 2px; }
+  .is-chat .how { display: none; }
+  .privacy { color: var(--muted); font-size: .72rem; text-align: center; max-width: 560px; margin: 16px auto 0; }
+
+  /* ───── lencana cakupan dan intip hasil ───── */
+  .coverage { position: fixed; right: clamp(16px, 3vw, 44px); bottom: 26vh; z-index: 3; width: 206px; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); backdrop-filter: blur(10px); font-size: .74rem; color: var(--muted); }
+  .flag { display: inline-flex; width: 30px; height: 18px; border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,.25); margin-bottom: 8px; vertical-align: middle; }
+  .flag i { flex: 1; } .flag i:nth-child(1) { background: #0a0a0a; } .flag i:nth-child(2) { background: #e3141a; } .flag i:nth-child(3) { background: #ffc928; }
+  .coverage b { display: block; color: var(--text); font-size: .95rem; font-weight: 600; }
+  .peek { position: fixed; z-index: 1; left: 50%; bottom: 0; transform: translateX(-50%); width: min(820px, 90vw); height: 15vh; border-radius: 18px 18px 0 0; border: 1px solid var(--line); border-bottom: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015)); padding: 14px 18px; display: flex; gap: 12px; overflow: hidden; }
+  .peek .mini { flex: 1; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); padding: 10px 12px; font-size: .8rem; min-width: 0; }
+  .peek .mini b { display: block; font-weight: 600; margin-bottom: 2px; }
+  .peek .mini span { color: var(--muted); font-size: .72rem; }
+  .band { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; height: 58px; background: #0b0708 url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%22118%22 viewBox=%220 0 56 118%22%3E%3Cpath d=%22M-56.0 122.0 L-53.7 124.2 L-51.2 125.5 L-48.5 126.2 L-45.8 126.4 L-43.0 126.1 L-40.3 125.2 L-37.8 123.9 L-35.4 122.3 L-33.2 120.2 L-31.1 118.0 L-29.2 115.4 L-27.4 112.7 L-25.7 109.7 L-24.1 106.6 L-22.7 103.3 L-21.4 99.9 L-20.2 96.4 L-19.1 92.8 L-18.1 89.2 L-17.2 85.3 L-16.4 80.5 L-15.6 76.2 L-14.7 72.0 L-13.7 67.9 L-12.7 64.0 L-11.6 60.2 L-10.4 56.5 L-9.2 52.9 L-7.9 49.5 L-6.4 46.2 L-4.9 43.0 L-3.2 40.0 L-1.5 37.1 L0.4 34.4 L2.4 31.7 L4.6 29.2 L7.0 26.8 L9.5 24.5 L12.3 22.3 L15.3 20.2 L18.6 18.2 L22.1 16.2 L25.9 14.4 L30.0 12.0 L30.0 12.0 L25.3 10.9 L20.7 10.8 L16.3 11.2 L12.0 12.0 L7.8 13.2 L3.7 14.7 L-0.2 16.6 L-3.9 18.8 L-7.4 21.3 L-10.7 24.1 L-13.8 27.2 L-16.8 30.5 L-19.4 34.0 L-21.9 37.7 L-24.2 41.7 L-26.2 45.8 L-28.0 50.0 L-29.6 54.4 L-31.0 58.9 L-32.2 63.6 L-33.2 68.3 L-33.9 73.2 L-34.5 78.1 L-34.8 82.7 L-35.1 86.0 L-35.5 89.4 L-36.0 92.7 L-36.4 95.9 L-37.0 99.0 L-37.5 102.0 L-38.2 104.8 L-38.9 107.4 L-39.6 109.8 L-40.4 112.0 L-41.3 114.0 L-42.2 115.7 L-43.2 117.2 L-44.3 118.5 L-45.6 119.6 L-47.0 120.4 L-48.6 121.1 L-50.6 121.6 L-53.0 121.8 L-56.0 122.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M-70.0 112.0 L-67.9 114.6 L-65.3 116.2 L-62.5 117.2 L-59.5 117.5 L-56.5 117.3 L-53.6 116.5 L-50.8 115.2 L-48.1 113.5 L-45.7 111.4 L-43.4 109.1 L-41.2 106.5 L-39.2 103.6 L-37.4 100.6 L-35.7 97.4 L-34.1 94.1 L-32.6 90.7 L-31.3 87.1 L-30.1 83.5 L-29.0 79.8 L-28.0 75.7 L-27.1 71.0 L-26.2 66.8 L-25.3 62.7 L-24.3 58.7 L-23.3 54.9 L-22.3 51.2 L-21.2 47.7 L-20.1 44.2 L-18.9 40.9 L-17.6 37.8 L-16.2 34.7 L-14.8 31.8 L-13.2 29.0 L-11.5 26.2 L-9.8 23.6 L-7.8 21.1 L-5.7 18.6 L-3.4 16.2 L-0.9 13.9 L1.9 11.7 L5.0 9.4 L8.3 7.3 L12.0 5.0 L16.0 2.0 L16.0 2.0 L11.2 0.3 L6.5 -0.2 L1.9 -0.1 L-2.7 0.5 L-7.1 1.5 L-11.4 2.9 L-15.5 4.7 L-19.4 6.9 L-23.2 9.4 L-26.8 12.2 L-30.1 15.3 L-33.2 18.7 L-36.1 22.3 L-38.8 26.2 L-41.2 30.2 L-43.3 34.4 L-45.3 38.8 L-46.9 43.3 L-48.4 48.0 L-49.6 52.8 L-50.6 57.6 L-51.3 62.6 L-51.8 67.6 L-52.0 72.3 L-52.3 75.4 L-52.6 78.8 L-52.9 82.0 L-53.2 85.2 L-53.6 88.3 L-54.0 91.2 L-54.5 93.9 L-55.0 96.5 L-55.5 98.8 L-56.1 100.9 L-56.8 102.9 L-57.5 104.5 L-58.3 106.0 L-59.1 107.2 L-60.0 108.3 L-61.2 109.3 L-62.6 110.2 L-64.5 110.8 L-66.9 111.3 L-70.0 112.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M0.0 122.0 L2.3 124.2 L4.8 125.5 L7.5 126.2 L10.2 126.4 L13.0 126.1 L15.7 125.2 L18.2 123.9 L20.6 122.3 L22.8 120.2 L24.9 118.0 L26.8 115.4 L28.6 112.7 L30.3 109.7 L31.9 106.6 L33.3 103.3 L34.6 99.9 L35.8 96.4 L36.9 92.8 L37.9 89.2 L38.8 85.3 L39.6 80.5 L40.4 76.2 L41.3 72.0 L42.3 67.9 L43.3 64.0 L44.4 60.2 L45.6 56.5 L46.8 52.9 L48.1 49.5 L49.6 46.2 L51.1 43.0 L52.8 40.0 L54.5 37.1 L56.4 34.4 L58.4 31.7 L60.6 29.2 L63.0 26.8 L65.5 24.5 L68.3 22.3 L71.3 20.2 L74.6 18.2 L78.1 16.2 L81.9 14.4 L86.0 12.0 L86.0 12.0 L81.3 10.9 L76.7 10.8 L72.3 11.2 L68.0 12.0 L63.8 13.2 L59.7 14.7 L55.8 16.6 L52.1 18.8 L48.6 21.3 L45.3 24.1 L42.2 27.2 L39.2 30.5 L36.6 34.0 L34.1 37.7 L31.8 41.7 L29.8 45.8 L28.0 50.0 L26.4 54.4 L25.0 58.9 L23.8 63.6 L22.8 68.3 L22.1 73.2 L21.5 78.1 L21.2 82.7 L20.9 86.0 L20.5 89.4 L20.0 92.7 L19.6 95.9 L19.0 99.0 L18.5 102.0 L17.8 104.8 L17.1 107.4 L16.4 109.8 L15.6 112.0 L14.7 114.0 L13.8 115.7 L12.8 117.2 L11.7 118.5 L10.4 119.6 L9.0 120.4 L7.4 121.1 L5.4 121.6 L3.0 121.8 L0.0 122.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M-14.0 112.0 L-11.9 114.6 L-9.3 116.2 L-6.5 117.2 L-3.5 117.5 L-0.5 117.3 L2.4 116.5 L5.2 115.2 L7.9 113.5 L10.3 111.4 L12.6 109.1 L14.8 106.5 L16.8 103.6 L18.6 100.6 L20.3 97.4 L21.9 94.1 L23.4 90.7 L24.7 87.1 L25.9 83.5 L27.0 79.8 L28.0 75.7 L28.9 71.0 L29.8 66.8 L30.7 62.7 L31.7 58.7 L32.7 54.9 L33.7 51.2 L34.8 47.7 L35.9 44.2 L37.1 40.9 L38.4 37.8 L39.8 34.7 L41.2 31.8 L42.8 29.0 L44.5 26.2 L46.2 23.6 L48.2 21.1 L50.3 18.6 L52.6 16.2 L55.1 13.9 L57.9 11.7 L61.0 9.4 L64.3 7.3 L68.0 5.0 L72.0 2.0 L72.0 2.0 L67.2 0.3 L62.5 -0.2 L57.9 -0.1 L53.3 0.5 L48.9 1.5 L44.6 2.9 L40.5 4.7 L36.6 6.9 L32.8 9.4 L29.2 12.2 L25.9 15.3 L22.8 18.7 L19.9 22.3 L17.2 26.2 L14.8 30.2 L12.7 34.4 L10.7 38.8 L9.1 43.3 L7.6 48.0 L6.4 52.8 L5.4 57.6 L4.7 62.6 L4.2 67.6 L4.0 72.3 L3.7 75.4 L3.4 78.8 L3.1 82.0 L2.8 85.2 L2.4 88.3 L2.0 91.2 L1.5 93.9 L1.0 96.5 L0.5 98.8 L-0.1 100.9 L-0.8 102.9 L-1.5 104.5 L-2.3 106.0 L-3.1 107.2 L-4.0 108.3 L-5.2 109.3 L-6.6 110.2 L-8.5 110.8 L-10.9 111.3 L-14.0 112.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M56.0 122.0 L58.3 124.2 L60.8 125.5 L63.5 126.2 L66.2 126.4 L69.0 126.1 L71.7 125.2 L74.2 123.9 L76.6 122.3 L78.8 120.2 L80.9 118.0 L82.8 115.4 L84.6 112.7 L86.3 109.7 L87.9 106.6 L89.3 103.3 L90.6 99.9 L91.8 96.4 L92.9 92.8 L93.9 89.2 L94.8 85.3 L95.6 80.5 L96.4 76.2 L97.3 72.0 L98.3 67.9 L99.3 64.0 L100.4 60.2 L101.6 56.5 L102.8 52.9 L104.1 49.5 L105.6 46.2 L107.1 43.0 L108.8 40.0 L110.5 37.1 L112.4 34.4 L114.4 31.7 L116.6 29.2 L119.0 26.8 L121.5 24.5 L124.3 22.3 L127.3 20.2 L130.6 18.2 L134.1 16.2 L137.9 14.4 L142.0 12.0 L142.0 12.0 L137.3 10.9 L132.7 10.8 L128.3 11.2 L124.0 12.0 L119.8 13.2 L115.7 14.7 L111.8 16.6 L108.1 18.8 L104.6 21.3 L101.3 24.1 L98.2 27.2 L95.2 30.5 L92.6 34.0 L90.1 37.7 L87.8 41.7 L85.8 45.8 L84.0 50.0 L82.4 54.4 L81.0 58.9 L79.8 63.6 L78.8 68.3 L78.1 73.2 L77.5 78.1 L77.2 82.7 L76.9 86.0 L76.5 89.4 L76.0 92.7 L75.6 95.9 L75.0 99.0 L74.5 102.0 L73.8 104.8 L73.1 107.4 L72.4 109.8 L71.6 112.0 L70.7 114.0 L69.8 115.7 L68.8 117.2 L67.7 118.5 L66.4 119.6 L65.0 120.4 L63.4 121.1 L61.4 121.6 L59.0 121.8 L56.0 122.0Z%22 fill=%22%23E3141A%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M42.0 112.0 L44.1 114.6 L46.7 116.2 L49.5 117.2 L52.5 117.5 L55.5 117.3 L58.4 116.5 L61.2 115.2 L63.9 113.5 L66.3 111.4 L68.6 109.1 L70.8 106.5 L72.8 103.6 L74.6 100.6 L76.3 97.4 L77.9 94.1 L79.4 90.7 L80.7 87.1 L81.9 83.5 L83.0 79.8 L84.0 75.7 L84.9 71.0 L85.8 66.8 L86.7 62.7 L87.7 58.7 L88.7 54.9 L89.7 51.2 L90.8 47.7 L91.9 44.2 L93.1 40.9 L94.4 37.8 L95.8 34.7 L97.2 31.8 L98.8 29.0 L100.5 26.2 L102.2 23.6 L104.2 21.1 L106.3 18.6 L108.6 16.2 L111.1 13.9 L113.9 11.7 L117.0 9.4 L120.3 7.3 L124.0 5.0 L128.0 2.0 L128.0 2.0 L123.2 0.3 L118.5 -0.2 L113.9 -0.1 L109.3 0.5 L104.9 1.5 L100.6 2.9 L96.5 4.7 L92.6 6.9 L88.8 9.4 L85.2 12.2 L81.9 15.3 L78.8 18.7 L75.9 22.3 L73.2 26.2 L70.8 30.2 L68.7 34.4 L66.7 38.8 L65.1 43.3 L63.6 48.0 L62.4 52.8 L61.4 57.6 L60.7 62.6 L60.2 67.6 L60.0 72.3 L59.7 75.4 L59.4 78.8 L59.1 82.0 L58.8 85.2 L58.4 88.3 L58.0 91.2 L57.5 93.9 L57.0 96.5 L56.5 98.8 L55.9 100.9 L55.2 102.9 L54.5 104.5 L53.7 106.0 L52.9 107.2 L52.0 108.3 L50.8 109.3 L49.4 110.2 L47.5 110.8 L45.1 111.3 L42.0 112.0Z%22 fill=%22%23FFC928%22 stroke=%22%230b0708%22 stroke-width=%222.6%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E") 0 0 / auto 58px repeat-x; border-top: 1px solid var(--line-gold); box-shadow: 0 -18px 50px -10px rgba(255, 120, 30, .25); }
+  .peek { bottom: 58px; }
+  .is-chat .coverage, .is-chat .peek, .is-chat .band { display: none; }
+  @media (max-width: 900px) { .coverage { display: none; } }
+  @media (max-width: 760px), (max-height: 760px) { .peek { display: none; } }
+
+  /* ───── percakapan ───── */
+  .thread { display: none; justify-content: center; padding: 8px 16px 160px; flex: 1; }
+  .is-chat .thread { display: flex; }
+  .thread-inner { width: min(720px, 100%); display: flex; flex-direction: column; gap: 18px; }
+  .msg { display: flex; gap: 12px; }
+  .msg.user { justify-content: flex-end; }
+  .avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #ffe27a, #e3141a 60%, #4a0508); }
+  .avatar svg { width: 17px; height: 17px; color: #fff; }
+  .bubble { border-radius: 20px; padding: 10px 16px; max-width: min(100%, 560px); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.user .bubble { background: rgba(255, 255, 255, .1); border: 1px solid var(--line); border-top-right-radius: 6px; }
+  .msg.bot .bubble { padding-left: 0; padding-top: 6px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; flex: 1; }
+  .fade-in { opacity: 0; transform: translateY(10px); animation: rise .5s ease forwards; animation-delay: calc(var(--i, 0) * 90ms); }
+  .card { position: relative; border: 1px solid var(--line); border-radius: 20px; background: rgba(255, 255, 255, .055); backdrop-filter: blur(12px); padding: 16px 18px 16px; overflow: hidden; }
+  .card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), var(--red), transparent); opacity: .85; }
+  .card h3 { margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -.01em; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 8px; }
+  .tag { font-size: .74rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .tag.ok { color: var(--gold-hi); border-color: var(--line-gold); }
+  .tag.ok::before { content: "✓ "; }
+  .meta { margin: 10px 0 0; font-size: .88rem; color: var(--muted); }
+  .meta b { color: var(--text); font-weight: 600; }
+  .wa { display: inline-flex; align-items: center; margin-top: 12px; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: .9rem; color: #1b1004; background: linear-gradient(120deg, #ffe27a, #ffc928 60%, #ffb000); }
+  .typing { display: inline-flex; gap: 5px; padding: 12px 0; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: blink 1.1s infinite ease-in-out; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+  .is-chat .privacy { margin-top: 8px; }
+
+  @media (max-width: 760px) {
+    .band { height: 46px; background-size: auto 46px; } .peek { bottom: 46px; }
+    .planet { top: 210px; width: 260vw; }
+    .orb-label { margin-bottom: 22px; }
+    .go { padding: 0 16px; }
+    .composer-wrap { margin-top: 26px; }
+    .pill { padding-left: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .rise, .fade-in { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="glow l"></div><div class="glow r"></div>
+  <div class="planet"></div>
+  <svg width="0" height="0" style="position:absolute"><defs><symbol id="sp" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0c.8 7 5 11.2 12 12-7 .8-11.2 5-12 12-.8-7-5-11.2-12-12C7 11.2 11.2 7 12 0Z"/></symbol></defs></svg>
+  <svg class="star" style="left:6%;top:42%"><use href="#sp"/></svg>
+  <svg class="star" style="left:24%;top:18%"><use href="#sp"/></svg>
+  <svg class="star" style="left:71%;top:12%"><use href="#sp"/></svg>
+  <svg class="star" style="left:86%;top:36%"><use href="#sp"/></svg>
+  <svg class="star" style="left:93%;top:58%"><use href="#sp"/></svg>
+  <svg class="star" style="left:14%;top:66%"><use href="#sp"/></svg>
+</div>
+
+<header class="nav">
+  <a class="brand" href="#" aria-label="Kamanga, beranda">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8c2 9 6 14 13 14s11-5 13-14"/><path d="M3 8c3 4 7 6 13 6s10-2 13-6" opacity=".55"/><path d="M10 27h12"/></svg>
+    kamanga
+  </a>
+  <nav class="links" aria-label="Utama"><a href="#">Cara kerja</a><a href="#">Kebutuhan</a><a href="#">Untuk usaha</a><a href="#">Tentang</a></nav>
+  <a class="cta" href="#">Daftarkan usaha <span aria-hidden="true">→</span></a>
+  <button class="btn-new" id="reset" type="button">Percakapan baru</button>
+</header>
+
+<div class="shell" id="app">
+  <section class="hero" id="hero">
+    <div class="orb rise" style="animation-delay:.05s"><svg><use href="#sp"/></svg></div>
+    <div class="orb-label rise" style="animation-delay:.1s">Kamanga AI<sup>Beta</sup></div>
+    <h1 class="rise" style="animation-delay:.18s">Ka manga hari ini?<span class="fade">Cukup ketik, Kamanga carikan.</span></h1>
+  </section>
+
+  <section class="thread" id="thread" aria-live="polite" aria-label="Percakapan">
+    <div class="thread-inner" id="messages"></div>
+  </section>
+
+  <div class="composer-wrap rise" style="animation-delay:.32s">
+    <form class="pill" id="form" autocomplete="off">
+      <svg class="spark" aria-hidden="true"><use href="#sp"/></svg>
+      <label for="input" style="position:absolute;left:-9999px">Pesan</label>
+      <input id="input" type="text" maxlength="500" placeholder="servis AC di Lubeg">
+      <button class="go" id="send" type="submit" disabled>Cari <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </form>
+    <div class="chips" id="chips">
+      <button class="chip" type="button">AC rusak</button>
+      <button class="chip" type="button">Kendaraan bermasalah</button>
+      <button class="chip" type="button">Acara pernikahan</button>
+      <button class="chip" type="button">Pindahan rumah</button>
+      <button class="chip" type="button">Wisata akhir pekan</button>
+    </div>
+    <a class="how" href="#"><i>▶</i> Lihat cara kerja</a>
+    <p class="privacy">Percakapan dicatat tanpa nama untuk memperbaiki layanan. Jangan mengirim data pribadi.</p>
+  </div>
+</div>
+
+<aside class="coverage" aria-label="Cakupan data"><span class="flag" role="img" aria-label="Marawa: hitam, merah, kuning"><i></i><i></i><i></i></span><b>19 kota/kabupaten</b>179 kecamatan, 1.265 nagari dan kelurahan di Sumatera Barat</aside>
+<div class="band" aria-hidden="true"></div>
+<div class="peek" aria-hidden="true">
+  <div class="mini"><b>Bengkel Onda Lubeg</b><span>Servis Motor · 1,2 km · Dicek langsung</span></div>
+  <div class="mini"><b>Montir Motor Harapan</b><span>Servis Motor · 3,8 km · Kontak dicek</span></div>
+  <div class="mini"><b>Bengkel Anak Nagari</b><span>Servis Motor · 5,1 km</span></div>
+</div>
+
+<script>
+  // Prototipe: data di bawah hanya contoh. Di aplikasi sungguhan kartu berasal dari pencarian direktori.
+  const SAMPLE = {
+    motor: { text: 'Ado 3 servis motor di Lubuk Begalung nan cocok. Ini nan paliang rancak:\nHubungi langsung lewat WhatsApp untuk memastikan ketersediaan dan harganya, ya.',
+      items: [
+        { name: 'Bengkel Onda Lubeg', cat: 'Servis Motor', ver: 'Dicek langsung', where: 'Lubuk Begalung, Kota Padang', dist: '1,2 km', price: 'Rp30.000 - Rp150.000 per kunjungan', mode: 'Pelanggan datang' },
+        { name: 'Montir Motor Harapan', cat: 'Servis Motor', ver: 'Kontak dicek', where: 'Lubuk Kilangan, Kota Padang', dist: '3,8 km', price: 'Rp165.000 - Rp170.000 per kunjungan', mode: 'Datang ke tempat Anda' },
+        { name: 'Bengkel Anak Nagari', cat: 'Servis Motor', ver: '', where: 'Padang Selatan, Kota Padang', dist: '5,1 km', price: 'Rp40.000 - Rp120.000 per kunjungan', mode: 'Pelanggan datang' }
+      ], chips: ['Servis Motor di Sumbar'] },
+    ac: { text: 'Ado 2 servis ac di Padang nan cocok. Ini nan paliang rancak:\nHubungi langsung lewat WhatsApp untuk memastikan ketersediaan dan harganya, ya.',
+      items: [
+        { name: 'Servis AC Nan Elok', cat: 'Servis AC', ver: 'Kontak dicek', where: 'Koto Tangah, Kota Padang', dist: '', price: 'Rp235.000 - Rp250.000 per kunjungan', mode: 'Datang ke tempat Anda' },
+        { name: 'Dingin Jaya AC', cat: 'Servis AC', ver: 'Dicek langsung', where: 'Padang Barat, Kota Padang', dist: '', price: 'Rp75.000 per kunjungan', mode: 'Datang ke tempat Anda' }
+      ], chips: ['Servis AC di Sumbar'] },
+    gedung: { text: 'Ado 2 gedung acara di Kota Padang, untuk 400 orang nan cocok. Ini nan paliang rancak:\nHubungi langsung lewat WhatsApp untuk memastikan ketersediaan dan harganya, ya.',
+      items: [
+        { name: 'Gedung Serbaguna Anak Nagari', cat: 'Gedung Acara', ver: 'Dicek langsung', where: 'Padang Barat, Kota Padang', dist: '', price: 'Rp8.000.000 - Rp12.000.000 per acara', mode: 'Kapasitas 500 orang' },
+        { name: 'Aula Bundo Kanduang', cat: 'Gedung Acara', ver: '', where: 'Nanggalo, Kota Padang', dist: '', price: 'Rp5.000.000 per acara', mode: 'Kapasitas 450 orang' }
+      ], chips: [] }
+  };
+  const app = document.getElementById('app'), form = document.getElementById('form'), input = document.getElementById('input');
+  const send = document.getElementById('send'), messages = document.getElementById('messages'), chips = document.getElementById('chips');
+  const SPARK = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0c.8 7 5 11.2 12 12-7 .8-11.2 5-12 12-.8-7-5-11.2-12-12C7 11.2 11.2 7 12 0Z"/></svg>';
+  const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x) e.textContent = x; return e; };
+  const setChat = (on) => { app.classList.toggle('is-chat', on); document.body.classList.toggle('is-chat', on); };
+  const scrollEnd = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+  function botMessage() { const m = el('div', 'msg bot fade-in'), a = el('div', 'avatar'), s = el('div', 'stack'); a.innerHTML = SPARK; m.append(a, s); messages.append(m); return s; }
+  function card(it, i) {
+    const c = el('article', 'card fade-in'); c.style.setProperty('--i', i);
+    c.append(el('h3', '', it.name));
+    const r = el('div', 'row'); r.append(el('span', 'tag', it.cat)); if (it.ver) r.append(el('span', 'tag ok', it.ver)); c.append(r);
+    c.append(el('p', 'meta', [it.where, it.dist, it.mode].filter(Boolean).join(' · ')));
+    const p = el('p', 'meta'); p.append(el('b', '', it.price)); c.append(p);
+    const w = el('a', 'wa', 'Hubungi via WhatsApp'); w.href = '#'; w.addEventListener('click', (e) => e.preventDefault()); c.append(w);
+    return c;
+  }
+  function chip(label) { const b = el('button', 'chip', label); b.type = 'button'; b.addEventListener('click', () => submit(label)); return b; }
+  function reply(text) {
+    const t = text.toLowerCase();
+    const key = /\bac\b|dingin|freon/.test(t) ? 'ac' : /gedung|aula|nikah|baralek|pernikahan/.test(t) ? 'gedung' : /onda|motor|oto|mogok|bengkel|kendaraan/.test(t) ? 'motor' : null;
+    const stack = botMessage(), dots = el('div', 'typing'); dots.innerHTML = '<i></i><i></i><i></i>'; stack.append(dots); scrollEnd();
+    setTimeout(() => {
+      dots.remove();
+      if (!key) { stack.append(el('div', 'bubble', 'Maaf, Kamanga alun paham maksudnya. Coba tulis jenis jasa atau tempat dan lokasinya, misalnya "servis AC di Lubeg".')); return; }
+      const d = SAMPLE[key]; stack.append(el('div', 'bubble', d.text));
+      d.items.forEach((it, i) => stack.append(card(it, i + 1)));
+      if (d.chips.length) { const r = el('div', 'chips fade-in'); r.style.cssText = '--i:' + (d.items.length + 1) + ';justify-content:flex-start;margin-top:4px'; d.chips.forEach((c) => r.append(chip(c))); stack.append(r); }
+      scrollEnd();
+    }, 1100);
+  }
+  function submit(text) {
+    text = text.trim(); if (!text) return;
+    setChat(true);
+    const u = el('div', 'msg user fade-in'); u.append(el('div', 'bubble', text)); messages.append(u);
+    input.value = ''; send.disabled = true; reply(text);
+  }
+  form.addEventListener('submit', (e) => { e.preventDefault(); submit(input.value); });
+  input.addEventListener('input', () => { send.disabled = !input.value.trim(); });
+  chips.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => submit(b.textContent)));
+  document.getElementById('reset').addEventListener('click', () => { messages.innerHTML = ''; setChat(false); input.focus(); });
+
+  const EX = ['servis AC di Lubeg', 'onda mogok di Bukittinggi', 'gedung untuk 400 orang di Padang', 'katering nasi kapau, budget 40rb per orang', 'penginapan dekat Jam Gadang'];
+  let ex = 0;
+  setInterval(() => { if (!input.value && document.activeElement !== input && !document.body.classList.contains('is-chat')) { ex = (ex + 1) % EX.length; input.placeholder = EX[ex]; } }, 3200);
+</script>
+</body>
+</html>

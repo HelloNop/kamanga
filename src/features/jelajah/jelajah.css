@@ -1,0 +1,676 @@
+/* Halaman publik: /jelajah dan /listing/[slug]. Memakai token .kmg dari chat.css.
+   Satu-satunya unsur Minang tetap motif Itiak Pulang Patang: dipakai sebagai kubah latar
+   dan sebagai sampul pengganti (berwarna kategori) saat belum ada foto. */
+
+.kmg .pub {
+  position: relative;
+  z-index: 2;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 88px clamp(16px, 4vw, 44px) 80px;
+}
+.kmg .pub-eyebrow {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kmg .pub-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ───── sampul (foto atau motif) ───── */
+.kmg .cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: var(--surface);
+}
+.kmg .cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kmg .cover-motif {
+  --cl: oklch(0.94 0.035 var(--h));
+  --cm: oklch(0.5 0.1 var(--h) / 0.17);
+  --ci: oklch(0.38 0.09 var(--h));
+  display: grid;
+  place-items: center;
+  background: var(--cl);
+}
+.dark .kmg .cover-motif {
+  --cl: oklch(0.27 0.04 var(--h));
+  --cm: oklch(0.82 0.08 var(--h) / 0.13);
+  --ci: oklch(0.88 0.06 var(--h));
+}
+.kmg .cover-motif::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--cm);
+  -webkit-mask: var(--tex) 0 0 / auto 44px repeat;
+  mask: var(--tex) 0 0 / auto 44px repeat;
+}
+.kmg .cover-motif span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--ci);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--bg) 35%, transparent);
+}
+
+/* ───── /jelajah ───── */
+.kmg .pub-hero {
+  padding: 28px 0 8px;
+}
+.kmg .pub-hero h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+.kmg .pub-hero h1 span {
+  color: var(--muted);
+}
+.kmg .pub-sub {
+  max-width: 560px;
+  margin: 14px 0 0;
+  color: var(--muted);
+}
+.kmg .pub-sub a {
+  color: var(--text);
+  text-underline-offset: 3px;
+}
+.kmg .pub-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 760px;
+  margin-top: 26px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+.kmg .pub-search:focus-within {
+  border-color: var(--muted);
+}
+.kmg .pub-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
+  padding: 0 18px;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+}
+.kmg .pub-search select {
+  flex: 0 1 210px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.kmg .pub-search button {
+  height: 48px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+  cursor: pointer;
+}
+.kmg .pub-cats {
+  display: flex;
+  gap: 8px;
+  margin: 30px calc(clamp(16px, 4vw, 44px) * -1) 0;
+  padding: 2px clamp(16px, 4vw, 44px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kmg .pub-cats::-webkit-scrollbar {
+  display: none;
+}
+.kmg .pub-cats a {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.kmg .pub-cats a:hover {
+  border-color: var(--muted);
+}
+.kmg .pub-cats a[aria-current='page'] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+.kmg .pub-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 26px 0 16px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.kmg .pub-bar p {
+  margin: 0;
+}
+.kmg .pub-bar b {
+  color: var(--text);
+}
+.kmg .pub-bar a {
+  color: var(--text);
+  text-underline-offset: 3px;
+}
+.kmg .pub-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 20px;
+}
+
+/* ───── kartu usaha ───── */
+.kmg .pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s;
+  animation: kmg-rise 0.45s ease both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+.kmg .pcard:hover {
+  transform: translateY(-3px);
+  border-color: var(--muted);
+  box-shadow: var(--shadow);
+}
+.kmg .pcard-media {
+  position: relative;
+}
+.kmg .pcard-ok {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--ok);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.kmg .pcard-ok::before {
+  content: '✓ ';
+}
+.kmg .pcard-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 14px 16px 16px;
+}
+.kmg .pcard-cat {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kmg .pcard h2 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.kmg .pcard-link {
+  color: inherit;
+  text-decoration: none;
+}
+.kmg .pcard-link::after {
+  /* seluruh kartu bisa diklik */
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.kmg .pcard-place {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.kmg .pcard-sum {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kmg .pcard-price {
+  margin: auto 0 0;
+  padding-top: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.kmg .pub-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 56px 16px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 24px;
+}
+.kmg .pub-empty-motif {
+  width: 96px;
+  height: 56px;
+  background: var(--motif);
+  -webkit-mask: var(--tex) 0 0 / auto 40px repeat;
+  mask: var(--tex) 0 0 / auto 40px repeat;
+}
+.kmg .pub-empty h2 {
+  margin: 8px 0 0;
+  font-size: 1.15rem;
+}
+.kmg .pub-empty p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  max-width: 380px;
+}
+.kmg .pub-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.kmg .pub-pager a {
+  color: var(--text);
+  text-underline-offset: 3px;
+}
+.kmg .pub-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.kmg .pub-cta h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.kmg .pub-cta p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* ───── /listing/[slug] ───── */
+.kmg .crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.kmg .crumbs a {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+.kmg .crumbs a:hover {
+  color: var(--text);
+}
+.kmg .pd-hero {
+  aspect-ratio: auto;
+  height: clamp(180px, 26vw, 280px);
+  margin-top: 14px;
+  border-radius: 24px;
+}
+.kmg .pd-hero span {
+  width: 4.4rem;
+  font-size: 1.4rem;
+}
+.kmg .pd-gal {
+  display: grid;
+  gap: 8px;
+  height: clamp(240px, 40vw, 440px);
+  margin-top: 14px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.kmg .pd-gal.n-1 {
+  grid-template-columns: 1fr;
+}
+.kmg .pd-gal.n-2 {
+  grid-template-columns: 2fr 1fr;
+}
+.kmg .pd-gal.n-3 {
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.kmg .pd-gal.n-3 > a:first-child {
+  grid-row: span 2;
+}
+.kmg .pd-gal a {
+  position: relative;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+}
+.kmg .pd-gal .cover {
+  aspect-ratio: auto;
+  height: 100%;
+  transition: transform 0.4s ease;
+}
+.kmg .pd-gal a:hover .cover {
+  transform: scale(1.03);
+}
+.kmg .pd-more {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.kmg .pd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 44px;
+  align-items: start;
+  margin-top: 30px;
+}
+.kmg .pd-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4.4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+.kmg .pd-place {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+.kmg .pd-lead {
+  margin: 18px 0 0;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+.kmg .pd-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+}
+.kmg .pd-perks li {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.84rem;
+}
+.kmg .pd-perks li::before {
+  content: '✓ ';
+  color: var(--ok);
+  font-weight: 700;
+}
+.kmg .pd-h {
+  margin: 36px 0 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.kmg .pd-desc {
+  margin: 0;
+  white-space: pre-line;
+  color: color-mix(in oklab, var(--text) 88%, var(--muted));
+  line-height: 1.7;
+}
+.kmg .pd-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.kmg .pd-facts > div {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+}
+.kmg .pd-facts dt {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.kmg .pd-facts dd {
+  margin: 3px 0 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.kmg .pd-contact {
+  position: sticky;
+  top: 88px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+.kmg .pd-price span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.kmg .pd-price b {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.kmg .pd-price em {
+  font-style: normal;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.kmg .pd-price p {
+  margin: 6px 0 0;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.kmg .pd-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+.kmg .pd-actions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.kmg .pd-actions a:hover {
+  border-color: var(--muted);
+}
+.kmg .pd-actions a.wa {
+  margin: 0;
+  border: 0;
+  background: var(--wa);
+  color: var(--wa-text);
+  font-weight: 600;
+}
+.kmg .pd-nocontact {
+  margin: 16px 0 0;
+  color: var(--muted);
+}
+.kmg .pd-trust {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+.kmg .pd-trust.ok {
+  color: var(--ok);
+}
+.kmg .pd-trust.ok::before {
+  content: '✓ ';
+}
+.kmg .pd-trust small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.kmg .pd-similar {
+  margin-top: 56px;
+}
+.kmg .pd-similar .pd-h {
+  margin-top: 0;
+}
+.kmg .pd-bar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .kmg .pd-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .kmg .pd-contact {
+    position: static;
+  }
+  .kmg .pd-detail-pad,
+  .kmg .pub-detail {
+    padding-bottom: 110px;
+  }
+  .kmg .pd-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px clamp(16px, 4vw, 44px) calc(12px + env(safe-area-inset-bottom));
+    background: color-mix(in oklab, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+  }
+  .kmg .pd-bar small {
+    display: block;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+  .kmg .pd-bar b {
+    font-size: 1rem;
+  }
+  .kmg .pd-bar .wa {
+    margin: 0;
+    flex: none;
+  }
+}
+@media (max-width: 640px) {
+  .kmg .pub-search {
+    flex-wrap: wrap;
+    border-radius: 26px;
+  }
+  .kmg .pub-search input {
+    flex-basis: 100%;
+  }
+  .kmg .pub-search select {
+    flex: 1;
+    border-left: 0;
+  }
+  .kmg .pd-gal.n-2,
+  .kmg .pd-gal.n-3 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    height: clamp(260px, 80vw, 400px);
+  }
+  .kmg .pd-gal.n-2 > a:first-child,
+  .kmg .pd-gal.n-3 > a:first-child {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+.kmg.pub-page .nav .link-quiet,
+.kmg.pub-page .nav .cta {
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  /* nav sempit: tautan "Tanya Kamanga" disembunyikan; merek dan Jelajah tetap ada */
+  .kmg.pub-page .nav .hide-sm {
+    display: none;
+  }
+}

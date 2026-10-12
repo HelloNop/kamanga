@@ -1,0 +1,5 @@
+slug,name,level,parent_slug,lat,lng,aliases
+west-sumatra,Sumatera Barat,provinsi,,,,Sumbar
+padang,Kota Padang,kota,west-sumatra,,,Padang|Pdg
+lubuk-begalung,Lubuk Begalung,kecamatan,padang,,,Lubeg
+pasar-raya-padang,Pasar Raya Padang,tempat,padang,,,Pasa Raya|Pasar Raya

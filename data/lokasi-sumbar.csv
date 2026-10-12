@@ -1,0 +1,65 @@
+slug,name,level,parent_slug,lat,lng,aliases
+west-sumatra,Sumatera Barat,provinsi,,,,Sumbar|Sumatra Barat
+padang,Kota Padang,kota,west-sumatra,-0.9471,100.4172,Pdg
+bukittinggi,Kota Bukittinggi,kota,west-sumatra,-0.3055,100.3692,Bukiktinggi|Bukik
+payakumbuh,Kota Payakumbuh,kota,west-sumatra,-0.22,100.63,Payakumbuah
+solok,Kota Solok,kota,west-sumatra,-0.80,100.65,
+sawahlunto,Kota Sawahlunto,kota,west-sumatra,-0.68,100.77,Sawah Lunto
+padang-panjang,Kota Padang Panjang,kota,west-sumatra,-0.47,100.40,
+pariaman,Kota Pariaman,kota,west-sumatra,-0.63,100.12,
+kab-kepulauan-mentawai,Kabupaten Kepulauan Mentawai,kabupaten,west-sumatra,,,Mentawai
+kab-pesisir-selatan,Kabupaten Pesisir Selatan,kabupaten,west-sumatra,,,Pessel
+kab-solok,Kabupaten Solok,kabupaten,west-sumatra,,,
+kab-sijunjung,Kabupaten Sijunjung,kabupaten,west-sumatra,,,
+kab-tanah-datar,Kabupaten Tanah Datar,kabupaten,west-sumatra,,,
+kab-padang-pariaman,Kabupaten Padang Pariaman,kabupaten,west-sumatra,,,
+kab-agam,Kabupaten Agam,kabupaten,west-sumatra,,,
+kab-lima-puluh-kota,Kabupaten Lima Puluh Kota,kabupaten,west-sumatra,,,Limapuluh Kota|50 Kota
+kab-pasaman,Kabupaten Pasaman,kabupaten,west-sumatra,,,
+kab-solok-selatan,Kabupaten Solok Selatan,kabupaten,west-sumatra,,,Solsel
+kab-dharmasraya,Kabupaten Dharmasraya,kabupaten,west-sumatra,,,
+kab-pasaman-barat,Kabupaten Pasaman Barat,kabupaten,west-sumatra,,,Pasbar
+bungus-teluk-kabung,Bungus Teluk Kabung,kecamatan,padang,,,Bungus
+koto-tangah,Koto Tangah,kecamatan,padang,,,
+kuranji,Kuranji,kecamatan,padang,,,
+lubuk-begalung,Lubuk Begalung,kecamatan,padang,,,Lubeg
+lubuk-kilangan,Lubuk Kilangan,kecamatan,padang,,,
+nanggalo,Nanggalo,kecamatan,padang,,,
+padang-barat,Padang Barat,kecamatan,padang,,,
+padang-selatan,Padang Selatan,kecamatan,padang,,,
+padang-timur,Padang Timur,kecamatan,padang,,,
+padang-utara,Padang Utara,kecamatan,padang,,,
+pauh,Pauh,kecamatan,padang,,,
+aur-birugo-tigo-baleh,Aur Birugo Tigo Baleh,kecamatan,bukittinggi,,,
+guguk-panjang,Guguak Panjang,kecamatan,bukittinggi,,,Guguk Panjang
+mandiangin-koto-selayan,Mandiangin Koto Selayan,kecamatan,bukittinggi,,,
+payakumbuh-barat,Payakumbuh Barat,kecamatan,payakumbuh,,,
+payakumbuh-selatan,Payakumbuh Selatan,kecamatan,payakumbuh,,,
+payakumbuh-timur,Payakumbuh Timur,kecamatan,payakumbuh,,,
+payakumbuh-utara,Payakumbuh Utara,kecamatan,payakumbuh,,,
+lamposi-tigo-nagari,Lamposi Tigo Nagori,kecamatan,payakumbuh,,,Lamposi Tigo Nagari
+lubuk-sikarah,Lubuk Sikarah,kecamatan,solok,,,
+tanjung-harapan,Tanjung Harapan,kecamatan,solok,,,
+barangin,Barangin,kecamatan,sawahlunto,,,
+lembah-segar,Lembah Segar,kecamatan,sawahlunto,,,
+silungkang,Silungkang,kecamatan,sawahlunto,,,
+talawi,Talawi,kecamatan,sawahlunto,,,
+padang-panjang-barat,Padang Panjang Barat,kecamatan,padang-panjang,,,
+padang-panjang-timur,Padang Panjang Timur,kecamatan,padang-panjang,,,
+pariaman-selatan,Pariaman Selatan,kecamatan,pariaman,,,
+pariaman-tengah,Pariaman Tengah,kecamatan,pariaman,,,
+pariaman-timur,Pariaman Timur,kecamatan,pariaman,,,
+pariaman-utara,Pariaman Utara,kecamatan,pariaman,,,
+air-pacah,Aie Pacah,kelurahan,koto-tangah,,,Aia Pacah|Air Pacah
+pasar-raya-padang,Pasar Raya Padang,tempat,padang,,,Pasa Raya|Pasar Raya
+pantai-padang,Pantai Padang,tempat,padang-barat,,,
+pantai-air-manis,Pantai Air Manis,tempat,padang-selatan,,,Air Manis
+jembatan-siti-nurbaya,Jembatan Siti Nurbaya,tempat,padang,,,Siti Nurbaya
+jam-gadang,Jam Gadang,tempat,guguk-panjang,,,
+pasar-atas-bukittinggi,Pasar Atas Bukittinggi,tempat,bukittinggi,,,Pasa Ateh|Pasar Atas
+benteng-fort-de-kock,Benteng Fort de Kock,tempat,bukittinggi,,,Fort de Kock
+bandara-minangkabau,Bandara Internasional Minangkabau,tempat,kab-padang-pariaman,,,BIM|Bandara BIM
+istano-basa-pagaruyung,Istano Basa Pagaruyung,tempat,kab-tanah-datar,,,Istana Pagaruyung|Istana Basa Pagaruyung
+lembah-harau,Lembah Harau,tempat,kab-lima-puluh-kota,,,Harau
+danau-maninjau,Danau Maninjau,tempat,kab-agam,,,Maninjau
+kawasan-mandeh,Kawasan Mandeh,tempat,kab-pesisir-selatan,,,Mandeh|Pantai Mandeh

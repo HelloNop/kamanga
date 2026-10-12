@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Kamanga · prototipe panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Prototipe panel pengelola Kamanga, mengikuti referensi: kanvas lembut, panel melayang, kartu putih besar, satu aksen biru-teal. */
+  :root {
+    --canvas: #e9eaed; --frame: #ffffff; --panel: #f4f4f6; --card: #ffffff; --soft: #f1f2f5;
+    --text: #1c1f24; --muted: #8b9098; --line: #e8e9ed;
+    --acc1: #2d5a73; --acc2: #4f90a8; --acc-soft: #aeeaf6;
+    --ok: #1e9a68; --ok-bg: #e6f6ee; --warn: #b87d00; --warn-bg: #fdf3d9; --bad: #cf3f3f; --bad-bg: #fde8e8; --info: #3d6fa5; --info-bg: #e7f0fa;
+    --hatch: #c9cbd1; --c1: #4a7c80; --c2: #8c9fc6; --c3: #2a3a3d;
+    --shadow: 0 1px 2px rgba(20, 24, 31, .04), 0 8px 24px -12px rgba(20, 24, 31, .1);
+    --f: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --canvas: #0b0c0e; --frame: #121417; --panel: #181a1f; --card: #20232a; --soft: #272b33;
+    --text: #edf0f3; --muted: #8e949e; --line: #2c3037;
+    --acc1: #2d5a73; --acc2: #4f90a8; --acc-soft: #aeeaf6;
+    --ok: #4cc58d; --ok-bg: #16372a; --warn: #e4b341; --warn-bg: #3a2f12; --bad: #f07a7a; --bad-bg: #3d1c1c; --info: #7fb1e8; --info-bg: #172a40;
+    --hatch: #3b4048; --c1: #5f9498; --c2: #8c9fc6; --c3: #d7dde0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --canvas: #0b0c0e; --frame: #121417; --panel: #181a1f; --card: #20232a; --soft: #272b33;
+      --text: #edf0f3; --muted: #8e949e; --line: #2c3037;
+      --ok: #4cc58d; --ok-bg: #16372a; --warn: #e4b341; --warn-bg: #3a2f12; --bad: #f07a7a; --bad-bg: #3d1c1c; --info: #7fb1e8; --info-bg: #172a40;
+      --hatch: #3b4048; --c1: #5f9498; --c2: #8c9fc6; --c3: #d7dde0;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--frame); color: var(--text); font-family: var(--f); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  :focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; border-radius: 10px; }
+
+  /* ───── kerangka ───── */
+  /* Aplikasi memenuhi layar: panel langsung di atas latar, tanpa bingkai atau kanvas di luarnya. */
+  .frame { padding: 16px; display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 16px; min-height: 100vh; }
+  .panel { background: var(--panel); border-radius: 24px; }
+  .side { padding: 22px 16px 16px; display: flex; flex-direction: column; position: sticky; top: 16px; height: calc(100vh - 32px); }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px; font-weight: 700; font-size: 22px; letter-spacing: -.03em; }
+  .logo b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(160deg, var(--acc1), var(--acc2)); color: #fff; font-size: 16px; }
+  .group { margin: 26px 0 8px 10px; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .nav a { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 14px; margin-bottom: 2px; border-radius: 12px; color: var(--muted); text-decoration: none; font-weight: 500; font-size: 15px; transition: color .15s; }
+  .nav a:hover { color: var(--text); }
+  .nav a[aria-current="page"] { color: var(--text); font-weight: 700; }
+  .nav a[aria-current="page"]::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 6px; border-radius: 0 6px 6px 0; background: var(--text); }
+  .nav .count { margin-left: auto; font-size: 11px; font-weight: 600; background: var(--acc1); color: #fff; border-radius: 999px; padding: 1px 8px; }
+  .promo { margin-top: auto; border-radius: 20px; padding: 18px; color: #fff; position: relative; overflow: hidden; background: linear-gradient(160deg, #1c3f54, #2d5a73 55%, #3f7d96); min-height: 170px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .promo::before { content: ""; position: absolute; inset: 0; background: rgba(255, 255, 255, .22); -webkit-mask: var(--tex) 0 0 / auto 70px repeat; mask: var(--tex) 0 0 / auto 70px repeat; opacity: .55; }
+  .promo > * { position: relative; }
+  .promo h4 { margin: 0 0 2px; font-size: 16px; }
+  .promo p { margin: 0 0 12px; font-size: 12px; opacity: .85; }
+
+  .top { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 16px; }
+  .search { flex: 1; max-width: 380px; display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 999px; padding: 10px 14px; color: var(--muted); }
+  .search span { flex: 1; }
+  .kbd { font-size: 11px; background: var(--soft); border-radius: 8px; padding: 2px 8px; }
+  .top .sp { flex: 1; }
+  .circ { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--card); border: 0; color: var(--text); }
+  .user { display: flex; align-items: center; gap: 10px; padding-left: 4px; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(140deg, #e8c3a4, #b98a78); display: grid; place-items: center; font-weight: 700; color: #fff; }
+  .user b { display: block; font-size: 14px; line-height: 1.2; }
+  .user small { color: var(--muted); }
+
+  .stage { padding: 26px; min-height: calc(100vh - 108px); }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 36px; line-height: 1.15; letter-spacing: -.03em; font-weight: 700; }
+  .sub { color: var(--muted); margin-top: 6px; font-size: 15px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 22px; border-radius: 999px; border: 1.5px solid var(--text); background: transparent; font-weight: 600; font-size: 14px; text-decoration: none; color: var(--text); }
+  .btn.pri { border-color: transparent; color: #fff; background: linear-gradient(180deg, var(--acc2), var(--acc1)); box-shadow: 0 8px 18px -8px rgba(45, 90, 115, .7); }
+  .btn.sm { height: 34px; padding: 0 14px; font-size: 13px; }
+  .btn.ghost { border-color: transparent; color: var(--muted); }
+
+  /* ───── kartu ───── */
+  .grid { display: grid; gap: 14px; }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+  .card h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .card .ch { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+  .kpi { display: flex; flex-direction: column; justify-content: space-between; min-height: 150px; }
+  .kpi .t { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; font-size: 16px; font-weight: 600; }
+  .kpi .v { font-size: 48px; line-height: 1; font-weight: 400; letter-spacing: -.04em; margin: 14px 0 10px; }
+  .kpi .n { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .kpi .go { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--text); display: grid; place-items: center; flex: none; background: transparent; color: inherit; }
+  .kpi.hi { background: linear-gradient(170deg, var(--acc1) 0%, var(--acc2) 100%); color: #fff; box-shadow: 0 14px 28px -14px rgba(45, 90, 115, .8); }
+  .kpi.hi .go { background: #fff; color: var(--acc1); border-color: #fff; }
+  .kpi.hi .n { color: var(--acc-soft); }
+  .tag { font-size: 11px; font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 0 7px; }
+
+  .dash { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) minmax(0, .95fr); margin-top: 14px; }
+  .span2 { grid-column: span 2; }
+  .bars { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; height: 168px; padding-top: 10px; }
+  .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 8px; font-size: 12px; color: var(--muted); position: relative; }
+  .bar i { display: block; width: 100%; border-radius: 999px; background: repeating-linear-gradient(135deg, var(--hatch) 0 1.5px, transparent 1.5px 7px); border: 1.5px solid var(--hatch); }
+  .bar i.s1 { background: var(--c1); border-color: transparent; }
+  .bar i.s2 { background: var(--c2); border-color: transparent; }
+  .bar i.s3 { background: var(--c3); border-color: transparent; }
+  .bar em { position: absolute; top: -4px; font-style: normal; font-size: 10px; font-weight: 600; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; color: var(--text); transform: translateY(-100%); }
+  .remind h4 { margin: 4px 0 4px; font-size: 22px; line-height: 1.2; letter-spacing: -.02em; }
+  .remind p { margin: 0 0 16px; color: var(--muted); }
+  .btn.wide { width: 100%; justify-content: center; }
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .list li { display: flex; align-items: center; gap: 12px; }
+  .ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; flex: none; font-weight: 700; font-size: 13px; }
+  .list b { display: block; font-weight: 600; line-height: 1.3; }
+  .list small { color: var(--muted); font-size: 12px; }
+  .list .end { margin-left: auto; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap; }
+  .pill.ok { color: var(--ok); background: var(--ok-bg); } .pill.warn { color: var(--warn); background: var(--warn-bg); }
+  .pill.bad { color: var(--bad); background: var(--bad-bg); } .pill.info { color: var(--info); background: var(--info-bg); } .pill.mut { color: var(--muted); background: var(--soft); }
+  .gauge { display: grid; place-items: center; position: relative; padding-top: 6px; }
+  .gauge svg { width: 100%; max-width: 270px; }
+  .gauge .num { position: absolute; bottom: 30px; text-align: center; }
+  .gauge .num b { font-size: 46px; font-weight: 400; letter-spacing: -.04em; display: block; line-height: 1; }
+  .gauge .num small { color: var(--muted); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 12px; margin-top: 10px; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+
+  /* ───── tabel ───── */
+  .tools { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .tools .search { max-width: 320px; box-shadow: var(--shadow); }
+  .chip { height: 40px; padding: 0 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+  .chip.on { border-color: var(--acc2); color: var(--acc1); background: var(--info-bg); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 14px 12px; white-space: nowrap; }
+  td { padding: 8px 14px; border-top: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+  tbody tr:hover td { background: var(--soft); }
+  td:first-child, th:first-child { padding-left: 4px; }
+  .nm { display: flex; align-items: center; gap: 12px; }
+  .nm .ic { width: 34px; height: 34px; border-radius: 11px; font-size: 12px; }
+  .nm b { display: block; font-weight: 600; } .nm small { color: var(--muted); }
+  .foot { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; flex-wrap: wrap; gap: 8px; }
+  .pg { display: flex; gap: 6px; } .pg button { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: transparent; }
+  .pg button.on { background: var(--acc1); color: #fff; border-color: transparent; }
+
+  /* ───── form ───── */
+  .form { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  .stack { display: grid; gap: 14px; }
+  .sec h3 { margin-bottom: 4px; } .sec .d { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  .fld { display: grid; gap: 6px; margin-bottom: 14px; } .fld:last-child { margin-bottom: 0; }
+  .fld > label, .lab { font-size: 13px; font-weight: 600; }
+  .fld > label small, .lab small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .inp { height: 44px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--card); padding: 0 14px; width: 100%; outline: none; }
+  .inp:focus { border-color: var(--acc2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc2) 18%, transparent); }
+  textarea.inp { height: auto; min-height: 84px; padding: 12px 14px; resize: vertical; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cp { height: 36px; padding: 0 15px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); font-weight: 500; }
+  .cp.on { background: var(--acc1); border-color: var(--acc1); color: #fff; }
+  .cp.dash { border-style: dashed; color: var(--muted); }
+  .seg { display: inline-flex; background: var(--soft); border-radius: 12px; padding: 3px; }
+  .seg button { border: 0; background: transparent; height: 32px; padding: 0 14px; border-radius: 9px; color: var(--muted); font-weight: 500; }
+  .seg button.on { background: var(--card); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+  .sw { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .sw:first-of-type { border-top: 0; padding-top: 0; }
+  .sw b { display: block; font-weight: 600; } .sw small { color: var(--muted); }
+  .tog { width: 46px; height: 28px; border-radius: 999px; background: var(--line); position: relative; border: 0; flex: none; }
+  .tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .tog.on { background: linear-gradient(180deg, var(--acc2), var(--acc1)); } .tog.on::after { left: 21px; }
+  .checks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; }
+  .ck { display: flex; align-items: center; gap: 9px; }
+  .ck i { width: 20px; height: 20px; border-radius: 7px; border: 1.5px solid var(--line); display: grid; place-items: center; background: var(--card); }
+  .ck.on i { background: var(--acc1); border-color: var(--acc1); color: #fff; }
+  .rowattr { display: grid; grid-template-columns: 1fr 150px 40px; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; border: 1.5px dashed var(--line); border-radius: 14px; padding: 8px; margin: -2px 0 12px; }
+  .opts span { background: var(--soft); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
+  .banner { display: flex; gap: 12px; align-items: flex-start; background: var(--warn-bg); color: var(--warn); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; }
+  .banner b { color: var(--text); } .banner p { margin: 0; color: var(--text); }
+  .side-card { position: sticky; top: 16px; }
+  .prev { border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .prev h4 { margin: 0 0 6px; font-size: 15px; }
+  .ring { --p: 72; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(var(--acc2) calc(var(--p) * 1%), var(--soft) 0); display: grid; place-items: center; flex: none; }
+  .ring span { width: 66px; height: 66px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 20px; font-weight: 600; }
+  .todo { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 13px; }
+  .todo li { display: flex; gap: 8px; align-items: center; color: var(--muted); } .todo li.d { color: var(--text); } .todo li.d svg { color: var(--ok); }
+  .view[hidden] { display: none; }
+
+  @media (max-width: 1180px) { .g4 { grid-template-columns: repeat(2, 1fr); } .dash { grid-template-columns: 1fr 1fr; } .span2 { grid-column: span 2; } .form { grid-template-columns: 1fr; } .side-card { position: static; } }
+  @media (max-width: 860px) {
+    .frame { grid-template-columns: 1fr; padding: 10px; }
+    .side { position: static; height: auto; padding: 14px; } .side .group, .promo { display: none; }
+    .nav { display: flex; gap: 4px; overflow-x: auto; } .nav a { white-space: nowrap; margin: 0; } .nav a[aria-current="page"]::before { display: none; }
+    .stage { padding: 16px; } h1 { font-size: 28px; } .g4, .dash { grid-template-columns: 1fr; } .span2 { grid-column: auto; }
+    .two, .checks { grid-template-columns: 1fr; } .user div { display: none; } .search { max-width: none; }
+    .tbl { overflow-x: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body style="--tex: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 233 349%22 width=%22233%22 height=%22349%22%3E%3Cpath d=%22M942 56.3 926.4 71.9 908.2 92.7 894.6 109.2 847.2 169.7 838.5 180 826.1 193.6 809.5 210 793.4 224 775.9 237.5 752.8 253.3 751.2 255 753.7 256.8 760.3 260.2 772.3 265.2 783.2 268.2 790 269.3 797 269.7 809 269.3 816.6 268 828 264.6 840.5 259 849.4 253.9 860.7 246.1 876.9 232.4 887 222.5 900.5 208 913.9 192.4 942 156.7 M-233 65 -219.5 52.1 -206.4 41.1 -192.5 31 -176.3 21.2 -163.5 15 -156.4 12.2 -148.9 9.7 -137.8 6.8 -131.9 5.7 -122 4.6 -108 4.7 -95.1 6.7 -87.3 8.9 -82.3 10.8 -76.8 13.3 -71.1 16.6 -64.2 21.6 -59.9 25.4 -55.1 30.6 -52.6 34.1 -49.5 39 -46.9 44.4 -45 50.4 -43.9 55.1 -44.4 56.2 -45.8 56.2 -62.1 51.6 -75 49.6 -85 49.2 -96 49.6 -107.9 51.7 -117.8 54.6 -126.4 58 -138.9 64.6 -147.9 70.6 -156.9 77.6 -167 86.5 -177.4 97.2 -184.9 105.7 -196.5 120 -233 168.4 M942 169.4 912 208.4 901 221.4 886.2 236.7 873.4 247.9 863 255.5 850.7 263.2 836.7 270.2 825.7 274.2 817 276.4 808 277.5 795 277.3 788.1 276.4 774.3 273.2 732.8 259.8 731.3 259.8 730.7 261.1 731.7 267.9 734.7 278.9 737.7 286.8 740.6 292.9 744.6 299.9 749.5 307 755 313.5 762.1 320.4 769.4 326.1 777.3 331.1 785.3 335.1 793.3 338.1 805.1 341.2 813 342.4 824.1 343.1 837.9 342.3 843.7 341.2 853.7 338.2 864.2 333.7 873.7 328.2 880.3 323.8 888.8 317.3 896.4 310.9 912.1 295.6 927.4 278.9 942 261.3 M-233 181.1 -188.7 123.8 -177.3 110.2 -166.8 98.7 -157.3 89.3 -148.8 81.7 -140.2 75.3 -127.7 67.9 -115.8 62.7 -107.6 59.9 -98.9 57.8 -92 56.6 -83 55.8 -76 55.8 -67.1 56.7 -61.4 58 -55.3 59.8 -50.3 61.8 -45.1 64.6 -37.6 70.1 -33.1 74.6 -29.8 79.2 -29.8 79.8 -31 80.4 -40.9 81.7 -49.8 83.7 -60.2 87.3 -70.4 92.1 -79.9 97.6 -89.9 104.5 -100 112.5 -110 121.5 -127.9 139.6 -146.9 161.6 -169.9 190.6 -208.7 241.8 -233 272.4 M108.5 6 114 5.6 125 5.6 135.8 6.9 143.8 8.7 150.6 11 157.5 14 163.3 17.2 170.8 22.6 175.1 26.4 179.9 31.6 182.8 35.7 186.2 41.3 189.1 48.3 191 55.4 191 56.8 190.6 57.2 189.2 57.2 172.9 52.6 161 50.7 150 50.2 138.1 50.7 132.1 51.7 123.2 53.7 110.7 58.1 96.7 65.2 87.1 71.6 78.1 78.6 68 87.5 57.6 98.2 50.6 106.1 34.5 126.1 9.8 159.3 -12.2 187.3 -23.1 200.4 -38.1 217.4 -50.5 230 -62.6 240.9 -76.2 251.3 -82.8 255.7 -89.8 259.7 -97.2 263.3 -103 265.6 -114.4 269 -122 270.3 -134 270.7 -141 270.3 -147.8 269.2 -158.7 266.2 -170.7 261.2 -179.6 256.3 -179.7 255.6 -178.2 254.3 -155.7 238.9 -137.6 225 -121.5 211 -104.9 194.6 -92.5 181 -83.8 170.7 -36.4 110.2 -16.4 86.1 -9.4 78.1 1.8 66.3 16.6 52.1 24.7 45.2 36.6 36.1 51.1 26.6 62 20.5 74.3 14.9 86.1 10.7 97.2 7.8 108.5 6Z M341.5 6 347 5.6 358 5.6 368.8 6.9 376.8 8.7 383.6 11 390.5 14 396.3 17.2 403.8 22.6 408.1 26.4 412.9 31.6 415.8 35.7 419.2 41.3 422.1 48.3 424 55.4 424 56.8 423.6 57.2 422.2 57.2 405.9 52.6 394 50.7 383 50.2 371.1 50.7 365.1 51.7 356.2 53.7 343.7 58.1 329.7 65.2 320.1 71.6 311.1 78.6 301 87.5 290.6 98.2 283.6 106.1 267.5 126.1 242.8 159.3 220.8 187.3 209.9 200.4 194.9 217.4 182.5 230 170.4 240.9 156.8 251.3 150.2 255.7 143.2 259.7 135.8 263.3 130 265.6 118.6 269 111 270.3 99 270.7 92 270.3 85.2 269.2 74.3 266.2 62.3 261.2 53.4 256.3 53.3 255.6 54.8 254.3 77.3 238.9 95.4 225 111.5 211 128.1 194.6 140.5 181 143 177.4 145 175.6 149.2 170.7 196.6 110.2 216.6 86.1 223.6 78.1 234.8 66.3 249.6 52.1 257.7 45.2 269.6 36.1 284.1 26.6 295 20.5 307.3 14.9 319.1 10.7 330.2 7.8 341.5 6Z M574.5 6 580 5.6 591 5.6 601.8 6.9 609.8 8.7 616.6 11 623.5 14 629.3 17.2 636.8 22.6 641.1 26.4 645.9 31.6 648.8 35.7 652.2 41.3 655.1 48.3 657 55.4 657 56.8 656.6 57.2 655.2 57.2 638.9 52.6 627 50.7 616 50.2 604.1 50.7 598.1 51.7 589.2 53.7 576.7 58.1 562.7 65.2 553.1 71.6 544.1 78.6 534 87.5 523.6 98.2 516.6 106.1 500.5 126.1 475.8 159.3 453.8 187.3 442.9 200.4 427.9 217.4 415.5 230 403.4 240.9 389.8 251.3 383.2 255.7 376.2 259.7 368.8 263.3 363 265.6 351.6 269 344 270.3 332 270.7 325 270.3 318.2 269.2 307.3 266.2 295.3 261.2 286.4 256.3 286.3 255.6 287.8 254.3 310.3 238.9 328.4 225 344.5 211 361.1 194.6 373.5 181 376 177.4 378 175.6 382.2 170.7 429.6 110.2 449.6 86.1 456.6 78.1 467.8 66.3 482.6 52.1 490.7 45.2 502.6 36.1 517.1 26.6 528 20.5 540.3 14.9 552.1 10.7 563.2 7.8 574.5 6Z M806.5 6 812 5.6 823 5.6 833.8 6.9 845.7 9.9 854.9 13.7 861.3 17.1 862.9 17 863.3 18.4 869.4 23.1 874.1 27.4 878.3 32.2 882.4 38.1 885.2 43.3 887.1 48.3 889 55.4 889 56.8 888.6 57.2 887.2 57.2 870.9 52.6 859 50.7 848 50.2 836.1 50.7 830.1 51.7 821.2 53.7 808.7 58.1 794.7 65.2 785.1 71.6 776.1 78.6 766 87.5 755.6 98.2 748.6 106.1 732.5 126.1 707.8 159.3 685.8 187.3 674.9 200.4 659.9 217.4 647.5 230 635.4 240.9 621.8 251.3 615.2 255.7 608.2 259.7 600.8 263.3 595 265.6 583.6 269 576 270.3 564 270.7 557 270.3 550.2 269.2 539.3 266.2 527.3 261.2 518.4 256.3 518.3 255.6 519.8 254.3 542.3 238.9 560.4 225 576.5 211 593.1 194.6 605.5 181 614.2 170.7 661.6 110.2 681.6 86.1 688.6 78.1 699.8 66.3 714.6 52.1 722.7 45.2 734.6 36.1 749.1 26.6 760 20.5 772.3 14.9 784.1 10.7 795.2 7.8 806.5 6Z M150.4 57 159 56.8 167.9 57.7 176.8 59.8 183.3 62.2 189.9 65.6 196.3 70.2 201.9 75.6 204.9 79.6 205.2 80.8 204 81.4 194.1 82.7 185.2 84.7 174.8 88.3 164.6 93.1 155.1 98.6 145.1 105.5 135 113.5 125 122.5 107.1 140.6 88.1 162.6 65.1 191.6 19.8 251.3 -3.6 279.9 -18.4 296.2 -29.4 307.1 -39.4 316 -48.4 323.1 -57.3 329.2 -66.8 334.7 -76.5 338.9 -84.1 341.3 -93.1 343.3 -99 343.8 -106.9 344.1 -119 343.3 -126.7 342.1 -136.9 339.4 -145.7 336.1 -153.7 332.1 -161 327.5 -168.4 321.9 -176 314.5 -181.9 307.4 -186.4 300.9 -189.4 295.9 -194.2 285.7 -197.3 276.8 -199.3 268.9 -200.3 263 -200.2 261.3 -199.7 260.8 -198.2 260.8 -166.7 271.2 -155.9 274.4 -142.9 277.4 -132 278.5 -121 278.4 -113.2 277.2 -106.1 275.4 -94.3 271.2 -79.7 263.8 -65.7 254.9 -52.7 244.8 -44.3 237.2 -30 222.4 -18.1 208.3 46.3 124.8 58.6 110.1 68.2 99.7 77.7 90.3 85.7 83.2 94.2 76.7 102.8 71.4 110.7 67.2 119.2 63.7 131.3 59.9 141.2 57.9 150.4 57Z M383.4 57 392 56.8 400.9 57.7 409.8 59.8 416.3 62.2 422.9 65.6 429.3 70.2 434.9 75.6 437.9 79.6 438.2 80.8 437 81.4 427.1 82.7 418.2 84.7 407.8 88.3 397.6 93.1 388.1 98.6 378.1 105.5 368 113.5 358 122.5 340.1 140.6 321.1 162.6 298.1 191.6 252.8 251.3 229.4 279.9 214.6 296.2 203.6 307.1 193.6 316 184.6 323.1 175.7 329.2 166.2 334.7 156.5 338.9 148.9 341.3 139.9 343.3 134 343.8 126.1 344.1 114 343.3 106.3 342.1 96.1 339.4 87.3 336.1 79.3 332.1 72 327.5 64.6 321.9 57 314.5 51.1 307.4 46.6 300.9 43.6 295.9 38.8 285.7 35.7 276.8 33.7 268.9 32.7 263 32.8 261.3 33.3 260.8 34.8 260.8 66.3 271.2 77.1 274.4 90.1 277.4 101 278.5 112 278.4 119.8 277.2 126.9 275.4 138.7 271.2 153.3 263.8 167.3 254.9 180.3 244.8 188.7 237.2 203 222.4 214.9 208.3 279.3 124.8 291.6 110.1 301.2 99.7 310.7 90.3 318.7 83.2 327.2 76.7 335.8 71.4 343.7 67.2 352.2 63.7 364.3 59.9 374.2 57.9 383.4 57Z M616.4 57 625 56.8 633.9 57.7 642.8 59.8 649.3 62.2 655.9 65.6 662.3 70.2 667.9 75.6 670.9 79.6 671.2 80.8 670 81.4 660.1 82.7 651.2 84.7 640.8 88.3 630.6 93.1 621.1 98.6 611.1 105.5 601 113.5 591 122.5 573.1 140.6 554.1 162.6 531.1 191.6 485.8 251.3 462.4 279.9 447.6 296.2 436.6 307.1 426.6 316 417.6 323.1 408.7 329.2 399.2 334.7 389.5 338.9 381.9 341.3 372.9 343.3 367 343.8 359.1 344.1 347 343.3 339.3 342.1 329.1 339.4 320.3 336.1 312.3 332.1 305 327.5 297.6 321.9 290 314.5 284.1 307.4 279.6 300.9 276.6 295.9 271.8 285.7 268.7 276.8 266.7 268.9 265.7 263 265.8 261.3 266.3 260.8 267.8 260.8 299.3 271.2 310.1 274.4 323.1 277.4 334 278.5 345 278.4 352.8 277.2 359.9 275.4 371.7 271.2 386.3 263.8 400.3 254.9 413.3 244.8 421.7 237.2 436 222.4 447.9 208.3 512.3 124.8 524.6 110.1 534.2 99.7 543.7 90.3 551.7 83.2 560.2 76.7 568.8 71.4 576.7 67.2 585.2 63.7 597.3 59.9 607.2 57.9 616.4 57Z M848.4 57 857 56.8 865.9 57.7 874.8 59.8 881.3 62.2 887.9 65.6 894.3 70.2 899.9 75.6 902.9 79.6 903.2 80.8 902 81.4 892.1 82.7 883.2 84.7 872.8 88.3 862.6 93.1 853.1 98.6 843.1 105.5 833 113.5 823 122.5 805.1 140.6 786.1 162.6 763.1 191.6 717.8 251.3 694.4 279.9 679.6 296.2 668.6 307.1 658.6 316 649.6 323.1 640.7 329.2 631.2 334.7 621.5 338.9 613.9 341.3 604.9 343.3 599 343.8 591.1 344.1 579 343.3 571.3 342.1 561.1 339.4 552.3 336.1 544.3 332.1 537 327.5 529.6 321.9 522 314.5 516.1 307.4 511.6 300.9 508.6 295.9 503.8 285.7 500.7 276.8 498.7 268.9 497.7 263 497.8 261.3 498.3 260.8 499.8 260.8 516.3 266.2 518.9 266.1 519.1 266.9 520.1 267.5 542.1 274.4 555.1 277.4 566 278.5 577 278.4 584.8 277.2 591.9 275.4 603.7 271.2 618.3 263.8 632.3 254.9 645.3 244.8 653.7 237.2 668 222.4 679.9 208.3 744.3 124.8 756.6 110.1 766.2 99.7 775.7 90.3 783.7 83.2 792.2 76.7 800.8 71.4 808.7 67.2 817.2 63.7 829.3 59.9 839.2 57.9 848.4 57Z%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%224.8%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E')">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2.5h6a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-tags" viewBox="0 0 24 24"><path d="M3.5 12.2V5a1.5 1.5 0 0 1 1.5-1.5h7.2a1.5 1.5 0 0 1 1.06.44l7.3 7.3a1.5 1.5 0 0 1 0 2.12l-7.2 7.2a1.5 1.5 0 0 1-2.12 0l-7.3-7.3a1.5 1.5 0 0 1-.44-1.06Z"/><circle cx="8" cy="8" r="1.4"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 14a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5M12 16.8h.01"/></symbol>
+    <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h4M15 8l4 4-4 4M19 12H9"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15zM10 20.5a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17H10l-4.5 3.5V17H5A1.5 1.5 0 0 1 3.5 15.5V7A1.5 1.5 0 0 1 5 5.5Z"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3 19.5h18zM12 10v4.5M12 17.2h.01"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  </defs>
+</svg>
+
+<div class="frame">
+  <aside class="side panel">
+    <div class="logo"><b>K</b>kamanga</div>
+    <div class="group">Menu</div>
+    <nav class="nav" aria-label="Utama">
+      <a href="#" data-view="ringkasan" aria-current="page"><svg class="i"><use href="#i-grid"/></svg>Dashboard</a>
+      <a href="#" data-view="listing"><svg class="i"><use href="#i-list"/></svg>Listing <span class="count">9</span></a>
+      <a href="#" data-view="kategori"><svg class="i"><use href="#i-tags"/></svg>Kategori</a>
+      <a href="#" data-view="lokasi"><svg class="i"><use href="#i-pin"/></svg>Lokasi</a>
+      <a href="#" data-view="kamus"><svg class="i"><use href="#i-book"/></svg>Kamus</a>
+      <a href="#" data-view="uji"><svg class="i"><use href="#i-search"/></svg>Uji Pencarian</a>
+    </nav>
+    <div class="group">Umum</div>
+    <nav class="nav" aria-label="Umum">
+      <a href="#"><svg class="i"><use href="#i-gear"/></svg>Pengaturan</a>
+      <a href="#"><svg class="i"><use href="#i-help"/></svg>Bantuan</a>
+      <a href="#"><svg class="i"><use href="#i-out"/></svg>Keluar</a>
+    </nav>
+    <div class="promo">
+      <h4>Lihat seperti warga</h4>
+      <p>Coba tanya Kamanga dan lihat hasilnya langsung.</p>
+      <a class="btn sm" href="#" style="background:#fff;color:#1c3f54;border-color:#fff;width:fit-content">Buka chat</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top panel">
+      <div class="search"><svg class="i"><use href="#i-search"/></svg><span>Cari listing, kategori, lokasi</span><span class="kbd" style="flex:none">⌘ K</span></div>
+      <div class="sp"></div>
+      <button class="circ" id="tema" aria-label="Ganti tema terang atau gelap"><svg class="i"><use href="#i-moon"/></svg></button>
+      <button class="circ" aria-label="Pesan"><svg class="i"><use href="#i-mail"/></svg></button>
+      <button class="circ" aria-label="Pemberitahuan"><svg class="i"><use href="#i-bell"/></svg></button>
+      <div class="user"><div class="avatar">NS</div><div><b>Nofri Satriawan</b><small>admin@kamanga.local</small></div></div>
+    </header>
+
+    <main class="stage panel">
+
+      <!-- ═════ RINGKASAN ═════ -->
+      <section class="view" id="v-ringkasan">
+        <div class="head">
+          <div><h1>Dashboard</h1><div class="sub">Kondisi direktori dan pemakaian chat Kamanga dalam 7 hari terakhir.</div></div>
+          <div class="actions"><a class="btn pri" href="#" data-go="form"><svg class="i"><use href="#i-plus"/></svg>Tambah listing</a><a class="btn" href="#">Impor CSV</a></div>
+        </div>
+        <div class="grid g4">
+          <div class="card kpi hi"><div class="t">Listing terbit<button class="go" aria-label="Buka"><svg class="i"><use href="#i-up"/></svg></button></div><div class="v">111</div><div class="n"><span class="tag">▲ 12</span>dari 139 listing</div></div>
+          <div class="card kpi"><div class="t">Menunggu review<button class="go" aria-label="Buka"><svg class="i"><use href="#i-up"/></svg></button></div><div class="v">9</div><div class="n"><span class="tag">▲ 3</span>belum tampil di chat</div></div>
+          <div class="card kpi"><div class="t">Percakapan 7 hari<button class="go" aria-label="Buka"><svg class="i"><use href="#i-up"/></svg></button></div><div class="v">7</div><div class="n"><span class="tag">▲ 2</span>14 pesan dari warga</div></div>
+          <div class="card kpi"><div class="t">Klik WhatsApp<button class="go" aria-label="Buka"><svg class="i"><use href="#i-up"/></svg></button></div><div class="v">0</div><div class="n">0% percakapan berakhir klik</div></div>
+        </div>
+        <div class="grid dash">
+          <div class="card">
+            <div class="ch"><h3>Listing per kelompok</h3><span class="pill mut">139 total</span></div>
+            <div class="bars" role="img" aria-label="Jumlah listing per kelompok">
+              <div class="bar"><i style="height:62%"></i>Mkn</div>
+              <div class="bar"><i class="s1" style="height:84%"></i>Acr</div>
+              <div class="bar"><em>24</em><i class="s2" style="height:70%"></i>Rmh</div>
+              <div class="bar"><i class="s3" style="height:100%"></i>Knd</div>
+              <div class="bar"><i style="height:56%"></i>Ksh</div>
+              <div class="bar"><i style="height:44%"></i>Wst</div>
+              <div class="bar"><i style="height:68%"></i>Kre</div>
+            </div>
+          </div>
+          <div class="card remind">
+            <div class="ch"><h3>Perlu ditindaklanjuti</h3></div>
+            <h4>9 listing menunggu review</h4>
+            <p>Juga 19 masih draf dan 8 terbit tanpa nomor WhatsApp.</p>
+            <a class="btn pri wide" href="#" data-go="listing">Tinjau sekarang</a>
+          </div>
+          <div class="card">
+            <div class="ch"><h3>Kategori terbaru</h3><a class="btn sm" href="#" data-go="kategori"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg>Baru</a></div>
+            <ul class="list">
+              <li><span class="ic" style="background:var(--info-bg);color:var(--info)">RS</span><span><b>Rumah Sakit</b><small>Kesehatan · 12 listing</small></span></li>
+              <li><span class="ic" style="background:var(--ok-bg);color:var(--ok)">KT</span><span><b>Katering</b><small>Makanan · 24 listing</small></span></li>
+              <li><span class="ic" style="background:var(--warn-bg);color:var(--warn)">SA</span><span><b>Servis AC</b><small>Rumah · 9 listing</small></span></li>
+              <li><span class="ic" style="background:var(--bad-bg);color:var(--bad)">GA</span><span><b>Gedung Acara</b><small>Acara · 7 listing</small></span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="grid dash" style="grid-template-columns:minmax(0,1.55fr) minmax(0,1fr) minmax(0,.95fr)">
+          <div class="card">
+            <div class="ch"><h3>Percakapan terbaru</h3><a class="btn sm" href="#">Lihat semua</a></div>
+            <ul class="list">
+              <li><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(140deg,#9bd0dd,#4f90a8)">W1</span><span><b>servis AC di Lubeg</b><small>3 hasil · Padang</small></span><span class="pill info end">Aturan kode</span></li>
+              <li><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(140deg,#c5c9f2,#8c9fc6)">W2</span><span><b>gedung untuk 400 orang di Padang</b><small>2 hasil · kapasitas 400+</small></span><span class="pill ok end">Template</span></li>
+              <li><span class="avatar" style="width:38px;height:38px;font-size:13px;background:linear-gradient(140deg,#f2d6a8,#d6a05a)">W3</span><span><b>onda mogok di Bukittinggi</b><small>1 hasil · Bukittinggi</small></span><span class="pill warn end">Model AI</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="ch"><h3>Verifikasi listing</h3></div>
+            <div class="gauge">
+              <svg viewBox="0 0 260 150" aria-hidden="true">
+                <path d="M30 130a100 100 0 0 1 200 0" fill="none" stroke="var(--soft)" stroke-width="30" stroke-linecap="round"/>
+                <path d="M30 130a100 100 0 0 1 200 0" fill="none" stroke="var(--c1)" stroke-width="30" stroke-linecap="round" stroke-dasharray="148 400"/>
+                <path d="M30 130a100 100 0 0 1 200 0" fill="none" stroke="var(--c3)" stroke-width="30" stroke-linecap="round" stroke-dasharray="40 400" stroke-dashoffset="-170"/>
+              </svg>
+              <div class="num"><b>13%</b><small>dicek langsung</small></div>
+            </div>
+            <div class="legend"><span><i style="background:var(--c1)"></i>Kontak dicek</span><span><i style="background:var(--c3)"></i>Dicek langsung</span><span><i style="background:var(--soft)"></i>Belum</span></div>
+          </div>
+          <div class="card" style="background:linear-gradient(170deg,#1b2f3b,#2d5a73);color:#fff;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;background:rgba(255,255,255,.25);-webkit-mask:var(--tex) 0 0/auto 64px repeat;mask:var(--tex) 0 0/auto 64px repeat;opacity:.5"></div>
+            <div style="position:relative">
+              <h3>Biaya model AI</h3>
+              <div style="font-size:40px;letter-spacing:-.03em;margin:18px 0 4px">Rp 0</div>
+              <div style="color:var(--acc-soft);font-size:13px">belum ada panggilan model dalam 7 hari</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════ LISTING (TABEL) ═════ -->
+      <section class="view" id="v-listing" hidden>
+        <div class="head">
+          <div><h1>Listing</h1><div class="sub">Kelola jasa, tempat, wisata, dan UMKM yang tampil di Kamanga.</div></div>
+          <div class="actions"><a class="btn pri" href="#" data-go="form"><svg class="i"><use href="#i-plus"/></svg>Tambah listing</a><a class="btn" href="#">Impor CSV</a></div>
+        </div>
+        <div class="tools">
+          <div class="search"><svg class="i"><use href="#i-search"/></svg><span>Cari nama atau slug</span></div>
+          <span class="chip on">Semua status</span><span class="chip">Kategori</span><span class="chip">Verifikasi</span><span class="chip">Kelompok</span>
+          <span style="margin-left:auto" class="chip"><svg class="i"><use href="#i-filter"/></svg>Tampilan</span>
+        </div>
+        <div class="card tbl">
+          <table>
+            <thead><tr><th>Nama</th><th>Kategori</th><th>Status</th><th>Verifikasi</th><th>Lokasi</th><th>Diubah</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--info-bg);color:var(--info)">RS</span><span><b>RS Uji Sehat</b><small>rs-uji-sehat-padang</small></span></div></td><td>Rumah Sakit</td><td><span class="pill ok">Terbit</span></td><td><span class="pill info">Dicek langsung</span></td><td>Padang Barat</td><td>10 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--ok-bg);color:var(--ok)">KU</span><span><b>Katering Uni Et</b><small>katering-uni-et-padang</small></span></div></td><td>Katering</td><td><span class="pill ok">Terbit</span></td><td><span class="pill ok">Kontak dicek</span></td><td>Lubuk Begalung</td><td>10 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--warn-bg);color:var(--warn)">BO</span><span><b>Bengkel Onda Lubeg</b><small>bengkel-onda-lubeg</small></span></div></td><td>Servis Motor</td><td><span class="pill warn">Menunggu review</span></td><td><span class="pill mut">Belum</span></td><td>Lubuk Begalung</td><td>9 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--bad-bg);color:var(--bad)">GS</span><span><b>Gedung Serbaguna Anak Nagari</b><small>gedung-serbaguna-anak-nagari</small></span></div></td><td>Gedung Acara</td><td><span class="pill ok">Terbit</span></td><td><span class="pill info">Dicek langsung</span></td><td>Padang Barat</td><td>9 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--soft);color:var(--muted)">DL</span><span><b>Desainer Logo Minang</b><small>desainer-logo-minang</small></span></div></td><td>Desain Logo</td><td><span class="pill mut">Draf</span></td><td><span class="pill mut">Belum</span></td><td>Daring</td><td>8 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+              <tr><td><div class="nm"><span class="ic" style="background:var(--info-bg);color:var(--info)">PM</span><span><b>Pantai Air Manis</b><small>pantai-air-manis</small></span></div></td><td>Wisata Pantai</td><td><span class="pill ok">Terbit</span></td><td><span class="pill mut">Belum</span></td><td>Padang Selatan</td><td>7 Okt 2026</td><td><svg class="i"><use href="#i-dots"/></svg></td></tr>
+            </tbody>
+          </table>
+          <div class="foot"><span>Total 139 data</span><div class="pg"><button>‹</button><button class="on">1</button><button>2</button><button>3</button><button>›</button></div></div>
+        </div>
+      </section>
+
+      <!-- ═════ KATEGORI (FORM) ═════ -->
+      <section class="view" id="v-kategori" hidden>
+        <div class="head">
+          <div><h1>Tambah kategori</h1><div class="sub">Kategori adalah rak tempat listing dikelompokkan, mis. Servis AC atau Katering.</div></div>
+        </div>
+        <div class="form">
+          <div class="stack">
+            <div class="card sec">
+              <h3>Identitas</h3><p class="d">Nama dan kelompok tempat kategori ini berada.</p>
+              <div class="fld"><label>Nama kategori *</label><input class="inp" value="Rumah Sakit"></div>
+              <div class="fld"><span class="lab">Kelompok *<small>rak besar tempat kategori berada</small></span>
+                <div class="chips"><button class="cp">Makanan & Minuman</button><button class="cp">Acara & Pernikahan</button><button class="cp on">Kesehatan</button><button class="cp">Rumah & Perbaikan</button><button class="cp dash">+ Kelompok baru</button></div>
+              </div>
+              <div class="fld"><label>Catatan untuk tim<small>tidak tampil ke warga</small></label><textarea class="inp" placeholder="Opsional"></textarea></div>
+            </div>
+            <div class="card sec">
+              <h3>Perilaku di chatbot</h3><p class="d">Mengatur apa yang dilakukan Kamanga untuk kategori ini.</p>
+              <div class="sw"><span><b>Tanyakan lokasi ke warga</b><small>Matikan untuk usaha yang bisa dikerjakan jarak jauh.</small></span><button class="tog on" aria-label="Tanyakan lokasi"></button></div>
+              <div class="sw"><span><b>Hanya informasi, tanpa tombol kontak</b><small>Untuk objek wisata umum.</small></span><button class="tog" aria-label="Hanya informasi"></button></div>
+              <div class="sw"><span><b>Aktif</b><small>Muncul sebagai pilihan di formulir listing.</small></span><button class="tog on" aria-label="Aktif"></button></div>
+            </div>
+            <div class="card sec">
+              <h3>Isian khusus listing</h3><p class="d">Pertanyaan tambahan untuk tiap listing di kategori ini.</p>
+              <div class="rowattr"><input class="inp" value="Terima BPJS"><div class="seg"><button class="on">Ya/Tidak</button></div><button class="circ" style="width:40px;height:40px;background:var(--soft)" aria-label="Hapus"><svg class="i"><use href="#i-x"/></svg></button></div>
+              <div class="rowattr"><input class="inp" value="Poli tersedia"><div class="seg"><button class="on">Pilihan ganda</button></div><button class="circ" style="width:40px;height:40px;background:var(--soft)" aria-label="Hapus"><svg class="i"><use href="#i-x"/></svg></button></div>
+              <div class="opts"><span>Umum ✕</span><span>Anak ✕</span><span>Kandungan ✕</span><span>Gigi ✕</span><span style="color:var(--muted);background:none">Tambah pilihan…</span></div>
+              <div class="rowattr"><input class="inp" value="IGD 24 jam"><div class="seg"><button class="on">Ya/Tidak</button></div><button class="circ" style="width:40px;height:40px;background:var(--soft)" aria-label="Hapus"><svg class="i"><use href="#i-x"/></svg></button></div>
+              <div class="chips" style="margin-top:6px"><button class="btn sm"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg>Tambah isian</button><button class="cp dash">+ Buka 24 jam</button><button class="cp dash">+ Ada parkir</button></div>
+            </div>
+          </div>
+          <aside class="side-card stack">
+            <div class="card">
+              <div class="ch"><h3>Pratinjau</h3></div>
+              <div class="prev">
+                <h4>Rumah Sakit</h4>
+                <span class="pill mut">Kesehatan</span>
+                <div style="margin-top:12px;color:var(--muted);font-size:12px">Perilaku di chatbot</div>
+                <ul class="todo" style="margin-top:6px"><li class="d"><svg class="i"><use href="#i-check"/></svg>Menanyakan lokasi ke warga</li><li class="d"><svg class="i"><use href="#i-check"/></svg>Menampilkan tombol kontak</li></ul>
+                <div style="margin-top:12px;color:var(--muted);font-size:12px">Tambahan di formulir listing</div>
+                <ul class="todo" style="margin-top:6px"><li class="d">Terima BPJS · Ya/Tidak</li><li class="d">Poli tersedia · Pilihan ganda (4)</li><li class="d">IGD 24 jam · Ya/Tidak</li></ul>
+              </div>
+            </div>
+            <a class="btn pri wide" href="#">Simpan kategori</a>
+            <a class="btn ghost wide" href="#">Batal</a>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ═════ FORM LISTING ═════ -->
+      <section class="view" id="v-form" hidden>
+        <div class="head">
+          <div><h1>Tambah listing</h1><div class="sub">Isi yang wajib dulu. Sisanya bisa dilengkapi kemudian.</div></div>
+        </div>
+        <div class="banner"><svg class="i"><use href="#i-alert"/></svg><p><b>Mirip dengan listing yang sudah ada:</b> "RS Uji Sehat" di Padang Barat (nomor WhatsApp sama). <a href="#" style="color:var(--acc2);font-weight:700">Lihat listing itu</a> sebelum membuat yang baru.</p></div>
+        <div class="form">
+          <div class="stack">
+            <div class="card sec">
+              <h3>Informasi dasar</h3><p class="d">Yang tampil pertama kali di kartu hasil pencarian.</p>
+              <div class="two">
+                <div class="fld"><label>Nama usaha *</label><input class="inp" value="RS Bunda Kanduang"></div>
+                <div class="fld"><label>Alamat web (slug)<small>otomatis</small></label><input class="inp" value="rs-bunda-kanduang-padang" style="color:var(--muted)"></div>
+              </div>
+              <div class="fld"><span class="lab">Kategori utama *</span>
+                <div class="chips"><button class="cp">Katering</button><button class="cp">Servis AC</button><button class="cp on">Rumah Sakit</button><button class="cp">Klinik & Puskesmas</button><button class="cp dash">Cari kategori…</button></div>
+              </div>
+              <div class="fld"><label>Ringkasan<small>1–2 kalimat · 74/200</small></label><textarea class="inp">Rumah sakit umum dengan IGD 24 jam, poli anak dan kandungan, menerima BPJS.</textarea></div>
+            </div>
+            <div class="card sec">
+              <h3>Isian khusus: Rumah Sakit</h3><p class="d">Muncul otomatis sesuai kategori yang dipilih.</p>
+              <div class="two">
+                <div class="fld"><span class="lab">Terima BPJS</span><div class="seg"><button>Belum diisi</button><button class="on">Ya</button><button>Tidak</button></div></div>
+                <div class="fld"><span class="lab">IGD 24 jam</span><div class="seg"><button>Belum diisi</button><button class="on">Ya</button><button>Tidak</button></div></div>
+              </div>
+              <div class="fld"><span class="lab">Poli tersedia</span>
+                <div class="checks"><span class="ck on"><i><svg class="i" style="width:13px;height:13px;stroke-width:3"><use href="#i-check"/></svg></i>Umum</span><span class="ck on"><i><svg class="i" style="width:13px;height:13px;stroke-width:3"><use href="#i-check"/></svg></i>Anak</span><span class="ck on"><i><svg class="i" style="width:13px;height:13px;stroke-width:3"><use href="#i-check"/></svg></i>Kandungan</span><span class="ck"><i></i>Gigi</span></div>
+              </div>
+            </div>
+            <div class="card sec">
+              <h3>Lokasi dan kontak</h3><p class="d">Semua kontak boleh kosong, mis. untuk objek wisata umum.</p>
+              <div class="two">
+                <div class="fld"><label>Lokasi *</label><input class="inp" value="Padang Barat, Kota Padang"></div>
+                <div class="fld"><label>Cara layanan *</label><div class="seg"><button class="on">Pelanggan datang</button><button>Panggilan</button><button>Daring</button></div></div>
+              </div>
+              <div class="fld"><label>Tempel tautan Google Maps<small>koordinat terisi otomatis</small></label><input class="inp" placeholder="https://maps.google.com/..."></div>
+              <div class="two">
+                <div class="fld"><label>WhatsApp</label><input class="inp" value="0812-3456-7890"></div>
+                <div class="fld"><label>Instagram</label><input class="inp" placeholder="@namausaha"></div>
+              </div>
+            </div>
+          </div>
+          <aside class="side-card stack">
+            <div class="card">
+              <div class="ch"><h3>Seperti tampil di chat</h3></div>
+              <div class="prev">
+                <h4>RS Bunda Kanduang</h4>
+                <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill mut">Rumah Sakit</span><span class="pill ok">✓ Kontak dicek</span></div>
+                <p style="margin:10px 0 0;color:var(--muted);font-size:13px">Padang Barat, Kota Padang · Pelanggan datang</p>
+                <p style="margin:6px 0 12px;font-size:13px">Terima BPJS · IGD 24 jam · 3 poli</p>
+                <span class="btn pri sm" style="width:100%;justify-content:center;background:var(--ok);box-shadow:none">Hubungi via WhatsApp</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch"><h3>Kelengkapan</h3></div>
+              <div style="display:flex;gap:16px;align-items:center">
+                <div class="ring" style="--p:72"><span>72%</span></div>
+                <ul class="todo"><li class="d"><svg class="i" style="width:15px;height:15px"><use href="#i-check"/></svg>Nama, kategori, lokasi</li><li class="d"><svg class="i" style="width:15px;height:15px"><use href="#i-check"/></svg>Kontak WhatsApp</li><li>Tambah jam buka</li><li>Tambah koordinat peta</li></ul>
+              </div>
+              <p style="margin:14px 0 0;color:var(--muted);font-size:12.5px">Listing yang lebih lengkap lebih mudah ditemukan di hasil pencarian.</p>
+            </div>
+            <a class="btn pri wide" href="#">Simpan listing</a>
+            <a class="btn wide" href="#">Simpan sebagai draf</a>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="v-soon" hidden>
+        <div class="head"><div><h1 id="soon-t">Segera</h1><div class="sub">Halaman ini mengikuti gaya yang sama.</div></div></div>
+        <div class="card" style="min-height:240px;display:grid;place-items:center;color:var(--muted)">Belum digambar di prototipe.</div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+  const views = { ringkasan: 'v-ringkasan', listing: 'v-listing', kategori: 'v-kategori', form: 'v-form' };
+  const show = (name) => {
+    const id = views[name] || 'v-soon';
+    document.querySelectorAll('.view').forEach((v) => (v.hidden = v.id !== id));
+    document.querySelectorAll('.nav a[data-view]').forEach((a) => {
+      const on = a.dataset.view === name || (name === 'form' && a.dataset.view === 'listing');
+      on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+    });
+    if (id === 'v-soon') document.getElementById('soon-t').textContent = name === 'kamus' ? 'Kamus' : name === 'lokasi' ? 'Lokasi' : 'Uji Pencarian';
+    window.scrollTo({ top: 0 });
+  };
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-view],[data-go]');
+    if (a) { e.preventDefault(); show(a.dataset.view || a.dataset.go); return; }
+    const cp = e.target.closest('.cp:not(.dash)');
+    if (cp) { cp.parentElement.querySelectorAll('.cp').forEach((c) => c.classList.toggle('on', c === cp)); return; }
+    const tog = e.target.closest('.tog'); if (tog) { tog.classList.toggle('on'); return; }
+    const sg = e.target.closest('.seg button'); if (sg) { sg.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === sg)); return; }
+    const ck = e.target.closest('.ck'); if (ck) ck.classList.toggle('on');
+  });
+  document.getElementById('tema').addEventListener('click', () => {
+    const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.theme = dark ? 'light' : 'dark';
+  });
+  const q = new URLSearchParams(location.search).get('v'); if (q) show(q);
+</script>
+</body>
+</html>
