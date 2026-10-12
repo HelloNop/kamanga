@@ -1,5 +1,5 @@
 // Pembantu skrip seed: kelompok kategori dulu berupa daftar tetap di kode, sekarang tabel yang bisa
-// ditambah admin. Skrip contoh (seed, seed-reference) memetakan kelompok lama ke nama kelompok baru.
+// ditambah admin. seed-reference memetakan kelompok lama ke nama kelompok baru.
 import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categoryGroups } from './schema';

@@ -1,5 +1,5 @@
 // Pemeriksaan satu giliran percakapan terhadap DATABASE SUNGGUHAN, memakai model AI tiruan (tanpa kunci API dan tanpa biaya).
-// Prasyarat: data lokasi dan data contoh: bun run db:seed-contoh. Jalankan: bun run check:chat
+// Prasyarat: data acuan + listing dummy: bun run db:fresh:dummy. Jalankan: bun run check:chat
 // Data uji (sesi dengan ip_hash "test-ip-hash*" dan panggilan "mock-model") dihapus di akhir.
 import assert from 'node:assert/strict';
 import { simulateReadableStream } from 'ai';
@@ -60,7 +60,7 @@ const callsBefore = await db.$count(llmCalls);
 r = await turn(sid, 'onda mogok di lubeg tolong');
 assert.ok(
   r.listings.items.length > 0 &&
-    r.listings.items.every((i: any) => i.categorySlug === 'contoh-servis-motor')
+    r.listings.items.every((i: any) => i.categorySlug === 'motorcycle-repair')
 );
 assert.equal((await lastRoute(sid)).route, 'rules');
 assert.equal(await db.$count(llmCalls), callsBefore);
@@ -85,8 +85,7 @@ r = await turn(sid3, 'jakarta');
 assert.match(r.text, /belum saya kenali sebagai lokasi/); // jawaban pendek di luar Sumbar
 r = await turn(sid3, 'padang');
 assert.ok(
-  r.listings.items.length > 0 &&
-    r.listings.items.every((i: any) => i.categorySlug === 'contoh-servis-ac')
+  r.listings.items.length > 0 && r.listings.items.every((i: any) => i.categorySlug === 'ac-repair')
 );
 console.log(
   '3. lokasi terbawa dalam sesi; sesi baru: servis ac -> ditanya lokasi -> "padang" ->',

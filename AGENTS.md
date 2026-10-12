@@ -44,12 +44,13 @@ bun run db:seed-reference  # data acuan: lokasi, kategori, kebutuhan, kamus (ama
 bun run auth:create-admin  # akun admin dari ADMIN_EMAIL / ADMIN_PASSWORD
 bun run db:fresh           # kosongkan + migrasi + data acuan + admin
 bun run db:fresh:dummy     # ditambah data dummy
+bun run db:seed-dummy      # listing dummy dari data/dummy-listings.csv (hapus: db:clear-dummy)
 
 bun run check:search       # pemeriksaan logika; daftar lengkap check:* ada di package.json
 bun run eval:chat          # set uji chatbot
 ```
 
-Tidak ada framework test. Logika penting diperiksa lewat berkas `*.check.ts` (assert biasa, dijalankan dengan bun) yang didaftarkan sebagai script `check:*`.
+Tidak ada framework test. Logika penting diperiksa lewat berkas `*.check.ts` (assert biasa, dijalankan dengan bun) yang didaftarkan sebagai script `check:*`. `check:search` dan `check:chat` membaca database sungguhan dan butuh data acuan + listing dummy. Satu-satunya data contoh adalah listing dummy (slug `dummy-`, nama `[DUMMY]`) yang memakai kategori acuan; jangan membuat kategori atau kebutuhan contoh tersendiri.
 
 Git hook (Husky): pre-commit merapikan format berkas yang di-stage, pre-push menjalankan `bun run build`.
 

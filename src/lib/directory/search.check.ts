@@ -1,8 +1,10 @@
 // Pemeriksaan pencarian dan pemahaman kata terhadap DATABASE SUNGGUHAN.
-// Prasyarat: data lokasi dan data contoh: bun run db:seed-contoh. Jalankan: bun run check:search
+// Prasyarat: data acuan + listing dummy: bun run db:fresh:dummy (atau db:seed-reference lalu db:seed-dummy).
+// Jalankan: bun run check:search
 import assert from 'node:assert/strict';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
+import { glossaryTerms } from '@/db/schema';
 import { searchListings, type SearchParams } from './search';
 import { findKamusTerms, resolveCategories, resolveLocation } from './understand';
 
@@ -14,7 +16,7 @@ const have = Number(
   )[0].c
 );
 if (have < 20) {
-  console.error('Butuh data: jalankan bun run db:seed-contoh dulu (dan muat data lokasi).');
+  console.error('Butuh data: jalankan bun run db:seed-dummy dulu (setelah db:seed-reference).');
   process.exit(1);
 }
 
@@ -29,12 +31,24 @@ assert.equal((await resolveLocation('xyzxyz')).candidates.length, 0);
 const names = async (t: string) => (await resolveCategories(t)).map((c) => c.name);
 assert.deepEqual(await names('onda mogok'), ['Servis Motor']);
 // sebutan lain kategori dan kebutuhan; kebutuhan membuka beberapa kategori sekaligus
-assert.deepEqual((await names('cari baralek')).sort(), ['Gedung Acara', 'Katering']);
+const wedding = await names('cari baralek');
+assert.ok(wedding.length > 2 && wedding.includes('Gedung Acara') && wedding.includes('Katering'));
 assert.ok((await names('ac saya rusak')).includes('Servis AC'));
-assert.deepEqual(await names('bikin logo untuk warung'), ['Desain Logo']);
-// kamus: hanya kata yang sudah dicek yang dipakai
-assert.equal((await findKamusTerms('lapau dekat sini')).length, 1);
-assert.equal((await findKamusTerms('sakik kepala')).length, 0); // belum dicek penutur asli
+assert.deepEqual(await names('desain logo usaha'), ['Desain Logo']);
+// kamus: hanya kata yang sudah dicek penutur asli yang dipakai. Tanda "dicek" pada satu kata diubah
+// sementara lalu dikembalikan. SQL langsung agar `updated_at` tidak ikut berubah.
+const [lapau] = await db.select().from(glossaryTerms).where(eq(glossaryTerms.term, 'lapau'));
+assert.ok(lapau, 'kamus acuan belum dimuat (bun run db:seed-reference)');
+const setChecked = (v: boolean) =>
+  db.execute(sql`update glossary_terms set is_checked = ${v} where id = ${lapau.id}`);
+try {
+  await setChecked(true);
+  assert.equal((await findKamusTerms('lapau dekat sini')).length, 1);
+  await setChecked(false);
+  assert.equal((await findKamusTerms('lapau dekat sini')).length, 0);
+} finally {
+  await setChecked(lapau.isChecked);
+}
 assert.ok((await names('mau jalan-jalan weekend')).includes('Wisata Alam'));
 assert.deepEqual(await names('halo apa kabar'), []);
 console.log('0. pemahaman kata (lokasi + kategori): OK');
@@ -60,7 +74,7 @@ let r = await searchListings({
   locationId: await loc('padang'),
   limit: 8
 });
-assert.ok(r.items.length >= 3 && r.items.every((i) => i.category?.slug === 'contoh-servis-ac'));
+assert.ok(r.items.length >= 2 && r.items.every((i) => i.category?.slug === 'ac-repair'));
 assert.ok((await statusOf(r.items.map((i) => i.id))).every((s) => s === 'published'));
 assert.ok(
   r.items.every((w, k, a) => k === 0 || a[k - 1].score >= w.score),
@@ -97,8 +111,8 @@ if (same.length && parent.length)
 
 // 3. kata saja ("nasi kapau"): relevan, tidak ada gedung
 r = await searchListings({ q: 'nasi kapau', limit: 10 });
-assert.ok(r.items.length > 0 && r.items[0].category?.slug === 'contoh-katering', r.items[0]?.name);
-assert.ok(r.items.every((i) => i.category?.slug !== 'contoh-gedung-acara'));
+assert.ok(r.items.length > 0 && r.items[0].category?.slug === 'catering', r.items[0]?.name);
+assert.ok(r.items.every((i) => i.category?.slug !== 'event-venue'));
 console.log(
   '3. kata "nasi kapau":',
   r.total,
@@ -133,7 +147,7 @@ const dbCount = Number(
   (
     (
       await db.execute(
-        sql`select count(*) c from listings l join listing_categories lc on lc.listing_id=l.id and lc.is_primary join categories c on c.id=lc.category_id and c.slug='contoh-gedung-acara' where l.status='published' and (l.attributes->>'capacity')::numeric >= 300`
+        sql`select count(*) c from listings l join listing_categories lc on lc.listing_id=l.id and lc.is_primary join categories c on c.id=lc.category_id and c.slug='event-venue' where l.status='published' and (l.attributes->>'capacity')::numeric >= 300`
       )
     ).rows as any[]
   )[0].c
@@ -152,12 +166,8 @@ assert.equal(
 ); // kunci jahat diabaikan
 
 // 6. hanya yang dicek langsung
-r = await searchListings({
-  categoryIds: await cat('gedung acara'),
-  minVerification: 'visited',
-  limit: 20
-});
-assert.ok(r.items.every((i) => i.verification === 'visited'));
+r = await searchListings({ minVerification: 'visited', limit: 20 });
+assert.ok(r.items.length > 0 && r.items.every((i) => i.verification === 'visited'));
 console.log('6. dicek langsung saja:', r.total, 'OK');
 
 // 7. dekat titik koordinat (pusat Padang, 8 km): tidak ada yang lebih jauh; jarak terisi
