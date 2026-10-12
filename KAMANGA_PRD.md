@@ -223,7 +223,7 @@ Sengaja tidak dilakukan: melatih model, self-host LLM, vector DB terpisah, micro
 ## 12. Urutan kerja
 
 1. ✅ Mulai v2: repo `kamanga`, database `kamanga_v2`, migrasi dan data acuan.
-2. Rapikan fondasi: bersihkan sisa template starter (nama paket, komponen dan paket tak terpakai, kbar, README), perbaiki skrip seed.
+2. ✅ Rapikan fondasi: bersihkan sisa template starter (nama paket, komponen dan paket tak terpakai, kbar, README), perbaiki skrip seed.
 3. Skema baru (Drizzle, migrasi): jenis listing penyedia/tempat; unit terjadwal + jam buka + durasi + harga per slot + slot terisi manual; catatan permintaan pesan (dari klik WhatsApp); tanya jawab per penyedia; isian aturan per kategori.
 4. Bangun **Mesin Jadwal + Pesanan dengan Ka main sebagai pintu pertama**: kalender di dashboard pemilik, slot kosong untuk warga, tombol "Pesan via WhatsApp" dengan pesan terisi.
 5. Beranda baru "Kamanga hari ko?" (lihat mockup).
