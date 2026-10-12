@@ -96,7 +96,7 @@ console.log(
 const addAlias = (table: 'categories' | 'needs', slug: string, term: string) =>
   db.execute(sql`
     update ${sql.raw(table)} set aliases = (
-      select coalesce(array_agg(distinct a), '{}') from unnest(aliases || ${[term]}::text[]) a
+      select coalesce(array_agg(distinct a), '{}') from unnest(array_append(aliases, ${term})) a
     ) where slug = ${slug}`);
 for (const g of GLOSSARY) {
   const term = norm(g.term);
