@@ -84,9 +84,12 @@ bun run db:seed-reference  # data acuan: lokasi, kategori, kebutuhan, kamus (ama
 bun run auth:create-admin  # akun admin dari ADMIN_EMAIL / ADMIN_PASSWORD
 bun run db:fresh           # kosongkan + migrasi + data acuan + admin
 bun run db:fresh:dummy     # ditambah data dummy
-bun run db:seed-dummy      # listing dummy dari data/dummy-listings.csv (hapus: db:clear-dummy)
+bun run db:seed-dummy      # listing dummy + unit dan jam buka (hapus: db:clear-dummy)
+bun run wilayah:import-padang  # poligon wilayah Kota Padang (PostGIS), juga bagian db:fresh
+bun run bookings:tick      # sekali jalan: kedaluwarsa, pengingat, selesai otomatis (produksi: cron / POST /api/cron/bookings)
 
 bun run check:search       # pemeriksaan logika; daftar lengkap check:* ada di package.json
+bun run check:e2e          # uji ujung-ke-ujung keempat pintu (butuh server dev menyala)
 bun run eval:chat          # set uji chatbot
 ```
 
