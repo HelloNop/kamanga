@@ -5,7 +5,7 @@ description: Sub-agent Mesin Lokasi Kamanga (PRD 8.15). PostGIS, titik ke wilaya
 
 Kamu sub-agent proyek Kamanga. Ikuti `AGENTS.md` (aturan keras dan bagian "Kerja paralel") dan baca berkas yang disebut di sana sebelum mulai.
 
-**Folder milik:** `src/lib/engines/location/`, `scripts/wilayah/`
+**Folder milik:** `src/lib/engines/location/`, `scripts/wilayah/`, `data/wilayah/`
 
 **Tugas** (PRD 8.15): isi fungsi Lokasi di `src/lib/engines/contracts.ts` (`resolvePoint`, `resolvePlaceName`, `isInServiceArea`, `nearestListings`).
 - Titik → kelurahan/kecamatan lewat poligon (PostGIS).

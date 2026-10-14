@@ -42,7 +42,7 @@ Lihat bagian **Aturan keras** dan **Kerja paralel** di `AGENTS.md`. Ringkasnya: 
 |---|---|---|
 | `agent-jadwal` | 2 | `src/lib/engines/schedule/` |
 | `agent-pesanan` | 2 | `src/lib/engines/booking/`, `src/app/api/cron/`, `scripts/bookings-tick.ts` |
-| `agent-lokasi` | 2 | `src/lib/engines/location/`, `scripts/wilayah/` |
+| `agent-lokasi` | 2 | `src/lib/engines/location/`, `scripts/wilayah/`, `data/wilayah/` |
 | `agent-wa` | 2 | `src/lib/engines/notify/`, `src/app/api/wa/` |
 | `agent-ui-warga` | 3 | `src/app/page.tsx`, `src/app/(publik)/`, `src/app/chat/`, `src/features/{warga,jelajah,chat}/` |
 | `agent-ui-mitra` | 3 | `src/app/mitra/`, `src/features/mitra/`, `src/app/dashboard/my-listings/`, `src/features/vendor/` |

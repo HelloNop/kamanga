@@ -33,6 +33,18 @@ export type Actor = { kind: ActorKind; userId?: string | null };
 export const appUrl = (path: string) =>
   `${(process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')}${path}`;
 
+/** Alamat halaman yang ditautkan dari pesan WA. Dipakai mesin dan UI agar sama. */
+export const paths = {
+  /** Halaman pesanan untuk warga (cek kepemilikan di halaman). */
+  citizenBooking: (id: number) => `/pesanan/${id}`,
+  /** Halaman Terima/Tolak untuk penyedia lewat token dari pesan WA, tanpa login. */
+  providerBookingToken: (token: string) => `/mitra/pesanan/t/${token}`,
+  /** Halaman pesanan di dashboard mitra (penyedia berakun). */
+  providerBooking: (id: number) => `/mitra/pesanan/${id}`,
+  /** Daftar pertanyaan warga yang menunggu dijawab penyedia. */
+  providerQuestions: () => '/mitra/tanya-jawab'
+};
+
 // ───────────────────────────── Mesin Jadwal (PRD 8.4) ─────────────────────────────
 
 export type ScheduleKind = 'slot' | 'seat' | 'date_stock' | 'survey' | 'none';
@@ -415,7 +427,8 @@ export type WaSendResult = {
 
 export type OtpRequestResult =
   | { ok: true; mode: 'api' | 'fallback' }
-  | { ok: false; reason: 'invalid_phone' | 'rate_limited' };
+  /** unavailable: produksi tanpa WhatsApp Business API (kode tidak bisa dikirim). */
+  | { ok: false; reason: 'invalid_phone' | 'rate_limited' | 'unavailable' };
 
 export type OtpVerifyResult =
   | { ok: true }
