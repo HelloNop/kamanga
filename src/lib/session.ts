@@ -12,6 +12,22 @@ export async function requireSession() {
   return session;
 }
 
+// Panel /dashboard: hanya admin dan mitra. Warga diarahkan ke beranda.
+export async function requireStaff() {
+  const session = await requireSession();
+  if (session.user.role === 'citizen') redirect('/');
+  return session;
+}
+
+// Untuk halaman warga (pesanan, akun). Belum masuk sebagai warga → halaman masuk OTP WA.
+// Di server action, pakai getSession() dan kembalikan galat alih-alih redirect.
+export async function requireCitizen(next = '/') {
+  const session = await getSession();
+  if (!session || session.user.role !== 'citizen')
+    redirect(`/masuk?next=${encodeURIComponent(next)}`);
+  return session;
+}
+
 // Untuk halaman dan aksi khusus admin. Selalu panggil juga di server action / route handler.
 export async function requireAdmin() {
   const session = await requireSession();

@@ -89,13 +89,11 @@ export async function loadUiMessages(sessionId: string, limit = 40): Promise<Kam
     .where(eq(chatMessages.sessionId, sessionId))
     .orderBy(desc(chatMessages.id))
     .limit(limit);
-  return rows
-    .reverse()
-    .map((r) => ({
-      id: String(r.id),
-      role: r.role as 'user' | 'assistant',
-      parts: r.parts as KamangaMessage['parts']
-    }));
+  return rows.reverse().map((r) => ({
+    id: String(r.id),
+    role: r.role as 'user' | 'assistant',
+    parts: r.parts as KamangaMessage['parts']
+  }));
 }
 
 export async function sessionExists(sid: string | null | undefined) {

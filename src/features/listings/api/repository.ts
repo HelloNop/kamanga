@@ -248,6 +248,7 @@ export async function getListingDetail(id: number): Promise<ListingDetail | null
     slug: row.slug,
     summary: row.summary ?? '',
     description: row.description ?? '',
+    kind: row.kind,
     primaryCategoryId: String(cats.find((c) => c.isPrimary)?.categoryId ?? ''),
     extraCategoryIds: cats.filter((c) => !c.isPrimary).map((c) => String(c.categoryId)),
     serviceModes: row.serviceModes,
@@ -256,6 +257,8 @@ export async function getListingDetail(id: number): Promise<ListingDetail | null
     lat: row.lat ?? undefined,
     lng: row.lng ?? undefined,
     areaIds: areas.map((a) => String(a.locationId)),
+    pointIsPublic: row.pointIsPublic,
+    serviceRadiusKm: row.serviceRadiusKm ?? undefined,
     whatsapp: row.whatsapp ?? '',
     phone: row.phone ?? '',
     instagram: row.instagram ?? '',
@@ -323,6 +326,7 @@ async function toDbValues(v: ListingFormValues, preloaded?: CategoryRow) {
     )[0];
   if (!cat) return null;
   return {
+    kind: v.kind,
     name: v.name.trim(),
     summary: nul(v.summary),
     description: nul(v.description),
@@ -330,6 +334,8 @@ async function toDbValues(v: ListingFormValues, preloaded?: CategoryRow) {
     locationId: v.locationId ? Number(v.locationId) : null,
     lat: v.lat ?? null,
     lng: v.lng ?? null,
+    pointIsPublic: v.pointIsPublic,
+    serviceRadiusKm: v.serviceRadiusKm ?? null,
     serviceModes: v.serviceModes,
     whatsapp: v.whatsapp.trim() ? normalizeWhatsapp(v.whatsapp) : null,
     phone: nul(v.phone),

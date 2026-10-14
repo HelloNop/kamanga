@@ -29,7 +29,7 @@ Peta dari kode v2 sekarang ke `KAMANGA_PRD.md` (bagian 7–10, 14). Ditulis lead
 11. **Isian aturan:** tipe `rupiah` (bilangan bulat) dan `duration` (menit) ditambahkan ke `attribute_schema`. Kunci yang dipakai mesin: `min_duration`, `cancel_before` (menit), `dp_required` (ya/tidak). Aturan yang ditampilkan saat memesan disalin ke `bookings.rules_snapshot`, jadi pembatalan selalu memakai aturan yang disetujui warga.
 12. **Ulasan:** `satisfied` (puas/kurang puas) wajib, `stars` (1–5) opsional, sampai PRD §18 no. 3 diputuskan.
 13. **Pengaturan admin** (template WA, batas waktu menjawab bawaan) di tabel kunci-nilai `app_settings`. Batas chat dan rem biaya AI tetap di env untuk sekarang.
-14. **Pesanan hanya untuk listing `kind = provider`, berstatus `published`, dengan tingkat verifikasi minimal `contact_checked`** (PRD 8.14 [USULAN]). Kategori dengan `schedule_kind = none` memakai formulir permintaan.
+14. **Pesanan hanya untuk listing `kind = provider`, berstatus `published`, tingkat verifikasi minimal `contact_checked`** (PRD 8.14 [USULAN]), **berkategori dengan pintu berstatus `active`**, dan jenis jadwal `slot`, `seat`, atau `none` (`date_stock`/`survey` baru tahap 2). Kategori `none` memakai formulir permintaan.
 15. **Pintu tambahan** (kategori tampil di pintu rencana) belum dibuat; cukup `categories.door_id` untuk pintu utama. Tabel penghubung ditambah saat Kabaralek dibangun.
 16. **Kedaluwarsa:** `expireStaleBookings()` dipanggil dari skrip `bun run bookings:tick` dan route `/api/cron/bookings` (dilindungi `CRON_SECRET`), serta secara malas saat pesanan dibaca.
 17. **Alamat aplikasi untuk tautan di pesan WA:** env `APP_URL` (cadangan `BETTER_AUTH_URL`).

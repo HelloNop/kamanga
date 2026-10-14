@@ -30,8 +30,17 @@ export const isHttpUrl = (s: string) => /^https?:\/\/\S+$/i.test(s.trim());
 
 // Tipe isian khusus kategori. Nilai yang disimpan di `listings.attributes`:
 // text -> string, number -> number, boolean -> true/false, select -> salah satu pilihan,
-// multiselect -> daftar pilihan.
-export const ATTRIBUTE_TYPES = ['text', 'number', 'boolean', 'select', 'multiselect'] as const;
+// multiselect -> daftar pilihan, rupiah -> bilangan bulat, duration -> menit (bilangan bulat).
+// Kunci yang dibaca mesin Pesanan: min_duration, cancel_before (duration), dp_required (boolean).
+export const ATTRIBUTE_TYPES = [
+  'text',
+  'number',
+  'boolean',
+  'select',
+  'multiselect',
+  'rupiah',
+  'duration'
+] as const;
 export type AttributeType = (typeof ATTRIBUTE_TYPES)[number];
 export type AttributeValue = string | number | boolean | string[];
 export type AttributeDef = {
@@ -93,6 +102,13 @@ export function coerceAttribute(def: AttributeDef, raw: unknown): AttributeValue
       const t = String(raw).trim().toLowerCase();
       return def.options?.find((o) => o.toLowerCase() === t);
     }
+    case 'rupiah': {
+      if (typeof raw === 'number') return Number.isFinite(raw) ? Math.round(raw) : undefined;
+      const digits = String(raw).replace(/\D/g, '');
+      return digits ? Number(digits) : undefined;
+    }
+    case 'duration':
+      return parseDuration(raw);
     case 'multiselect': {
       const items = Array.isArray(raw) ? raw.map(String) : String(raw).split(/[;,]/);
       const picked = items
@@ -106,6 +122,53 @@ export function coerceAttribute(def: AttributeDef, raw: unknown): AttributeValue
       return t || undefined;
     }
   }
+}
+
+const DURATION_UNITS: Record<string, number> = {
+  menit: 1,
+  mnt: 1,
+  m: 1,
+  jam: 60,
+  j: 60,
+  hari: 1440,
+  h: 1440,
+  minggu: 10080
+};
+
+/** "90", "1 jam 30 menit", "2 hari" -> menit; undefined bila tidak terbaca. Angka polos = menit. */
+export function parseDuration(raw: unknown): number | undefined {
+  if (typeof raw === 'number')
+    return Number.isFinite(raw) && raw >= 0 ? Math.round(raw) : undefined;
+  const t = String(raw).trim().toLowerCase().replace(',', '.');
+  if (/^\d+(\.\d+)?$/.test(t)) return Math.round(Number(t));
+  let total = 0;
+  let found = false;
+  for (const m of t.matchAll(/(\d+(?:\.\d+)?)\s*([a-z]+)/g)) {
+    const unit = DURATION_UNITS[m[2]];
+    if (!unit) return undefined;
+    total += Number(m[1]) * unit;
+    found = true;
+  }
+  return found ? Math.round(total) : undefined;
+}
+
+/** Menit -> "1 jam 30 menit", "2 hari". */
+export function formatDuration(minutes: number): string {
+  if (minutes > 0 && minutes % 1440 === 0) return `${minutes / 1440} hari`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return [h ? `${h} jam` : '', m || !h ? `${m} menit` : ''].filter(Boolean).join(' ');
+}
+
+export const formatRupiah = (n: number) => `Rp${n.toLocaleString('id-ID')}`;
+
+/** Nilai isian untuk ditampilkan ke warga. */
+export function formatAttributeValue(def: Pick<AttributeDef, 'type'>, v: unknown): string {
+  if (def.type === 'rupiah' && typeof v === 'number') return formatRupiah(v);
+  if (def.type === 'duration' && typeof v === 'number') return formatDuration(v);
+  if (v === true) return 'Ya';
+  if (v === false) return 'Tidak';
+  return Array.isArray(v) ? v.join(', ') : String(v ?? '');
 }
 
 /** Simpan hanya atribut yang didefinisikan kategori, dengan nilai yang valid menurut tipenya. */

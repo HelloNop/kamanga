@@ -1,7 +1,32 @@
 // Kamus istilah awal. SEMUA perlu dicek penutur asli sebelum dianggap benar (lihat kolom catatan).
-// `target` menunjuk ke kategori, kebutuhan, atau lokasi (boleh kosong).
-type Target = { category?: string; need?: string; location?: string };
+// `target` menunjuk ke pintu, kategori, kebutuhan, atau lokasi (boleh kosong).
+type Target = { door?: string; category?: string; need?: string; location?: string };
 export const GLOSSARY: { term: string; meaning: string; target?: Target }[] = [
+  // Tahap 1: pintu dan kategori baru
+  {
+    term: 'sewa lapangan',
+    meaning: 'menyewa lapangan olahraga per jam',
+    target: { door: 'ka-main' }
+  },
+  { term: 'booking lapangan', meaning: 'memesan lapangan olahraga', target: { door: 'ka-main' } },
+  { term: 'pangkas', meaning: 'potong rambut', target: { category: 'barbershop' } },
+  { term: 'pangkas rambuik', meaning: 'potong rambut', target: { category: 'barbershop' } },
+  { term: 'cukua', meaning: 'cukur', target: { category: 'barbershop' } },
+  { term: 'urut', meaning: 'pijat', target: { category: 'spa-massage' } },
+  { term: 'baurut', meaning: 'dipijat, berurut', target: { category: 'spa-massage' } },
+  {
+    term: 'pulang kampuang',
+    meaning: 'pulang kampung',
+    target: { category: 'intercity-travel' }
+  },
+  {
+    term: 'travel',
+    meaning: 'angkutan travel antarkota',
+    target: { category: 'intercity-travel' }
+  },
+  { term: 'titip barang', meaning: 'menitipkan paket', target: { category: 'parcel-delivery' } },
+  { term: 'kirim paket', meaning: 'mengirim paket', target: { category: 'parcel-delivery' } },
+  { term: 'pindahan', meaning: 'pindah rumah', target: { category: 'moving-transport' } },
   { term: 'onda', meaning: 'sepeda motor', target: { category: 'motorcycle-repair' } },
   { term: 'oto', meaning: 'mobil', target: { category: 'car-repair' } },
   { term: 'lapau', meaning: 'warung atau kedai', target: { category: 'restaurant' } },

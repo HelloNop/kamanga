@@ -5,7 +5,9 @@ export const ATTRIBUTE_TYPE_OPTIONS: { value: AttributeType; label: string; hint
   { value: 'number', label: 'Angka', hint: 'bisa dipakai menyaring' },
   { value: 'boolean', label: 'Ya / Tidak', hint: 'mis. ada parkir' },
   { value: 'select', label: 'Pilihan', hint: 'pilih satu dari daftar' },
-  { value: 'multiselect', label: 'Pilihan ganda', hint: 'boleh pilih banyak' }
+  { value: 'multiselect', label: 'Pilihan ganda', hint: 'boleh pilih banyak' },
+  { value: 'rupiah', label: 'Rupiah', hint: 'mis. harga sewa raket' },
+  { value: 'duration', label: 'Durasi', hint: 'disimpan dalam menit' }
 ];
 export const attributeTypeLabel = (t: AttributeType) =>
   ATTRIBUTE_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t;
@@ -17,6 +19,9 @@ export const ATTRIBUTE_SUGGESTIONS: {
   options?: string[];
 }[] = [
   { label: 'Kapasitas (orang)', type: 'number' },
+  { label: 'Durasi minimal', type: 'duration' },
+  { label: 'Batas pembatalan', type: 'duration' },
+  { label: 'Wajib DP', type: 'boolean' },
   { label: 'Minimal pesanan (porsi)', type: 'number' },
   { label: 'Jumlah kamar', type: 'number' },
   { label: 'Terima BPJS', type: 'boolean' },
