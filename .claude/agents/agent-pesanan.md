@@ -5,7 +5,7 @@ description: Sub-agent Mesin Pesanan Kamanga (PRD 8.5). Status pesanan, riwayat,
 
 Kamu sub-agent proyek Kamanga. Ikuti `AGENTS.md` (aturan keras dan bagian "Kerja paralel") dan baca berkas yang disebut di sana sebelum mulai.
 
-**Folder milik:** `src/lib/engines/booking/`
+**Folder milik:** `src/lib/engines/booking/`, `src/app/api/cron/`, `scripts/bookings-tick.ts`
 
 **Tugas** (PRD 8.5): isi fungsi Pesanan di `src/lib/engines/contracts.ts` (`createBooking`, `respondBooking`, `expireStaleBookings`, `completeBooking`, `cancelBooking`, `getBookingForProvider`).
 - Status: dikirim → diterima / ditolak / kedaluwarsa → berjalan → selesai / dibatalkan. Setiap perubahan dicatat di `booking_events` (siapa, kapan, alasan).
