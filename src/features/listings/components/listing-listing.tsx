@@ -5,7 +5,7 @@ import { listingFormOptions, listingsQueryOptions } from '../api/queries';
 import { ListingTable } from './listing-tables';
 
 // Server: ambil data awal supaya tabel langsung terisi, lalu klien mengambil alih (React Query).
-export default function ListingListingPage() {
+export default function ListingListingPage({ kind }: { kind?: string }) {
   const search = searchParamsCache.get('name');
   const categories = searchParamsCache.get('category');
   const status = searchParamsCache.get('status');
@@ -16,6 +16,7 @@ export default function ListingListingPage() {
     page: searchParamsCache.get('page'),
     limit: searchParamsCache.get('perPage'),
     ...(search && { search }),
+    ...(kind && { kind }),
     ...(categories && { categories }),
     ...(status && { status }),
     ...(verification && { verification }),

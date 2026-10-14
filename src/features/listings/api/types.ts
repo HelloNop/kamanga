@@ -13,11 +13,13 @@ export type ListingFilters = {
   status?: string;
   verification?: string;
   categories?: string;
+  kind?: string; // provider | place, dipisah koma
   sort?: string; // JSON: [{ id, desc }]
 };
 
 export type ListingRow = {
   id: number;
+  kind: 'provider' | 'place';
   slug: string;
   name: string;
   status: ListingStatus;

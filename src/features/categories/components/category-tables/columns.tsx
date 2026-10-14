@@ -4,12 +4,14 @@ import { Icons } from '@/components/icons';
 import { Pill } from '@/components/ui/pill';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import type { CategoryRow } from '../../api/types';
+import { SCHEDULE_KIND_LABELS, type ScheduleKindValue } from '../../constants';
 import { CellAction } from './cell-action';
 
 // id kolom = nama parameter URL (name, group) dan kunci urutan (name, group, sortOrder).
 export const COLUMN_IDS = [
   'name',
   'group',
+  'door',
   'rules',
   'sortOrder',
   'attributes',
@@ -61,6 +63,21 @@ export function getColumns(
       ),
       enableColumnFilter: true,
       meta: { label: 'Kelompok', variant: 'multiSelect', options: groupOptions }
+    },
+    {
+      id: 'door',
+      enableSorting: false,
+      header: 'Pintu & jadwal',
+      cell: ({ row }) => (
+        <div className='min-w-32'>
+          <div className={row.original.door ? 'font-medium' : 'text-muted-foreground'}>
+            {row.original.door ?? 'Tanpa pintu'}
+          </div>
+          <div className='text-muted-foreground text-xs'>
+            {SCHEDULE_KIND_LABELS[row.original.scheduleKind as ScheduleKindValue]}
+          </div>
+        </div>
+      )
     },
     {
       id: 'rules',

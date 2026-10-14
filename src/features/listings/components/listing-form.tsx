@@ -8,7 +8,8 @@ import { CategoryPicker } from '@/components/forms/category-picker';
 import { Chip } from '@/components/forms/chip';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { FieldError, FieldGroup } from '@/components/ui/field';
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import { useAppForm } from '@/lib/form';
 import { cn } from '@/lib/utils';
 import { saveMyListingMutation } from '@/features/vendor/api/mutations';
@@ -27,6 +28,8 @@ import {
   type ServiceMode
 } from '../constants/listing-options';
 import {
+  formatAttributeValue,
+  formatDuration,
   normalizeWhatsapp,
   parseMapsCoords,
   type AttributeDef,
@@ -125,6 +128,81 @@ function YesNoInput({
   );
 }
 
+/** Isian rupiah: angka dengan pemisah ribuan dan awalan "Rp". Disimpan sebagai bilangan bulat. */
+function RupiahInput({
+  id,
+  label,
+  value,
+  onChange
+}: {
+  id: string;
+  label: string;
+  value: unknown;
+  onChange: (v: number | undefined) => void;
+}) {
+  const n = typeof value === 'number' ? value : undefined;
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <div className='relative'>
+        <span className='text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm'>
+          Rp
+        </span>
+        <Input
+          id={id}
+          inputMode='numeric'
+          className='pl-9'
+          placeholder='0'
+          value={n === undefined ? '' : n.toLocaleString('id-ID')}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
+            onChange(digits ? Number(digits) : undefined);
+          }}
+        />
+      </div>
+    </Field>
+  );
+}
+
+/** Isian durasi: jumlah menit, dengan pratinjau "1 jam 30 menit". */
+function DurationInput({
+  id,
+  label,
+  value,
+  onChange
+}: {
+  id: string;
+  label: string;
+  value: unknown;
+  onChange: (v: number | undefined) => void;
+}) {
+  const n = typeof value === 'number' ? value : undefined;
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <div className='relative'>
+        <Input
+          id={id}
+          type='number'
+          min={0}
+          step={5}
+          className='pr-16'
+          value={n ?? ''}
+          onChange={(e) =>
+            onChange(
+              e.target.value === '' ? undefined : Math.max(0, Math.round(Number(e.target.value)))
+            )
+          }
+        />
+        <span className='text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm'>
+          menit
+        </span>
+      </div>
+      {n !== undefined && n > 0 && <FieldDescription>= {formatDuration(n)}</FieldDescription>}
+    </Field>
+  );
+}
+
 /** Ringkasan isian khusus untuk kartu pratinjau, mis. "Terima BPJS · IGD 24 jam · 3 poli". */
 function attributeSummary(
   attrs: AttributeDef[],
@@ -138,7 +216,12 @@ function attributeSummary(
       if (v === true) out.push(a.label);
     } else if (a.type === 'multiselect') {
       if (Array.isArray(v) && v.length) out.push(`${v.length} ${a.label.toLowerCase()}`);
-    } else out.push(a.type === 'number' ? `${a.label} ${v}` : String(v));
+    } else
+      out.push(
+        a.type === 'text' || a.type === 'select'
+          ? String(v)
+          : `${a.label} ${formatAttributeValue(a, v)}`
+      );
   }
   return out.slice(0, 4).join(' · ');
 }
@@ -380,7 +463,7 @@ export default function ListingForm({
           });
           if (!detail) await uploadStaged(r.id);
           toast.success(r.message);
-          router.push('/dashboard/my-listings');
+          router.push('/mitra/usaha');
         } catch (e) {
           toast.error(e instanceof Error ? e.message : 'Gagal menyimpan listing');
         }
@@ -460,6 +543,35 @@ export default function ListingForm({
             title='Informasi dasar'
             description='Yang tampil pertama kali di kartu hasil pencarian.'
           >
+            {!isVendor && (
+              <form.Field
+                name='kind'
+                children={(field) => (
+                  <div>
+                    <Lab hint='Tempat tidak punya tombol pesan'>Jenis</Lab>
+                    <div role='radiogroup' aria-label='Jenis listing' className={segWrap}>
+                      {(
+                        [
+                          ['provider', 'Penyedia (bisa dipesan)'],
+                          ['place', 'Tempat (informasi saja)']
+                        ] as const
+                      ).map(([k, text]) => (
+                        <button
+                          key={k}
+                          type='button'
+                          role='radio'
+                          aria-checked={field.state.value === k}
+                          onClick={() => field.handleChange(k)}
+                          className={segBtn(field.state.value === k)}
+                        >
+                          {text}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
             <div className={two}>
               <form.AppField
                 name='name'
@@ -645,6 +757,23 @@ export default function ListingForm({
                             )}
                           />
                         );
+                      if (a.type === 'rupiah' || a.type === 'duration') {
+                        const Comp = a.type === 'rupiah' ? RupiahInput : DurationInput;
+                        return (
+                          <form.Field
+                            key={a.key}
+                            name={name}
+                            children={(f) => (
+                              <Comp
+                                id={f.name}
+                                label={a.label}
+                                value={f.state.value}
+                                onChange={(v) => f.handleChange(v)}
+                              />
+                            )}
+                          />
+                        );
+                      }
                       if (a.type === 'multiselect')
                         return (
                           <div key={a.key} className='sm:col-span-2'>
@@ -809,6 +938,15 @@ export default function ListingForm({
                 )}
               />
             </div>
+            <form.AppField
+              name='pointIsPublic'
+              children={(f) => (
+                <f.SwitchField
+                  label='Tampilkan titik di peta publik'
+                  description='Matikan untuk usaha rumahan atau perorangan: warga hanya melihat kecamatan, titik tetap dipakai menghitung jarak.'
+                />
+              )}
+            />
             <div className={two}>
               <form.AppField
                 name='whatsapp'
@@ -859,6 +997,20 @@ export default function ListingForm({
                     })}
                   </div>
                 </div>
+              )}
+            />
+            <form.AppField
+              name='serviceRadiusKm'
+              children={(f) => (
+                <f.TextField
+                  label='Radius area layanan (km)'
+                  type='number'
+                  min={0.5}
+                  max={200}
+                  step='any'
+                  placeholder='Mis. 10'
+                  description='Untuk usaha yang datang ke pelanggan: dihitung dari titik usaha. Boleh dipakai bersama daftar wilayah di atas.'
+                />
               )}
             />
           </Section>

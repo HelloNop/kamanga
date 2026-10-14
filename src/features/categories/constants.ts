@@ -12,6 +12,24 @@ export const ATTRIBUTE_TYPE_OPTIONS: { value: AttributeType; label: string; hint
 export const attributeTypeLabel = (t: AttributeType) =>
   ATTRIBUTE_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t;
 
+// Nilai sama dengan enum schedule_kind. date_stock dan survey baru dipakai tahap 2 (belum bisa dipesan).
+export const SCHEDULE_KINDS = ['slot', 'seat', 'date_stock', 'survey', 'none'] as const;
+export type ScheduleKindValue = (typeof SCHEDULE_KINDS)[number];
+export const SCHEDULE_KIND_LABELS: Record<ScheduleKindValue, string> = {
+  slot: 'Slot jam',
+  seat: 'Kursi per keberangkatan',
+  date_stock: 'Tanggal + stok (tahap 2)',
+  survey: 'Jadwal survei (tahap 2)',
+  none: 'Tanpa jadwal'
+};
+export const SCHEDULE_KIND_HINTS: Record<ScheduleKindValue, string> = {
+  slot: 'Lapangan, barber, salon: durasi tetap per unit',
+  seat: 'Travel: jam berangkat × jumlah kursi per rute',
+  date_stock: 'Sewa barang per hari dengan jumlah unit. Belum bisa dipesan.',
+  survey: 'Kunjungan kos/kontrakan. Belum bisa dipesan.',
+  none: 'Formulir permintaan (Ka servis) atau informasi saja'
+};
+
 // Isian yang sering dipakai; satu klik menambahkannya ke daftar isian khusus kategori.
 export const ATTRIBUTE_SUGGESTIONS: {
   label: string;

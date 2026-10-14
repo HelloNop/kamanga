@@ -4,7 +4,7 @@ import { ThemeToggle } from '@/features/chat/components/theme-toggle';
 export function PublicHeader() {
   return (
     <header className='nav'>
-      <Link className='brand' href='/chat' aria-label='Kamanga, beranda'>
+      <Link className='brand' href='/' aria-label='Kamanga, beranda'>
         kamanga
       </Link>
       <div className='nav-right'>

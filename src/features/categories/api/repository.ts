@@ -1,7 +1,13 @@
 // Logika database kategori. TANPA pemeriksaan login: hanya diimpor oleh service.ts.
 import { and, asc, count, desc, eq, exists, ilike, inArray, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/db';
-import { categories, categoryExtraGroups, categoryGroups, listingCategories } from '@/db/schema';
+import {
+  categories,
+  categoryExtraGroups,
+  categoryGroups,
+  doors,
+  listingCategories
+} from '@/db/schema';
 import { hasOptions, parseAttributeSchema } from '@/features/listings/lib/format';
 import { normAliases } from '@/lib/directory/norm';
 import { pgArray } from '@/lib/directory/sql';
@@ -196,10 +202,13 @@ export async function listCategories(f: CategoryFilters): Promise<CategoriesResp
         isActive: categories.isActive,
         sortOrder: categories.sortOrder,
         attributeSchema: categories.attributeSchema,
-        listingCount: listingCountSql
+        listingCount: listingCountSql,
+        door: doors.name,
+        scheduleKind: categories.scheduleKind
       })
       .from(categories)
       .innerJoin(categoryGroups, eq(categories.groupId, categoryGroups.id))
+      .leftJoin(doors, eq(doors.id, categories.doorId))
       .where(where)
       .orderBy(...order)
       .limit(limit)
@@ -262,7 +271,10 @@ export async function getCategoryDetail(id: number): Promise<CategoryDetail | nu
       attributes: parseAttributeSchema(c.attributeSchema).map((a) => ({
         ...a,
         options: a.options ?? []
-      }))
+      })),
+      doorId: c.doorId ? String(c.doorId) : '',
+      scheduleKind: c.scheduleKind,
+      responseMinutes: c.responseMinutes ?? undefined
     }
   };
 }
@@ -294,6 +306,9 @@ const toDb = (v: CategoryFormValues) => ({
   description: v.description.trim() || null,
   sortOrder: v.sortOrder,
   isActive: v.isActive,
+  doorId: v.doorId ? Number(v.doorId) : null,
+  scheduleKind: v.scheduleKind,
+  responseMinutes: v.responseMinutes ?? null,
   attributeSchema: withKeys(v.attributes).map((a) => ({
     key: a.key,
     label: a.label.trim(),

@@ -1,28 +1,46 @@
-// Satu giliran percakapan: batas pemakaian -> router -> (jalur kode | model AI) -> simpan -> alirkan ke layar.
+// Satu giliran percakapan: batas pemakaian → router (template → kode → AI) → mesin → simpan → alirkan ke layar.
+// Niat terstruktur sesi dibaca dari dan disimpan ke chat_sessions.state.
 import { createUIMessageStream, type LanguageModel } from 'ai';
 import { findKamusTerms } from '@/lib/directory/understand';
+import type { Point } from '@/lib/engines/contracts';
 import { chatConfig } from './config';
 import { runAgent } from './agent';
-import { loadHistory, saveAssistantMessage, saveUserMessage } from './chat-store';
+import {
+  loadHistory,
+  loadState,
+  saveAssistantMessage,
+  saveState,
+  saveUserMessage
+} from './chat-store';
+import { redact } from './extract';
 import { acquireLlmSlot } from './queue';
 import { llmAvailability, getModel, recordLlmCall, type ModelHandle } from './gateway';
 import { userMessagesToday, userMessagesTodayByIp } from './limits';
 import * as replies from './replies';
-import { decide, quickReply } from './router';
-import { runListingSearch } from './search-tool';
-import type { KamangaMessage, Reply } from './types';
+import { decide, doorChips } from './router';
+import { execute } from './turn';
+import type { ChatAction, ChatState, KamangaMessage, Reply } from './types';
 
 export type TurnInput = {
   sessionId: string;
   ipHash: string | null;
   text: string;
+  /** Aksi tombol (kategori, wilayah, pelonggaran, tanya penyedia, teruskan pertanyaan, lokasi saya). */
+  action?: ChatAction | null;
+  /** Titik perangkat bersama aksi lokasi. Hanya dipakai untuk pencarian ini, tidak disimpan. */
+  point?: Point | null;
+  /** Warga yang sedang masuk (hanya untuk listing_qa.asked_by). */
+  userId?: string | null;
+  /** Untuk pengujian: waktu "sekarang". */
+  now?: Date;
   /** Untuk pengujian: pakai model ini (mis. model tiruan) alih-alih vendor sungguhan. */
   modelOverride?: { model: LanguageModel; id: string };
 };
 
-const partsOf = (r: Reply) => [
+export const partsOf = (r: Reply) => [
   { type: 'text', text: r.text },
   ...(r.listings ? [{ type: 'data-listings', data: r.listings }] : []),
+  ...(r.providers ? [{ type: 'data-providers', data: r.providers }] : []),
   ...(r.chips?.length ? [{ type: 'data-chips', data: { options: r.chips } }] : [])
 ];
 
@@ -35,6 +53,7 @@ function replyStream(r: Reply) {
       writer.write({ type: 'text-delta', id: 't', delta: r.text });
       writer.write({ type: 'text-end', id: 't' });
       if (r.listings) writer.write({ type: 'data-listings', data: r.listings });
+      if (r.providers) writer.write({ type: 'data-providers', data: r.providers });
       if (r.chips?.length) writer.write({ type: 'data-chips', data: { options: r.chips } });
       writer.write({ type: 'finish' });
     }
@@ -44,7 +63,7 @@ function replyStream(r: Reply) {
 async function storeAndStream(
   sessionId: string,
   r: Reply,
-  route: 'template' | 'rules' | 'limit' | 'error'
+  route: 'template' | 'rules' | 'llm' | 'limit' | 'error'
 ) {
   await saveAssistantMessage(sessionId, partsOf(r), route);
   return replyStream(r);
@@ -65,58 +84,54 @@ export async function handleChatTurn(input: TurnInput) {
     return storeAndStream(sessionId, replies.limitReached(), 'limit');
   }
 
-  const history = await loadHistory(sessionId, cfg.historyMessages);
+  const [history, state] = await Promise.all([
+    loadHistory(sessionId, cfg.historyMessages),
+    loadState(sessionId)
+  ]);
   await saveUserMessage(sessionId, text);
-  const seed = history.length;
-  const lastAssistant = [...history].reverse().find((m) => m.role === 'assistant')?.content ?? '';
-  const awaitingLocation = /di mana lokasinya|belum saya kenali sebagai lokasi/i.test(
-    lastAssistant
-  );
-  // Mode AI-first (bawaan): semua pesan, selain sapaan/terima kasih/menu yang murni, dijawab model AI karena
-  // hanya model yang menjaga ingatan percakapan. Jalur kode menjadi cadangan bila model AI tidak tersedia.
-  // CHAT_MODE=hybrid mengembalikan perilaku lama: kode menjawab dulu yang bisa dipahami.
-  const aiFirst = process.env.CHAT_MODE !== 'hybrid';
-  if (aiFirst) {
-    const quick = await quickReply(text, seed);
-    if (quick) return storeAndStream(sessionId, quick, 'template');
-  }
+  const ctx = {
+    now: input.now ?? new Date(),
+    seed: history.length,
+    point: input.point ?? null,
+    action: input.action ?? null
+  };
   const aiReady = input.modelOverride ? true : (await llmAvailability('cheap')).ok;
-  const decision =
-    aiFirst && aiReady
-      ? ({ kind: 'llm' } as const)
-      : await decide(
-          text,
-          history.filter((m) => m.role === 'user').map((m) => m.content),
-          seed,
-          { awaitingLocation }
-        );
 
-  // 2) jalur kode
-  if (decision.kind === 'reply') return storeAndStream(sessionId, decision.reply, 'template');
-  if (decision.kind === 'search') {
-    const outcome = await runListingSearch({
-      ...decision.args,
-      meta: { sessionId, source: 'rules' }
+  // 2) template dan jalur kode: niat → mesin
+  const routed = await decide(text, state, ctx);
+  if (routed.decision.kind !== 'llm') {
+    const out = await execute(routed.decision, routed.state, {
+      ...ctx,
+      sessionId,
+      userId: input.userId,
+      source: 'rules',
+      allowModel: aiReady,
+      modelOverride: input.modelOverride
     });
-    return storeAndStream(sessionId, replies.fromOutcome(outcome, seed, decision.ctx), 'rules');
+    await saveState(sessionId, out.state);
+    return storeAndStream(sessionId, out.reply, out.route);
   }
+  await saveState(sessionId, routed.state);
 
-  // 3) jalur model AI (hanya bila tersedia dan belum melewati rem harian)
+  // 3) model AI (hanya bila tersedia dan belum melewati rem harian)
   let handle: ModelHandle | null = null;
   if (input.modelOverride) handle = { ...input.modelOverride, tier: 'cheap' };
   else {
     const avail = await llmAvailability('cheap');
+    const chips = await doorChips();
     if (avail.ok) handle = await getModel('cheap');
     else
       return storeAndStream(
         sessionId,
-        avail.reason === 'budget' ? replies.aiResting([]) : replies.unclear([]),
+        avail.reason === 'budget' ? replies.aiResting(chips) : replies.unclear(chips),
         avail.reason === 'budget' ? 'limit' : 'template'
       );
   }
 
   // Arti kata Minang/sehari-hari dari kamus (yang sudah dicek) ikut dikirim sebagai konteks.
   const kamus = await findKamusTerms(text);
+  // Tool model AI memakai router dan mesin yang sama; niat yang diubahnya disimpan di akhir.
+  const stateRef: { current: ChatState } = { current: routed.state };
 
   let failed = false;
   let crowded = false;
@@ -136,10 +151,11 @@ export async function handleChatTurn(input: TurnInput) {
       runAgent({
         writer,
         handle: handle!,
-        history: history.map((m) => ({ role: m.role, content: m.content })),
-        text,
+        // Nomor telepon dan email yang terlanjur diketik warga tidak ikut dikirim ke model.
+        history: history.map((m) => ({ role: m.role, content: redact(m.content) })),
+        text: redact(text),
         kamus,
-        sessionId,
+        tool: { ...ctx, sessionId, userId: input.userId, stateRef },
         onDone: async (info) => {
           slot.release();
           await recordLlmCall({
@@ -160,6 +176,7 @@ export async function handleChatTurn(input: TurnInput) {
     onEnd: async ({ responseMessage }) => {
       const parts = responseMessage.parts as { type: string; text?: string; data?: unknown }[];
       const hasText = parts.some((p) => p.type === 'text' && p.text?.trim());
+      await saveState(sessionId, stateRef.current);
       await saveAssistantMessage(
         sessionId,
         hasText ? parts : [...parts, { type: 'text', text: replies.busy().text }],

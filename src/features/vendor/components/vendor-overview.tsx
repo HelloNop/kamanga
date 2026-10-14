@@ -27,10 +27,7 @@ export function VendorOverview() {
           <li>Kirim untuk review. Tim Kamanga memeriksa sebelum listing tampil.</li>
           <li>Setelah disetujui, warga menemukan usaha Anda lewat chat Kamanga.</li>
         </ol>
-        <Link
-          href='/dashboard/my-listings/new'
-          className={cn(buttonVariants(), 'mt-5 inline-flex')}
-        >
+        <Link href='/mitra/usaha/baru' className={cn(buttonVariants(), 'mt-5 inline-flex')}>
           <Icons.add className='mr-2 size-4' /> Tambah listing
         </Link>
       </div>
@@ -40,7 +37,7 @@ export function VendorOverview() {
     <div className='space-y-3.5'>
       {s.rejected > 0 && (
         <Link
-          href='/dashboard/my-listings'
+          href='/mitra/usaha'
           className='block rounded-2xl bg-red-500/10 px-4 py-3.5 text-[0.9375rem]'
         >
           <b>{s.rejected} listing ditolak.</b> Lihat alasannya dan perbaiki.
@@ -57,7 +54,7 @@ export function VendorOverview() {
         <Stat label='Ditolak' value={s.rejected} />
       </div>
       <Link
-        href='/dashboard/my-listings'
+        href='/mitra/usaha'
         className={cn(buttonVariants({ variant: 'outline' }), 'inline-flex')}
       >
         Kelola listing saya

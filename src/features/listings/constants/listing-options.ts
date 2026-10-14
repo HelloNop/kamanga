@@ -53,6 +53,10 @@ export const SOURCE_LABELS: Record<ListingSource, string> = {
   vendor: 'Vendor',
   import: 'Impor'
 };
+export const KIND_LABELS: Record<'provider' | 'place', string> = {
+  provider: 'Penyedia',
+  place: 'Tempat'
+};
 export const LOCATION_LEVEL_LABELS: Record<string, string> = {
   province: 'provinsi',
   city: 'kota/kabupaten',
@@ -69,6 +73,7 @@ export const VERIFICATION_OPTIONS = toOptions(VERIFICATION_LABELS);
 export const SERVICE_MODE_OPTIONS = toOptions(SERVICE_MODE_LABELS);
 export const PRICE_UNIT_OPTIONS = toOptions(PRICE_UNIT_LABELS);
 export const SOURCE_OPTIONS = toOptions(SOURCE_LABELS);
+export const KIND_OPTIONS = toOptions(KIND_LABELS);
 
 /** Jumlah foto maksimal per listing (sudah disetujui + menunggu review). */
 export const MAX_PHOTOS = 6;

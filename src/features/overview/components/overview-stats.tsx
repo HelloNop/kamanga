@@ -191,12 +191,24 @@ function Gauge({ visited, checked, total }: { visited: number; checked: number; 
 
 export function OverviewStats() {
   const { data } = useSuspenseQuery(overviewQueryOptions());
-  const { listings: l, chat: c, directory: d } = data;
+  const { listings: l, chat: c, directory: d, bookings: b } = data;
   const clickRate = c.sessions > 0 ? Math.round((c.clickedSessions / c.sessions) * 100) : 0;
   const answered =
     c.routes.template + c.routes.rules + c.routes.llm + c.routes.limit + c.routes.error;
 
   const attention = [
+    b.stuck > 0 && {
+      text: `${id(b.stuck)} pesanan macet`,
+      href: '/dashboard/bookings?flag=stuck'
+    },
+    b.unanswered > 0 && {
+      text: `${id(b.unanswered)} pesanan menunggu jawaban penyedia`,
+      href: '/dashboard/bookings?status=sent'
+    },
+    b.questionsUnanswered > 0 && {
+      text: `${id(b.questionsUnanswered)} pertanyaan warga belum terjawab`,
+      href: '/dashboard/demand'
+    },
     l.pendingReview > 0 && {
       text: `${id(l.pendingReview)} listing menunggu review`,
       href: '/dashboard/review'
@@ -220,9 +232,42 @@ export function OverviewStats() {
 
   return (
     <div className='space-y-3.5'>
-      <div className='grid grid-cols-2 gap-3.5 xl:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-5'>
         <Kpi
           hi
+          title='Pesanan hari ini'
+          value={id(b.today)}
+          hint='masuk sejak 00.00 WIB'
+          href='/dashboard/bookings'
+        />
+        <Kpi
+          title='Belum dijawab'
+          value={id(b.unanswered)}
+          hint='menunggu penyedia'
+          href='/dashboard/bookings?status=sent'
+        />
+        <Kpi
+          title='Pesanan macet'
+          value={id(b.stuck)}
+          hint='hampir kedaluwarsa atau lewat jadwal'
+          href='/dashboard/bookings?flag=stuck'
+        />
+        <Kpi
+          title='Pertanyaan warga'
+          value={id(b.questionsUnanswered)}
+          hint='belum dijawab penyedia'
+          href='/dashboard/demand'
+        />
+        <Kpi
+          title='Pencarian tanpa hasil'
+          value={id(b.unmetSearches)}
+          hint='7 hari terakhir'
+          href='/dashboard/demand'
+        />
+      </div>
+
+      <div className='grid grid-cols-2 gap-3.5 xl:grid-cols-4'>
+        <Kpi
           title='Listing terbit'
           value={id(l.published)}
           hint={`dari ${id(l.total)} listing`}

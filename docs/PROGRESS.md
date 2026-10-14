@@ -44,7 +44,23 @@ Keputusan lead di gelombang ini:
 
 ## Gelombang 3 — Antarmuka dan chat
 
-Status: belum mulai
+Status: **selesai** (15 Okt 2026). Empat sub-agent paralel, lalu digabung dan diuji lead di browser.
+
+- **Warga** (agent-ui-warga): beranda "Kamanga hari ko?" dari tabel `doors`, halaman pintu (`/pintu/[slug]`) untuk keempat pintu, "Pakai lokasi saya" / ketik daerah, hasil dari `findProviders` urut terdekat, halaman pesan (`/pesan/[slug]`) dengan ringkasan aturan yang wajib disetujui, masuk OTP WA (`/masuk`) + nama panggilan + persetujuan privasi, status dan riwayat pesanan, ulasan, akun (alamat tersimpan, hapus akun), profil listing diperkaya. Uji `check:warga`.
+- **Mitra** (agent-ui-mitra): `/mitra` ramah ponsel + PWA, beranda, pesanan, halaman token tanpa login, jadwal (unit, jam buka, pengecualian, kalender, blokir dua ketukan), usaha, tanya jawab, ulasan, statistik; `ScheduleEditor`/`QaEditor` dipakai juga di panel admin; portal vendor tidak bisa lagi memalsukan jenis/status/verifikasi. Uji `check:mitra`.
+- **Admin** (agent-ui-admin): menu Pintu, Pesanan (antrean "teruskan ke penyedia" untuk mode cadangan, pesanan macet, catatan admin), Pengaturan, isian pintu/jadwal/batas waktu di kategori, jenis/titik publik/radius di listing, pertanyaan warga belum terjawab, uji pencarian mode Pintu dengan rincian skor. Uji `check:admin`.
+- **Chat** (agent-chat): niat terstruktur di `chat_sessions.state`, diteruskan ke `findProviders`; kartu dengan slot; satu pertanyaan dengan tombol; lokasi perangkat tidak disimpan; jawaban tentang penyedia hanya dari datanya; di luar layanan lewat template. `eval:chat` 61/64 (95%), 86% tanpa AI. Mode `CHAT_MODE` "AI dulu" dihapus (PRD 8.2: template → kode → AI).
+- Lead: sebutan lain kategori (padel, pijat, cukur, ...), label pelonggaran ramah warga, perbaikan pindah halaman setelah masuk OTP dan setelah keluar/hapus akun, tautan portal vendor ke `/mitra/usaha`, cache disk Turbopack dimatikan (disk penuh).
+- **Uji di browser (360 px) oleh lead, berhasil:** beranda → Ka main → padel besok malam dekat Lubeg, 4 orang → slot → aturan → masuk OTP → kirim (#DYKHLG, menunggu 30 menit) → tautan token penyedia (kontak tertutup) → Terima (kontak terbuka, tombol kabari pemesan) → Selesai → ulasan "Puas, 5 bintang" → hapus akun (pesanan dan ulasan tetap, anonim; kontak dan nomor di log WA dihapus). Chat dengan kalimat PRD menampilkan kartu padel dan jam kosong. 24 halaman panel admin dan mitra dimuat 200 dengan akun uji sementara; pembagian peran benar.
+- Semua uji lulus: typecheck, lint (0 galat), 17 script `check:*`, `eval:chat` 95%.
+
+Temuan untuk Gelombang 4:
+- Pilihan di halaman pesan (sewa raket, lama) hilang setelah masuk OTP, padahal teksnya berjanji tersimpan.
+- Penyedia bisa menandai selesai sebelum jadwal dimulai.
+- Header chat menampilkan "Daftar" (mitra), seharusnya "Masuk" untuk warga.
+- Teks berganti di beranda tampak pucat; periksa kontras.
+- Mode cadangan: pemberitahuan ke warga (ditolak, kedaluwarsa, jawaban pertanyaan) belum punya antrean tim di admin.
+- Alur klaim usaha belum ada; notifikasi PWA belum ada.
 
 ## Gelombang 4 — Uji menyeluruh
 

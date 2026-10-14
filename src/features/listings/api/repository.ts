@@ -81,6 +81,10 @@ export async function listListings(f: ListingFilters): Promise<ListingsResponse>
   );
   if (levels.length)
     conds.push(inArray(listings.verificationLevel, levels as (typeof VERIFICATIONS)[number][]));
+  const kinds = csv(f.kind).filter((k): k is 'provider' | 'place' =>
+    ['provider', 'place'].includes(k)
+  );
+  if (kinds.length) conds.push(inArray(listings.kind, kinds));
   const catSlugs = csv(f.categories);
   if (catSlugs.length) {
     conds.push(
@@ -115,6 +119,7 @@ export async function listListings(f: ListingFilters): Promise<ListingsResponse>
     db
       .select({
         id: listings.id,
+        kind: listings.kind,
         slug: listings.slug,
         name: listings.name,
         status: listings.status,

@@ -66,6 +66,18 @@ export function CellAction({ data }: { data: ListingRow }) {
             <DropdownMenuItem onClick={() => router.push(`/dashboard/listings/${data.id}`)}>
               <Icons.edit className='mr-2 h-4 w-4' /> Ubah
             </DropdownMenuItem>
+            {data.kind === 'provider' && (
+              <DropdownMenuItem
+                onClick={() => router.push(`/dashboard/listings/${data.id}/jadwal`)}
+              >
+                <Icons.calendar className='mr-2 h-4 w-4' /> Jadwal
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => router.push(`/dashboard/listings/${data.id}/tanya-jawab`)}
+            >
+              <Icons.messageQuestion className='mr-2 h-4 w-4' /> Tanya jawab
+            </DropdownMenuItem>
             {data.status !== 'published' && (
               <DropdownMenuItem onClick={() => setStatus('published')}>
                 <Icons.circleCheck className='mr-2 h-4 w-4' /> Terbitkan

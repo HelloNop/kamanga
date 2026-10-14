@@ -19,3 +19,13 @@ export type DemandReport = {
   unmetSearches: number;
   rows: DemandRow[];
 };
+
+/** Pertanyaan warga ke penyedia yang belum dijawab (listing_qa tanpa jawaban). */
+export type QuestionRow = {
+  id: number;
+  question: string;
+  createdAt: string; // ISO
+  listing: { id: number; name: string; whatsapp: string | null };
+  category: string | null;
+  place: string | null;
+};

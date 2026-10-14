@@ -5,6 +5,8 @@ import { InitialAvatar } from '@/components/ui/initial-avatar';
 import { Pill, type PillTone } from '@/components/ui/pill';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
 import {
+  KIND_LABELS,
+  KIND_OPTIONS,
   STATUS_LABELS,
   STATUS_OPTIONS,
   VERIFICATION_LABELS,
@@ -15,9 +17,10 @@ import {
 import type { ListingRow } from '../../api/types';
 import { CellAction } from './cell-action';
 
-// id kolom = nama parameter URL (name, category, status, verification) dan kunci urutan (name, status, updatedAt).
+// id kolom = nama parameter URL (name, kind, category, status, verification) dan kunci urutan (name, status, updatedAt).
 export const COLUMN_IDS = [
   'name',
+  'kind',
   'category',
   'status',
   'verification',
@@ -70,6 +73,19 @@ export function getColumns(
         icon: Icons.text
       },
       enableColumnFilter: true
+    },
+    {
+      id: 'kind',
+      accessorKey: 'kind',
+      enableSorting: false,
+      header: header('Jenis'),
+      cell: ({ row }) => (
+        <Pill tone={row.original.kind === 'place' ? 'info' : 'mut'}>
+          {KIND_LABELS[row.original.kind]}
+        </Pill>
+      ),
+      enableColumnFilter: true,
+      meta: { label: 'Jenis', variant: 'multiSelect', options: KIND_OPTIONS }
     },
     {
       id: 'category',

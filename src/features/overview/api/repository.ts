@@ -1,11 +1,28 @@
 // Angka ringkasan dashboard. TANPA pemeriksaan login: hanya diimpor oleh service.ts.
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
+import { ACTIVE_STATUSES, stuckReason } from '@/features/bookings/lib/status';
+import { booking } from '@/lib/engines/contracts';
+import { fromJakarta, jakartaDate } from '@/lib/engines/time';
 import type { Overview } from './types';
 
 const rows = async <T>(q: ReturnType<typeof sql>) => (await db.execute(q)).rows as T[];
 
 export async function getOverview(): Promise<Overview> {
+  // Lebih dulu: listBookings juga mengedaluwarsakan pesanan yang lewat batas waktu, jadi hitungan di bawah segar.
+  // ponytail: macet dinilai dari 500 pesanan aktif terbaru; pindah ke SQL bila pesanan aktif sebanyak itu.
+  const now = new Date();
+  const active = await booking.listBookings({ status: ACTIVE_STATUSES, limit: 500 });
+  const stuck = active.items.filter((b) => stuckReason(b, now)).length;
+  const today = fromJakarta(jakartaDate(now), '00:00');
+  const [bk] = await rows<Record<string, number>>(sql`
+    select
+      (select count(*)::int from bookings where created_at >= ${today}) as today,
+      (select count(*)::int from bookings where status = 'sent') as unanswered,
+      (select count(*)::int from listing_qa where answer is null) as questions,
+      (select count(*)::int from search_logs
+        where status = 'ok' and result_count = 0 and created_at >= now() - interval '7 days') as unmet`);
+
   const [l] = await rows<Record<string, number>>(sql`
     select count(*)::int as total,
       count(*) filter (where status = 'published')::int as published,
@@ -69,6 +86,13 @@ export async function getOverview(): Promise<Overview> {
     from chat_messages m where m.role = 'user' order by m.id desc limit 5`);
 
   return {
+    bookings: {
+      today: bk.today,
+      unanswered: bk.unanswered,
+      stuck,
+      questionsUnanswered: bk.questions,
+      unmetSearches: bk.unmet
+    },
     groups: groups.map((g) => ({ name: g.name, count: g.n })),
     topCategories: topCategories.map((c) => ({ name: c.name, group: c.grp, count: c.n })),
     recentChats,

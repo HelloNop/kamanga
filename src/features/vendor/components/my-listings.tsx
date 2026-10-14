@@ -77,7 +77,7 @@ function Row({ item, onArchive }: { item: MyListing; onArchive: () => void }) {
 
       <div className='mt-4 flex flex-wrap items-center gap-2 border-t pt-4'>
         <Link
-          href={`/dashboard/my-listings/${item.id}`}
+          href={`/mitra/usaha/${item.id}`}
           className={buttonVariants({ variant: canSubmit ? 'default' : 'outline', size: 'sm' })}
         >
           {canSubmit
@@ -123,10 +123,7 @@ export function MyListings() {
           <p className='text-muted-foreground mt-1 text-sm'>
             Daftarkan usaha Anda supaya warga Sumatera Barat bisa menemukannya lewat Kamanga.
           </p>
-          <Link
-            href='/dashboard/my-listings/new'
-            className={cn(buttonVariants(), 'mt-4 inline-flex')}
-          >
+          <Link href='/mitra/usaha/baru' className={cn(buttonVariants(), 'mt-4 inline-flex')}>
             <Icons.add className='mr-2 size-4' /> Tambah listing
           </Link>
         </div>

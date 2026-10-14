@@ -1,4 +1,6 @@
-// Jalur model AI: persona + tool pencarian. Dipanggil hanya bila router tidak bisa memahami pesan.
+// Jalur model AI: persona + tool. Dipanggil hanya bila router (template → kode) tidak memahami pesan.
+// Tool `cari` meneruskan kebutuhan yang dipahami model ke router dan mesin yang sama dengan jalur kode, jadi kartu,
+// slot, dan harga tetap dibuat KODE dari database. Model hanya menulis kalimat pengantar.
 import {
   isStepCount,
   streamText,
@@ -10,76 +12,105 @@ import {
 import * as z from 'zod';
 import type { ModelHandle, Usage } from './gateway';
 import { PERSONA } from './persona';
+import { decide, type TurnCtx } from './router';
 import { listingDetailForModel, runListingSearch, toModelResult } from './search-tool';
-import type { KamangaMessage } from './types';
+import { execute } from './turn';
+import type { ChatState, KamangaMessage, Reply } from './types';
 
-export function buildTools(writer: UIMessageStreamWriter<KamangaMessage>, sessionId?: string) {
+export type ToolCtx = TurnCtx & {
+  sessionId: string;
+  userId?: string | null;
+  /** Niat sesi; diperbarui tool, disimpan handler di akhir giliran. */
+  stateRef: { current: ChatState };
+};
+
+/** Tulis bagian kartu dan tombol balasan kode ke layar. */
+function writeParts(writer: UIMessageStreamWriter<KamangaMessage>, r: Reply) {
+  if (r.listings) writer.write({ type: 'data-listings', data: r.listings });
+  if (r.providers) writer.write({ type: 'data-providers', data: r.providers });
+  if (r.chips?.length) writer.write({ type: 'data-chips', data: { options: r.chips } });
+}
+
+export function buildTools(writer: UIMessageStreamWriter<KamangaMessage>, c: ToolCtx) {
   return {
-    search_listings: tool({
+    cari: tool({
       description:
-        'Cari jasa, tempat, wisata, freelancer, atau produk UMKM di direktori Kamanga. WAJIB dipanggil sebelum menyebut usaha apa pun. Kamus Minang dan nama lokasi dipahami otomatis.',
+        'Cari penyedia atau tempat di Kamanga dan tampilkan kartunya (dengan jadwal kosong bila ada). WAJIB dipanggil sebelum menyebut usaha apa pun. Kamus Minang, nama daerah, waktu, dan jumlah orang dipahami otomatis.',
       inputSchema: z.object({
-        query: z
+        kebutuhan: z
           .string()
           .min(1)
           .max(200)
-          .describe(
-            'Kebutuhan dengan kata warga apa adanya, mis. "onda mogok", "katering nasi kapau", "cuci AC".'
-          ),
-        location: z
+          .describe('Kebutuhan dengan kata warga apa adanya, mis. "lapangan padel", "onda mogok".'),
+        lokasi: z
           .string()
           .max(100)
           .optional()
           .describe(
-            'Lokasi persis seperti disebut warga, mis. "lubeg". Kosongkan bila belum disebut.'
+            'Daerah persis seperti disebut warga, mis. "lubeg". Kosongkan bila belum disebut.'
           ),
-        budget_idr: z
-          .number()
-          .int()
-          .positive()
+        waktu: z
+          .string()
+          .max(60)
           .optional()
-          .describe('Anggaran maksimum dalam rupiah, bila disebut.'),
-        budget_unit: z
-          .enum(['per_person', 'per_hour', 'per_day', 'per_event', 'per_visit'])
-          .optional()
-          .describe('Satuan anggaran, bila jelas.'),
-        min_capacity: z
-          .number()
-          .int()
-          .positive()
-          .optional()
-          .describe('Kapasitas minimal (orang), untuk gedung atau tempat acara.'),
-        service_mode: z
-          .enum(['on_site', 'on_call', 'online'])
-          .optional()
-          .describe(
-            'on_call = penyedia datang ke pelanggan; on_site = pelanggan datang; online = daring.'
-          ),
-        verified_only: z.boolean().optional().describe('true bila warga minta yang terverifikasi.')
+          .describe('Waktu seperti disebut warga, mis. "nanti malam", "besok jam 5".'),
+        jumlah_orang: z.number().int().positive().max(60).optional(),
+        anggaran_rp: z.number().int().positive().optional().describe('Anggaran maksimum (rupiah).')
       }),
       execute: async (a) => {
-        const outcome = await runListingSearch({
-          query: a.query,
-          location: a.location,
-          budget: a.budget_idr ? { max: a.budget_idr, unit: a.budget_unit } : undefined,
-          minCapacity: a.min_capacity,
-          serviceMode: a.service_mode,
-          verifiedOnly: a.verified_only,
-          limit: 5,
-          meta: sessionId ? { sessionId, source: 'llm' } : undefined
+        const text = [
+          a.kebutuhan,
+          a.waktu,
+          a.lokasi ? `di ${a.lokasi}` : '',
+          a.jumlah_orang ? `${a.jumlah_orang} orang` : '',
+          a.anggaran_rp ? `anggaran ${a.anggaran_rp}` : ''
+        ]
+          .filter(Boolean)
+          .join(' ');
+        const routed = await decide(text, c.stateRef.current, {
+          ...c,
+          action: null,
+          point: null,
+          fromModel: true
         });
-        // Kartu untuk warga ditulis KODE ke layar; model hanya menerima ringkasan.
-        if (outcome.status === 'ok' && outcome.items.length)
-          writer.write({
-            type: 'data-listings',
-            data: { items: outcome.items, total: outcome.total }
+        if (routed.decision.kind === 'llm') {
+          // Kebutuhan di luar kategori yang dikenal: pencarian teks lama di direktori.
+          const outcome = await runListingSearch({
+            query: a.kebutuhan,
+            location: a.lokasi,
+            budget: a.anggaran_rp ? { max: a.anggaran_rp } : undefined,
+            limit: 5,
+            meta: { sessionId: c.sessionId, source: 'llm' }
           });
-        return toModelResult(outcome);
+          if (outcome.status === 'ok' && outcome.items.length)
+            writer.write({
+              type: 'data-listings',
+              data: { items: outcome.items, total: outcome.total }
+            });
+          return toModelResult(outcome);
+        }
+        const out = await execute(routed.decision, routed.state, {
+          ...c,
+          action: null,
+          point: null,
+          source: 'llm'
+        });
+        c.stateRef.current = out.state;
+        writeParts(writer, out.reply);
+        const cards = out.reply.providers?.items.length ?? out.reply.listings?.items.length ?? 0;
+        return {
+          status: cards ? 'ok' : out.reply.chips?.length ? 'perlu_info' : 'kosong',
+          // Kalimat dari kode, tanpa nomor atau tautan. Kartu dan tombol sudah tampil di layar.
+          ringkasan_kode: out.reply.text,
+          jumlah_kartu: cards,
+          catatan:
+            'Kartu, jadwal, harga, dan tombol sudah tampil di layar. Tulis 1-2 kalimat saja; jangan mengulang daftar, harga, atau jam. Bila status perlu_info, sampaikan pertanyaan di ringkasan_kode.'
+        };
       }
     }),
     listing_detail: tool({
       description:
-        'Ambil detail satu usaha (alamat, jam buka, catatan harga, tautan) dari id hasil search_listings. Panggil hanya bila warga menanyakan detail.',
+        'Ambil detail satu usaha (jam buka, catatan harga, tautan) dari id hasil pencarian lama. Panggil hanya bila warga menanyakan detail.',
       inputSchema: z.object({ id: z.number().int().positive() }),
       execute: async ({ id }) => listingDetailForModel(id)
     })
@@ -121,8 +152,8 @@ export type AgentInput = {
   text: string;
   /** Arti kata dari kamus yang muncul di pesan. Dikirim sebagai catatan di pesan warga. */
   kamus?: { term: string; meaning: string }[];
-  /** Sesi chat, untuk mencatat pencarian. */
-  sessionId?: string;
+  /** Konteks tool: sesi, niat berjalan, waktu. */
+  tool: ToolCtx;
   onDone: (info: { usage: Usage; latencyMs: number; error?: string }) => Promise<void> | void;
   onError: (message: string) => void;
 };
@@ -147,12 +178,12 @@ export function runAgent(i: AgentInput) {
       providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } }
     },
     messages,
-    tools: buildTools(i.writer, i.sessionId),
+    tools: buildTools(i.writer, i.tool),
     stopWhen: isStepCount(4),
     // Setelah pencarian dijalankan, langkah berikutnya WAJIB berupa jawaban teks. Tanpa ini model sering
     // mencari ulang dengan sinonim (3-4 langkah, 10+ detik) padahal sistem sudah memahami kamus dan sinonim.
     prepareStep: ({ steps }) =>
-      steps.some((s) => s.toolCalls?.some((c) => c.toolName === 'search_listings'))
+      steps.some((s) => s.toolCalls?.some((c) => c.toolName === 'cari'))
         ? { toolChoice: 'none' as const }
         : undefined,
     maxOutputTokens: 500,

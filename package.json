@@ -37,6 +37,9 @@
     "check:location": "bun run src/lib/engines/location/location.check.ts",
     "check:notify": "bun run src/lib/engines/notify/notify.check.ts",
     "check:providers": "bun run src/lib/directory/providers.check.ts",
+    "check:admin": "bun run src/features/bookings/admin.check.ts",
+    "check:mitra": "bun run src/features/mitra/mitra.check.ts",
+    "check:warga": "bun run src/features/warga/warga.check.ts",
     "bookings:tick": "bun run scripts/bookings-tick.ts",
     "wilayah:import-padang": "bun run scripts/wilayah/import-padang.ts",
     "eval:chat": "bun run src/lib/kamanga-ai/eval/run.ts"

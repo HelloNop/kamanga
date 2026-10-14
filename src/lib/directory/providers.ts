@@ -16,6 +16,7 @@ import {
   type VisitMode
 } from '@/lib/engines/contracts';
 import { addDays, fromJakarta, jakartaDate } from '@/lib/engines/time';
+import { parseAttributeSchema } from '@/features/listings/lib/format';
 import { photoUrl } from '@/lib/storage';
 import {
   completenessScore,
@@ -409,12 +410,19 @@ export async function findProviders(q: ProviderQuery): Promise<ProviderResult> {
     }
     if (q.budgetMax)
       tries.push({ key: 'budget', label: 'abaikan anggaran', q: { ...q, budgetMax: null } });
-    if (q.attributes && Object.keys(q.attributes).length)
+    if (q.attributes && Object.keys(q.attributes).length) {
+      // Nama isian untuk warga ("Termasuk raket"), bukan kuncinya.
+      const defs = (
+        await db.execute(sql`select attribute_schema from categories
+          where id = any(${pgArray(q.categoryIds, 'int')})`)
+      ).rows.flatMap((r) => parseAttributeSchema(r.attribute_schema));
+      const label = (k: string) => defs.find((d) => d.key === k)?.label.toLowerCase() ?? k;
       tries.push({
         key: 'attributes',
-        label: `abaikan syarat ${Object.keys(q.attributes).join(', ')}`,
+        label: `abaikan syarat ${Object.keys(q.attributes).map(label).join(', ')}`,
         q: { ...q, attributes: undefined }
       });
+    }
     for (const t of tries) {
       const n = (await evaluate(t.q)).items.length;
       if (n > main.items.length) relaxations.push({ key: t.key, label: t.label, count: n });

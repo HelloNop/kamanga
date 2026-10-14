@@ -16,8 +16,16 @@ import { GroupDialog } from './group-dialog';
 import { createCategoryMutation, updateCategoryMutation } from '../api/mutations';
 import { categoryGroupsOptions } from '../api/queries';
 import type { CategoryDetail } from '../api/types';
+import { doorOptionsQueryOptions } from '@/features/doors/api/queries';
 import { hasOptions } from '@/features/listings/lib/format';
-import { ATTRIBUTE_SUGGESTIONS, ATTRIBUTE_TYPE_OPTIONS, attributeTypeLabel } from '../constants';
+import {
+  ATTRIBUTE_SUGGESTIONS,
+  ATTRIBUTE_TYPE_OPTIONS,
+  SCHEDULE_KIND_HINTS,
+  SCHEDULE_KIND_LABELS,
+  SCHEDULE_KINDS,
+  attributeTypeLabel
+} from '../constants';
 import {
   categoryFormSchema,
   emptyCategoryForm,
@@ -450,10 +458,23 @@ function SwitchRow({
 }
 
 /** Ringkasan langsung: menunjukkan akibat pengaturan form sebelum disimpan. */
-function Preview({ v, nameOf }: { v: CategoryFormValues; nameOf: (id: number) => string }) {
+function Preview({
+  v,
+  nameOf,
+  doorName
+}: {
+  v: CategoryFormValues;
+  nameOf: (id: number) => string;
+  doorName: string | null;
+}) {
   const groups = [v.groupId, ...v.extraGroupIds].map(nameOf).filter(Boolean);
   const attrs = v.attributes.filter((a) => a.label.trim());
   const rules = [
+    doorName ? `Tampil di pintu ${doorName}` : 'Tanpa pintu, hanya lewat chat',
+    `Jadwal: ${SCHEDULE_KIND_LABELS[v.scheduleKind]}`,
+    v.responseMinutes
+      ? `Penyedia menjawab dalam ${v.responseMinutes} menit`
+      : 'Batas waktu menjawab: bawaan Pengaturan',
     v.needsLocation ? 'Menanyakan lokasi ke warga' : 'Tidak menanyakan lokasi',
     v.infoOnly ? 'Hanya informasi, tanpa tombol kontak' : 'Menampilkan tombol kontak',
     v.isActive ? 'Muncul sebagai pilihan listing' : 'Disembunyikan dari pilihan'
@@ -485,7 +506,7 @@ function Preview({ v, nameOf }: { v: CategoryFormValues; nameOf: (id: number) =>
           </div>
         </div>
         <div>
-          <p className='text-muted-foreground mb-1 text-xs'>Perilaku di chatbot</p>
+          <p className='text-muted-foreground mb-1 text-xs'>Perilaku</p>
           <ul className='space-y-1'>
             {rules.map((r) => (
               <li key={r} className='flex gap-2'>
@@ -533,6 +554,7 @@ export default function CategoryForm({
   const create = useMutation(createCategoryMutation);
   const update = useMutation(updateCategoryMutation);
   const { data: groups } = useSuspenseQuery(categoryGroupsOptions());
+  const { data: doors } = useSuspenseQuery(doorOptionsQueryOptions());
   const [showExtra, setShowExtra] = useState((detail?.values.extraGroupIds.length ?? 0) > 0);
   // Modal "Tambah kelompok" dibuka dari pilihan utama atau tambahan; hasilnya langsung dipilih.
   const [dialogFor, setDialogFor] = useState<'main' | 'extra' | null>(null);
@@ -693,6 +715,82 @@ export default function CategoryForm({
           </Section>
 
           <Section
+            title='Pintu dan pesanan'
+            description='Pintu tempat kategori ini tampil di beranda, dan cara warga memesannya.'
+          >
+            <form.AppField
+              name='doorId'
+              children={(f) => (
+                <f.SelectField
+                  label='Pintu utama'
+                  placeholder='Pilih pintu'
+                  description='Satu kategori hanya punya satu pintu utama.'
+                  options={[
+                    { value: '', label: '(tanpa pintu, hanya lewat chat)' },
+                    ...doors.map((d) => ({
+                      value: String(d.id),
+                      label:
+                        d.status === 'active'
+                          ? d.name
+                          : `${d.name} (${d.status === 'soon' ? 'segera' : 'tersembunyi'})`
+                    }))
+                  ]}
+                />
+              )}
+            />
+            <form.Field
+              name='scheduleKind'
+              children={(field) => (
+                <div>
+                  <Label>Jenis jadwal</Label>
+                  <div
+                    role='radiogroup'
+                    aria-label='Jenis jadwal'
+                    className='grid gap-2 sm:grid-cols-2'
+                  >
+                    {SCHEDULE_KINDS.map((k) => {
+                      const on = field.state.value === k;
+                      return (
+                        <button
+                          key={k}
+                          type='button'
+                          role='radio'
+                          aria-checked={on}
+                          onClick={() => field.handleChange(k)}
+                          className={cn(
+                            'rounded-xl border-[1.5px] p-3 text-left transition-colors',
+                            on ? 'border-primary bg-primary/5' : 'bg-card hover:bg-muted/60'
+                          )}
+                        >
+                          <span className='block text-sm font-semibold'>
+                            {SCHEDULE_KIND_LABELS[k]}
+                          </span>
+                          <span className='text-muted-foreground mt-0.5 block text-xs leading-snug'>
+                            {SCHEDULE_KIND_HINTS[k]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            />
+            <form.AppField
+              name='responseMinutes'
+              children={(f) => (
+                <f.TextField
+                  label='Batas waktu menjawab (menit)'
+                  type='number'
+                  min={5}
+                  max={1440}
+                  placeholder='bawaan'
+                  description='Lewat batas ini pesanan kedaluwarsa dan warga ditawari tempat lain. Kosongkan untuk memakai bawaan di Pengaturan.'
+                />
+              )}
+            />
+          </Section>
+
+          <Section
             title='Perilaku di chatbot'
             description='Mengatur apa yang dilakukan Kamanga untuk kategori ini.'
           >
@@ -786,7 +884,13 @@ export default function CategoryForm({
 
         <aside className='space-y-4 lg:sticky lg:top-4'>
           <form.Subscribe selector={(s) => s.values}>
-            {(v) => <Preview v={v} nameOf={nameOf} />}
+            {(v) => (
+              <Preview
+                v={v}
+                nameOf={nameOf}
+                doorName={doors.find((d) => String(d.id) === v.doorId)?.name ?? null}
+              />
+            )}
           </form.Subscribe>
           <div className='flex flex-col gap-2'>
             <form.AppForm>

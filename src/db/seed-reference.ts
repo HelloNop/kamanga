@@ -136,6 +136,8 @@ const addAlias = (table: 'doors' | 'categories' | 'needs', slug: string, term: s
     update ${sql.raw(table)} set aliases = (
       select coalesce(array_agg(distinct a), '{}') from unnest(array_append(aliases, ${term})) a
     ) where slug = ${slug}`);
+for (const c of CATEGORIES)
+  for (const a of c.aliases ?? []) await addAlias('categories', c.slug, norm(a));
 for (const g of GLOSSARY) {
   const term = norm(g.term);
   if (g.target?.door) await addAlias('doors', g.target.door, term);

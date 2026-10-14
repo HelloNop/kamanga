@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
 import { Cover, ListingCard } from '@/features/jelajah/components/public-card';
 import { PublicHeader } from '@/features/jelajah/components/public-header';
 import {
@@ -8,9 +9,18 @@ import {
   SERVICE_MODE_LABELS,
   type ServiceMode
 } from '@/features/listings/constants/listing-options';
-import { isHttpUrl } from '@/features/listings/lib/format';
+import { isHttpUrl, parseAttributeSchema } from '@/features/listings/lib/format';
+import {
+  countListingView,
+  getBookingTarget,
+  getListingExtras
+} from '@/features/warga/api/repository';
+import { buildRules } from '@/features/warga/lib/format';
+import { slotButtons } from '@/features/warga/lib/slots';
 import { getPublicListing } from '@/lib/directory/public';
 import { searchListings } from '@/lib/directory/search';
+import { paths, schedule } from '@/lib/engines/contracts';
+import { addDays, fromJakarta, jakartaDate } from '@/lib/engines/time';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -40,6 +50,35 @@ const TRUST: Record<string, string> = {
 export default async function Page({ params }: Props) {
   const l = await getPublicListing((await params).slug);
   if (!l) notFound();
+  // Hitungan kunjungan harian (tanpa data pribadi), dijalankan setelah halaman terkirim.
+  after(() => countListingView(l.id).catch(() => {}));
+
+  // Pemesanan lewat Kamanga: aturan penting, slot kosong hari ini/besok, tombol Pesan.
+  const [target, extras] = await Promise.all([getBookingTarget(l.slug), getListingExtras(l.id)]);
+  const bookCat = target?.category ?? null;
+  const rules =
+    target && bookCat
+      ? buildRules(parseAttributeSchema(bookCat.attributeSchema), target.listing.attributes).lines
+      : [];
+  const timed = bookCat?.scheduleKind === 'slot' || bookCat?.scheduleKind === 'seat';
+  const today = jakartaDate(new Date());
+  const slots =
+    target?.bookable && timed && target.units.length
+      ? slotButtons(
+          l.slug,
+          await schedule.getAvailability({
+            unitIds: target.units.map((u) => u.id),
+            from: new Date(),
+            to: fromJakarta(addDays(today, 2), '00:00')
+          }),
+          new Map(target.units.map((u) => [u.id, u.name])),
+          { seat: bookCat?.scheduleKind === 'seat', seats: 1, max: 16 }
+        )
+      : [];
+  const slotDays = [...new Set(slots.map((x) => x.day))];
+  const satisfied = extras.reviews.filter((r) => r.satisfied).length;
+  // Usaha rumahan/perorangan: publik hanya melihat kecamatan, tanpa alamat dan peta.
+  const showPoint = l.pointIsPublic;
 
   const similar = l.category
     ? (
@@ -64,8 +103,9 @@ export default async function Page({ params }: Props) {
       ? rupiah((l.priceMin ?? l.priceMax)!)
       : null;
   const modes = l.serviceModes.map((m) => SERVICE_MODE_LABELS[m as ServiceMode]).filter(Boolean);
-  const mapsHref =
-    l.mapsUrl && isHttpUrl(l.mapsUrl)
+  const mapsHref = !showPoint
+    ? null
+    : l.mapsUrl && isHttpUrl(l.mapsUrl)
       ? l.mapsUrl
       : l.lat !== null && l.lng !== null
         ? `https://www.google.com/maps?q=${l.lat},${l.lng}`
@@ -74,7 +114,10 @@ export default async function Page({ params }: Props) {
   const hasContact = !!(wa || l.phone || l.instagram || web || mapsHref);
   const seed = l.category?.slug ?? l.slug;
   const facts = [
-    l.place && { k: 'Lokasi', v: l.address ? `${l.address}, ${l.place}` : l.place },
+    l.place && {
+      k: 'Lokasi',
+      v: l.address && showPoint ? `${l.address}, ${l.place}` : l.place
+    },
     modes.length > 0 && { k: 'Cara layanan', v: modes.join(' · ') },
     l.areas.length > 0 && { k: 'Area layanan', v: l.areas.join(', ') },
     ...l.attributes
@@ -140,6 +183,41 @@ export default async function Page({ params }: Props) {
               </section>
             )}
 
+            {slots.length > 0 && (
+              <section>
+                <h2 className='pd-h'>Jadwal kosong</h2>
+                {slotDays.map((d) => (
+                  <div key={d}>
+                    <p className='pd-day'>{d}</p>
+                    <ul className='pd-slots'>
+                      {slots
+                        .filter((x) => x.day === d)
+                        .map((x) => (
+                          <li key={x.href}>
+                            <Link href={x.href}>
+                              <span className='sr-only'>Pesan {d}, </span>
+                              <b>{x.time}</b>
+                              {x.price && <small>{x.price}</small>}
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {rules.length > 0 && (
+              <section>
+                <h2 className='pd-h'>Aturan penting</h2>
+                <ul className='pd-rules'>
+                  {rules.map((r) => (
+                    <li key={r}>{r}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {facts.length > 0 && (
               <section>
                 <h2 className='pd-h'>Rincian</h2>
@@ -153,6 +231,44 @@ export default async function Page({ params }: Props) {
                 </dl>
               </section>
             )}
+
+            {extras.qa.length > 0 && (
+              <section>
+                <h2 className='pd-h'>Tanya jawab</h2>
+                <dl className='pd-qa'>
+                  {extras.qa.map((x) => (
+                    <div key={x.id}>
+                      <dt>{x.question}</dt>
+                      <dd>{x.answer}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
+
+            <section>
+              <h2 className='pd-h'>Ulasan</h2>
+              {extras.reviews.length ? (
+                <>
+                  <p className='pd-desc'>
+                    {satisfied} dari {extras.reviews.length} pemesan puas.
+                  </p>
+                  <ul className='pd-reviews'>
+                    {extras.reviews
+                      .filter((r) => r.comment)
+                      .map((r) => (
+                        <li key={r.id}>
+                          <b>{r.satisfied ? 'Puas' : 'Kurang puas'}</b>
+                          {r.stars ? ` · ${r.stars} dari 5 bintang` : ''}
+                          <p>{r.comment}</p>
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              ) : (
+                <p className='pd-desc'>Belum ada ulasan dari pesanan lewat Kamanga.</p>
+              )}
+            </section>
           </article>
 
           <aside className='pd-contact' aria-label='Hubungi'>
@@ -164,6 +280,21 @@ export default async function Page({ params }: Props) {
                 {l.priceNote && <p>{l.priceNote}</p>}
               </div>
             )}
+
+            {target?.bookable ? (
+              <div className='pd-actions'>
+                <Link className='book' href={paths.bookingStart(l.slug)}>
+                  Pesan lewat Kamanga
+                </Link>
+              </div>
+            ) : (
+              l.kind === 'provider' && (
+                <p className='pd-nocontact'>Belum bisa dipesan lewat Kamanga.</p>
+              )
+            )}
+            <div className='pd-actions'>
+              <Link href={paths.chat(`Saya mau tanya tentang ${l.name}`)}>Tanya pengelola</Link>
+            </div>
 
             {hasContact ? (
               <div className='pd-actions'>

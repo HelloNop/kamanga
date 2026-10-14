@@ -14,7 +14,9 @@ import {
   VERIFICATION_LABELS
 } from '@/features/listings/constants/listing-options';
 import type { SearchItem } from '@/lib/directory/search';
+import { cn } from '@/lib/utils';
 import { runSearch } from '../api/service';
+import { ProviderConsole } from './provider-console';
 import type { SearchInput, SearchResponse } from '../api/types';
 
 const rupiah = (n: number) => `Rp${n.toLocaleString('id-ID')}`;
@@ -135,7 +137,7 @@ function ResultCard({ item, rank }: { item: SearchItem; rank: number }) {
   );
 }
 
-export default function SearchConsole() {
+function DirectoryConsole() {
   const { data: options } = useSuspenseQuery(listingFormOptions());
   const [input, setInput] = useState<SearchInput>({ radiusKm: 15 });
   const [response, setResponse] = useState<SearchResponse | null>(null);
@@ -435,6 +437,43 @@ export default function SearchConsole() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+const MODES = [
+  { key: 'pintu', label: 'Pintu', hint: 'penyedia + slot kosong, seperti halaman pintu dan chat' },
+  { key: 'direktori', label: 'Direktori', hint: 'kata bebas lewat kamus dan gazetteer' }
+] as const;
+
+export default function SearchConsole() {
+  const [mode, setMode] = useState<(typeof MODES)[number]['key']>('pintu');
+  return (
+    <div className='space-y-4'>
+      <div
+        className='bg-card inline-flex rounded-xl p-[3px] shadow-sm'
+        role='group'
+        aria-label='Mode uji'
+      >
+        {MODES.map((m) => (
+          <button
+            key={m.key}
+            type='button'
+            aria-pressed={mode === m.key}
+            title={m.hint}
+            onClick={() => setMode(m.key)}
+            className={cn(
+              'h-9 rounded-[9px] px-4 text-sm transition-colors',
+              mode === m.key
+                ? 'bg-primary text-primary-foreground font-semibold'
+                : 'text-muted-foreground font-medium'
+            )}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      {mode === 'pintu' ? <ProviderConsole /> : <DirectoryConsole />}
     </div>
   );
 }

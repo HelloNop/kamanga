@@ -17,6 +17,8 @@ type Category = {
   schedule?: ScheduleKind;
   /** Batas waktu penyedia menjawab (menit). Kosong = pengaturan bawaan. */
   responseMinutes?: number;
+  /** Sebutan lain yang dikenali chat dan pencarian (ditambahkan, tidak menimpa ubahan admin). */
+  aliases?: string[];
 };
 
 // ───── Isian aturan yang dipakai ulang (PRD 8.8, Lampiran B) ─────
@@ -260,6 +262,7 @@ export const CATEGORIES: Category[] = [
   // ───── Ka main (tahap 1) ─────
   {
     slug: 'futsal-court',
+    aliases: ['futsal'],
     name: 'Lapangan Futsal',
     group: 'place',
     description: 'Sewa lapangan futsal per jam.',
@@ -269,6 +272,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'mini-soccer-field',
+    aliases: ['mini soccer', 'minsoc', 'sepak bola mini'],
     name: 'Lapangan Mini Soccer',
     group: 'place',
     description: 'Sewa lapangan mini soccer per jam.',
@@ -278,6 +282,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'padel-court',
+    aliases: ['padel'],
     name: 'Lapangan Padel',
     group: 'place',
     description: 'Sewa lapangan padel per jam.',
@@ -294,6 +299,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'badminton-court',
+    aliases: ['badminton', 'bulutangkis', 'bulu tangkis'],
     name: 'Lapangan Badminton',
     group: 'place',
     description: 'Sewa lapangan badminton per jam.',
@@ -303,6 +309,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'billiard',
+    aliases: ['biliar', 'bilyar'],
     name: 'Billiard',
     group: 'place',
     description: 'Sewa meja billiard per jam.',
@@ -312,6 +319,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'karaoke',
+    aliases: ['karoke'],
     name: 'Karaoke',
     group: 'place',
     description: 'Sewa ruang karaoke per jam.',
@@ -326,6 +334,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'gym',
+    aliases: ['fitness', 'fitnes'],
     name: 'Gym & Kebugaran',
     group: 'place',
     description: 'Pusat kebugaran, kunjungan harian dan bulanan.',
@@ -340,6 +349,7 @@ export const CATEGORIES: Category[] = [
   // ───── Ka rawat diri (tahap 1) ─────
   {
     slug: 'barbershop',
+    aliases: ['barber', 'potong rambut', 'cukur rambut', 'pangkas rambut'],
     name: 'Barbershop',
     group: 'service',
     description: 'Potong rambut dan cukur pria.',
@@ -362,6 +372,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'spa-massage',
+    aliases: ['pijat', 'pijit', 'spa', 'massage'],
     name: 'Spa & Pijat',
     group: 'service',
     description: 'Spa, pijat, dan urut, di tempat atau panggilan.',
@@ -381,6 +392,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'reflexology',
+    aliases: ['pijat refleksi'],
     name: 'Refleksi',
     group: 'service',
     description: 'Pijat refleksi kaki dan badan.',
@@ -390,6 +402,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'facial-skincare',
+    aliases: ['facial', 'perawatan wajah'],
     name: 'Perawatan Wajah & Kulit',
     group: 'service',
     description: 'Facial dan perawatan kulit.',
@@ -405,6 +418,7 @@ export const CATEGORIES: Category[] = [
   // ───── Ka uda anta (tahap 1) ─────
   {
     slug: 'intercity-travel',
+    aliases: ['travel antar kota', 'mobil travel'],
     name: 'Travel Antarkota',
     group: 'service',
     description: 'Travel antarkota berizin, jemput di alamat atau titik kumpul.',
@@ -427,6 +441,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: 'parcel-delivery',
+    aliases: ['titip paket', 'paket antar kota'],
     name: 'Titip Paket',
     group: 'service',
     description: 'Titip dan antar paket antarkota.',
