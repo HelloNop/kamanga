@@ -189,7 +189,7 @@
 .kmg .btn-new {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   border-radius: 999px;
   text-decoration: none;
@@ -219,8 +219,8 @@
   display: none;
 }
 .kmg .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -412,7 +412,7 @@
 }
 .kmg .pill textarea::placeholder {
   color: var(--muted);
-  opacity: 0.8;
+  opacity: 1; /* kontras placeholder ≥ 4.5:1 */
 }
 .kmg .go {
   flex: none;
@@ -447,7 +447,7 @@
   max-width: 700px;
 }
 .kmg .chip {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 15px;
   border-radius: 999px;
   background: var(--bg);
@@ -741,8 +741,7 @@
     display: none;
   }
   .kmg .link-quiet.keep {
-    display: inline;
-    padding: 8px 4px;
+    padding: 0 6px;
   }
   .kmg .nav {
     padding-left: 16px;
@@ -763,7 +762,7 @@
   }
   /* "Percakapan baru" jadi tombol ikon bulat */
   .kmg .btn-new {
-    width: 40px;
+    width: 44px;
     padding: 0;
     justify-content: center;
   }
@@ -832,14 +831,16 @@
 
 /* tautan nav yang tetap tampil di layar sempit */
 .kmg .link-quiet.keep {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 /* tombol "Coba lagi" setelah gangguan */
 .kmg .retry {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -983,4 +984,12 @@
   font-size: 0.82rem;
   color: var(--text);
   text-align: center;
+}
+
+/* Layar sangat sempit (360 px) saat percakapan berjalan: ajakan "Daftarkan usaha" untuk mitra disembunyikan
+   agar header tidak melebar; warga tetap punya Masuk dan Jelajah. */
+@media (max-width: 420px) {
+  .kmg .nav-right .cta {
+    display: none;
+  }
 }

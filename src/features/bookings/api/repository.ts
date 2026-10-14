@@ -1,6 +1,6 @@
 // Pesanan untuk panel admin. TANPA pemeriksaan login: hanya diimpor oleh service.ts (dan uji).
 // Pesanan dibaca dan diubah lewat Mesin Pesanan; repository ini hanya menambah catatan admin dan penyaring.
-import { eq, ilike } from 'drizzle-orm';
+import { eq, ilike, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { bookings, listings } from '@/db/schema';
 import { booking, type BookingStatus, type BookingView } from '@/lib/engines/contracts';
@@ -100,4 +100,60 @@ export async function saveAdminNote(id: number, note: string) {
     .where(eq(bookings.id, id))
     .returning({ id: bookings.id });
   return rows.length > 0;
+}
+
+// ───── Pesan ke warga yang menunggu dikirim tim (mode cadangan WA) ─────
+
+/** Template yang ditujukan ke warga. booking_cancelled bisa ke dua arah: disaring dengan nomor penyedia. */
+export const CITIZEN_TEMPLATES = [
+  'booking_accepted',
+  'booking_rejected',
+  'booking_expired',
+  'booking_cancelled',
+  'booking_reminder',
+  'review_request',
+  'question_answered'
+] as const;
+
+export type PendingMessageRow = {
+  id: number;
+  template: (typeof CITIZEN_TEMPLATES)[number];
+  phone: string;
+  params: Record<string, unknown>;
+  bookingId: number | null;
+  code: string | null;
+  createdAt: Date;
+};
+
+/** Pesan mode cadangan ke warga yang belum dikirim (3 hari terakhir), terlama dulu. */
+export async function listPendingCitizenMessages(): Promise<PendingMessageRow[]> {
+  const rows = (
+    await db.execute(sql`
+      select m.id, m.template, m.phone, m.params, m.booking_id, b.code, m.created_at
+      from wa_messages m
+      left join bookings b on b.id = m.booking_id
+      left join listings l on l.id = b.listing_id
+      where m.direction = 'outbound' and m.mode = 'fallback' and m.status = 'link'
+        and m.template = any(${sql.raw(`array['${CITIZEN_TEMPLATES.join("','")}']`)})
+        and m.phone <> 'dihapus' and (l.whatsapp is null or m.phone <> l.whatsapp)
+        and m.created_at > now() - interval '3 days'
+      order by m.created_at
+      limit 50`)
+  ).rows as Record<string, unknown>[];
+  return rows.map((r) => ({
+    id: Number(r.id),
+    template: r.template as PendingMessageRow['template'],
+    phone: String(r.phone),
+    params: (r.params as Record<string, unknown>) ?? {},
+    bookingId: r.booking_id === null ? null : Number(r.booking_id),
+    code: (r.code as string | null) ?? null,
+    createdAt: new Date(r.created_at as string)
+  }));
+}
+
+/** Tandai terkirim (tim sudah mengirim dari nomor resmi Kamanga). */
+export async function markCitizenMessageSent(id: number) {
+  await db.execute(
+    sql`update wa_messages set status = 'sent', updated_at = now() where id = ${id} and status = 'link'`
+  );
 }

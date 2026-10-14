@@ -22,7 +22,16 @@ export default async function BookingPage(props: { params: Promise<{ id: string 
       >
         <Icons.chevronLeft className='size-4' aria-hidden /> Semua pesanan
       </Link>
-      <BookingDetail b={b} actions={<BookingActions target={{ id: b.id }} status={b.status} />} />
+      <BookingDetail
+        b={b}
+        actions={
+          <BookingActions
+            target={{ id: b.id }}
+            status={b.status}
+            canComplete={!b.startsAt || b.startsAt <= new Date()}
+          />
+        }
+      />
     </PageContainer>
   );
 }

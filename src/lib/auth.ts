@@ -5,6 +5,8 @@ import { admin, phoneNumber } from 'better-auth/plugins';
 import { db } from '@/db';
 import { notify } from '@/lib/engines/contracts';
 
+const PHONE_VERIFY_PATH = '/phone-number/verify';
+
 // Tiga peran: `admin` (tim Kamanga), `vendor` (mitra, daftar dengan email + sandi), dan `citizen`
 // (warga, masuk dengan nomor WhatsApp + OTP). Peran tidak bisa diisi dari formulir.
 // Peran admin hanya diberikan lewat skrip `auth:create-admin` atau oleh admin lain.
@@ -28,14 +30,23 @@ export const auth = betterAuth({
       privacyConsentAt: { type: 'date', required: false, input: false }
     }
   },
+  // Nomor WA hanya boleh tercatat lewat verifikasi OTP (/phone-number/verify). Isian phoneNumber dari plugin
+  // bisa diisi lewat formulir lain (daftar email, ubah profil); tanpa penjagaan ini penyusup bisa memasang nomor
+  // orang lain lalu mengambil alih akun warga pemilik nomor itu saat ia masuk dengan OTP.
   databaseHooks: {
     user: {
       create: {
-        // Akun yang dibuat lewat verifikasi nomor WA adalah warga.
-        before: async (u) =>
-          (u as { phoneNumber?: string }).phoneNumber
-            ? { data: { ...u, role: 'citizen' } }
-            : undefined
+        before: async (u, ctx) =>
+          ctx?.path === PHONE_VERIFY_PATH && (u as { phoneNumber?: string }).phoneNumber
+            ? { data: { ...u, role: 'citizen' } } // akun dari verifikasi nomor WA = warga
+            : { data: { ...u, phoneNumber: null, phoneNumberVerified: false } }
+      },
+      update: {
+        before: async (data, ctx) => {
+          const d = data as { phoneNumber?: unknown; phoneNumberVerified?: unknown };
+          const touchesPhone = d.phoneNumber !== undefined || d.phoneNumberVerified !== undefined;
+          return touchesPhone && ctx?.path !== PHONE_VERIFY_PATH ? false : undefined;
+        }
       }
     }
   },

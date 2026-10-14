@@ -15,6 +15,7 @@ import type {
 } from '@/lib/kamanga-ai/types';
 import { ITIK_PATH, ITIK_VIEWBOX } from './motif-strokes';
 import { ThemeToggle } from './theme-toggle';
+import { paths } from '@/lib/engines/paths';
 
 export type Coverage = { cities: number; districts: number; villages: number };
 export type PeekItem = { id: number; name: string; meta: string };
@@ -469,13 +470,14 @@ export default function ChatView({
           <Link className='link-quiet keep' href='/jelajah'>
             Jelajah
           </Link>
-          <Link className='link-quiet' href='/auth/sign-in'>
+          {/* Masuk warga (OTP WA). Pendaftaran usaha untuk mitra, dibedakan jelas di layar sempit. */}
+          <Link className='link-quiet keep' href={paths.citizenSignIn('/chat')}>
             Masuk
           </Link>
           <Link className='cta' href='/auth/sign-up' aria-label='Daftarkan usaha'>
             <span className='cta-long'>Daftarkan usaha</span>
             <span className='cta-short' aria-hidden='true'>
-              Daftar
+              Mitra
             </span>
           </Link>
         </div>

@@ -113,7 +113,13 @@ try {
   assert.ok(brg.kind === 'resolved' && brg.region.parentName === 'Lubuk Kilangan');
   const lubeg = await location.resolvePlaceName('lubeg');
   assert.ok(lubeg.kind === 'resolved' && lubeg.region.name === 'Lubuk Begalung');
-  assert.equal((await location.resolvePlaceName('Lubuk')).kind, 'ambiguous'); // banyak di Padang
+  // "Lubuk": banyak di Padang. Ambigu, KECUALI search_logs sudah menunjukkan yang paling sering dicari
+  // (isi database sungguhan); aturan pencarian terbanyak diuji terkendali pada kasus Andaleh di bawah.
+  const lubuk = await location.resolvePlaceName('Lubuk');
+  assert.ok(
+    lubuk.kind === 'ambiguous' ||
+      (lubuk.kind === 'resolved' && lubuk.region.name.startsWith('Lubuk '))
+  );
   assert.equal((await location.resolvePlaceName('xyzxyz')).kind, 'not_found');
 
   // "Andaleh": dua nagari di luar Padang (Batipuh, Luak). Diselesaikan konteks bila ada.

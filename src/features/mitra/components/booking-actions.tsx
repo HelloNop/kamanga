@@ -146,7 +146,16 @@ function ReasonDialog({
   );
 }
 
-export function BookingActions({ target, status }: { target: Target; status: BookingStatus }) {
+export function BookingActions({
+  target,
+  status,
+  canComplete = true
+}: {
+  target: Target;
+  status: BookingStatus;
+  /** false sebelum jadwal mulai (mesin menolak "selesai" lebih awal). */
+  canComplete?: boolean;
+}) {
   const router = useRouter();
   const [notices, setNotices] = useState<CitizenNotice[]>([]);
   const [ask, setAsk] = useState<'reject' | 'cancel' | null>(null);
@@ -192,7 +201,7 @@ export function BookingActions({ target, status }: { target: Target; status: Boo
             Mulai layanan
           </Button>
         )}
-        {(status === 'accepted' || status === 'in_progress') && (
+        {canComplete && (status === 'accepted' || status === 'in_progress') && (
           <Button
             disabled={busy}
             onClick={() => run('complete')}

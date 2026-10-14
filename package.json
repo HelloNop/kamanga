@@ -40,6 +40,9 @@
     "check:admin": "bun run src/features/bookings/admin.check.ts",
     "check:mitra": "bun run src/features/mitra/mitra.check.ts",
     "check:warga": "bun run src/features/warga/warga.check.ts",
+    "check:auth": "bun run src/lib/auth.check.ts",
+    "check:e2e": "bun run tests/e2e.check.ts",
+    "check:tampilan": "bun run tests/tampilan.check.ts",
     "bookings:tick": "bun run scripts/bookings-tick.ts",
     "wilayah:import-padang": "bun run scripts/wilayah/import-padang.ts",
     "eval:chat": "bun run src/lib/kamanga-ai/eval/run.ts"

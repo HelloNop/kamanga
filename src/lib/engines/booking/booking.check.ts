@@ -279,6 +279,11 @@ try {
   );
   assert.equal(await booking.getBookingForProvider({ bookingId: b1, userId: owner2 }), null);
   assert.equal((await booking.startBooking(b1, prov)).ok, true);
+  // Belum boleh selesai sebelum jadwal mulai; geser jadwal uji ke masa lalu lalu selesaikan.
+  assert.equal(await bad(booking.completeBooking(b1, prov)), 'invalid_transition');
+  await db.execute(
+    sql`update bookings set starts_at = now() - interval '2 hours', ends_at = now() - interval '1 hour' where id = ${b1}`
+  );
   const comp = await booking.completeBooking(b1, prov);
   assert.ok(comp.ok && comp.status === 'completed');
   assert.equal(sentFor(b1, 'review_request')[0]?.phone, contact.phone);
@@ -380,6 +385,12 @@ try {
   assert.ok(c2.ok && c2.status === 'cancelled');
   assert.equal(sentFor(k2, 'booking_cancelled')[0]?.params.reason, 'Listrik padam');
   assert.equal(sentFor(k2, 'booking_cancelled')[0]?.role, 'citizen');
+  // Akun warga dihapus: sistem membatalkan walau lewat batas pembatalan, penyedia diberi tahu.
+  const k4 = await create({ slot: slot(12), rulesAccepted: { cancelBeforeMinutes: 4 * 24 * 60 } });
+  await booking.respondBooking(k4, 'accept', prov);
+  const c4 = await booking.cancelBooking(k4, { kind: 'system' }, 'Akun pemesan dihapus');
+  assert.ok(c4.ok && c4.status === 'cancelled');
+  assert.equal(sentFor(k4, 'booking_cancelled')[0]?.role, 'provider');
   // Warga membatalkan pesanan yang sudah diterima: penyedia diberi tahu.
   assert.equal(sentFor(k1, 'booking_cancelled')[0]?.role, 'provider');
   assert.equal((await booking.getBookingForProvider({ token: tokenOf(k2) }))?.contact, null);

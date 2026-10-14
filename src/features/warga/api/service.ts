@@ -11,7 +11,7 @@ import {
   paths,
   type RulesSnapshot
 } from '@/lib/engines/contracts';
-import { getSession } from '@/lib/session';
+import { getSession, isCitizen } from '@/lib/session';
 import { buildRules } from '../lib/format';
 import {
   activeBookingIds,
@@ -28,7 +28,7 @@ import { locSchema, whereOf } from './where';
 
 async function citizen() {
   const s = await getSession();
-  return s?.user.role === 'citizen' ? s : null;
+  return isCitizen(s) ? s : null;
 }
 const NEED_LOGIN = { ok: false as const, error: 'Masuk dulu dengan nomor WhatsApp.' };
 
@@ -106,7 +106,8 @@ export async function deleteAccount(confirm: string): Promise<ActionResult> {
   if (!s) return NEED_LOGIN;
   if (confirm !== 'HAPUS') return { ok: false, error: 'Ketik HAPUS untuk memastikan.' };
   for (const id of await activeBookingIds(s.user.id))
-    await booking.cancelBooking(id, { kind: 'citizen', userId: s.user.id }, 'Akun warga dihapus');
+    // Sistem, bukan warga: hak menghapus data (UU PDP) didahulukan dari batas pembatalan; penyedia diberi tahu.
+    await booking.cancelBooking(id, { kind: 'system' }, 'Akun pemesan dihapus');
   await deleteCitizenData(s.user.id);
   return { ok: true };
 }

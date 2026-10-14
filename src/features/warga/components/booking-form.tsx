@@ -47,6 +47,7 @@ export function BookingForm(p: Props) {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ text: string; retry?: string } | null>(null);
+  const slotKey = `${p.slug}:${p.slot?.unitId ?? ''}:${p.slot?.startsAt ?? ''}`;
 
   // Isian dari halaman pintu / sebelum masuk dibaca dari sessionStorage setelah tampil.
   useEffect(() => {
@@ -57,11 +58,16 @@ export function BookingForm(p: Props) {
     if (d.period && PERIODS.some((x) => x.key === d.period)) setPeriod(d.period);
     if (d.address) setAddress(d.address);
     if (d.note) setNote(d.note);
+    // Lama dan sewa raket hanya dipulihkan untuk slot yang sama (kembali dari halaman masuk).
+    if (d.slotKey === slotKey) {
+      if (d.endsAt && p.durations.some((x) => x.endsAt === d.endsAt)) setEndsAt(d.endsAt);
+      if (d.racket) setRacket(true);
+    }
     setReady(true);
-  }, [p.dates]);
+  }, [p.dates, p.durations, slotKey]);
   useEffect(() => {
-    if (ready) saveDraft({ problem, date, period, address, note });
-  }, [ready, problem, date, period, address, note]);
+    if (ready) saveDraft({ problem, date, period, address, note, slotKey, endsAt, racket });
+  }, [ready, problem, date, period, address, note, slotKey, endsAt, racket]);
 
   function pickLoc(v: LocChoice | null) {
     setLoc(v);

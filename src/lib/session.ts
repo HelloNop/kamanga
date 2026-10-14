@@ -19,12 +19,17 @@ export async function requireStaff() {
   return session;
 }
 
+type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
+
+/** Warga = peran citizen DAN nomor WA sudah diverifikasi lewat OTP (lapis kedua; lihat hook di auth.ts). */
+export const isCitizen = (s: Session | null | undefined): s is Session =>
+  s?.user.role === 'citizen' && s.user.phoneNumberVerified === true && !!s.user.phoneNumber;
+
 // Untuk halaman warga (pesanan, akun). Belum masuk sebagai warga → halaman masuk OTP WA.
-// Di server action, pakai getSession() dan kembalikan galat alih-alih redirect.
+// Di server action, pakai getSession() + isCitizen() dan kembalikan galat alih-alih redirect.
 export async function requireCitizen(next = '/') {
   const session = await getSession();
-  if (!session || session.user.role !== 'citizen')
-    redirect(`/masuk?next=${encodeURIComponent(next)}`);
+  if (!isCitizen(session)) redirect(`/masuk?next=${encodeURIComponent(next)}`);
   return session;
 }
 

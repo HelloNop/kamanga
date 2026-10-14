@@ -64,13 +64,55 @@ Temuan untuk Gelombang 4:
 
 ## Gelombang 4 — Uji menyeluruh
 
-Status: belum mulai
+Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `tests/tampilan.check.ts`, dan `docs/laporan-uji.md`; lead memperbaiki temuannya (tabel "Status perbaikan" di laporan uji).
+
+- Temuan kritis K1 (pengambilalihan akun warga lewat daftar email dengan nomor orang lain) diperbaiki di `src/lib/auth.ts` + `isCitizen()`; uji `check:auth`.
+- S1–S4, R1–R5 diperbaiki; R6 bukan masalah; R7–R11 terbuka (lihat di bawah).
+- Hasil akhir: typecheck lulus; lint 0 galat; 20 script `check:*` lulus, termasuk `check:e2e` 18/18 (empat alur warga sampai ulasan, anti-bentrok bersamaan, privasi, keamanan, hapus akun) dan `check:tampilan` 0 temuan; `eval:chat` 95%.
+
+## Laporan untuk pemilik
+
+### Yang sudah jalan (coba di browser: `bun run dev`, buka http://localhost:3000)
+1. **Beranda** "Kamanga hari ko?" dengan pintu dari database (`/`).
+2. **Pintu Ka main / Ka rawat diri / Ka uda anta / Ka servis**: pilih jenis → tanggal/jam/jumlah → "Pakai lokasi saya" atau ketik daerah (mis. "Lubeg", "Koto Baru") → daftar penyedia terdekat dengan slot kosong, harga, verifikasi, ulasan.
+3. **Pesan**: pilih slot → setujui aturan penting → masuk dengan nomor WA (kode OTP muncul di log server saat pengembangan) → pesanan terkirim → `/pesanan/<id>` menampilkan status.
+4. **Penyedia**: admin membuka `/dashboard/bookings` → "Teruskan ke penyedia (WA)" membuka WhatsApp berisi pesan pesanan bertautan Terima/Tolak → penyedia menekan Terima (tanpa login) → kontak warga baru terbuka → Selesai → warga memberi ulasan.
+5. **Dashboard mitra** `/mitra` (daftar di `/auth/sign-up`, lalu jadikan pemilik listing dummy lewat admin atau SQL): pesanan, jadwal, blokir slot dua ketukan, tanya jawab, ulasan, statistik.
+6. **Dashboard admin** `/dashboard` (akun dari `ADMIN_EMAIL`): Pintu, Kategori & aturan, Pesanan (+ antrean pesan WA mode cadangan), Pengaturan, Uji pencarian dengan rincian skor.
+7. **Chat** `/chat`: "Ado lapangan padel kosong nanti malam dakek Lubeg? Barampek kami." → kartu padel dengan jam kosong.
+
+### Yang belum
+- WhatsApp Business API resmi belum aktif (mode cadangan: tim meneruskan pesan dari nomor resmi lewat dashboard admin). Perlu: verifikasi Meta, isi 4 env `WA_*`, daftarkan 13 template di `src/lib/engines/notify/templates.ts`.
+- Penjadwal berkala untuk `bun run bookings:tick` / `POST /api/cron/bookings` (isi `CRON_SECRET`). Tanpa itu kedaluwarsa tetap terjadi saat pesanan dibaca, tetapi pengingat dan selesai otomatis tidak jalan.
+- Alur klaim usaha oleh penyedia, notifikasi PWA, poligon wilayah di luar Padang, `search.ts` lama masih earthdistance.
+
+### Keputusan yang diambil lead (alasan di `docs/rencana-tahap1.md` bagian 2)
+- Slot ditahan = pesanan berstatus "dikirim"; anti-bentrok dijamin constraint database.
+- Mode cadangan WA: pesan ke penyedia dan ke warga dikirim TIM dari nomor resmi (bukan warga/penyedia sendiri) agar nomor warga tidak bocor dan token tidak terlihat warga.
+- Token penyedia diturunkan dari kode pesanan + rahasia server (hanya hash yang disimpan).
+- Hanya penyedia "kontak dicek" ke atas yang bisa dipesan; area layanan bawaan penyedia panggilan = kecamatannya + 5 km.
+- Ulasan: puas/kurang puas wajib, bintang opsional (PRD §18 no. 3 masih terbuka).
+- Hapus akun membatalkan pesanan aktif tanpa memandang batas pembatalan (UU PDP didahulukan).
+- Chat selalu template → kode → AI; mode "AI dulu" dihapus.
+- Cache disk Turbopack di mode dev dimatikan (disk laptop penuh).
+
+### Langkah berikutnya yang disarankan
+1. Bebaskan ruang disk (tersisa sekitar 3 GB).
+2. Wawancara lapangan + isi data penyedia nyata (target PRD §14: 20 lapangan, 15 perawatan diri, 5 travel, 15 servis).
+3. Ajukan verifikasi WhatsApp Business API dan template Meta; tambah batas OTP per IP sebelum API aktif.
+4. Pasang penjadwal `bookings:tick` di VPS (cron tiap 1–5 menit).
+5. Alur klaim usaha; uji tampilan manual di ponsel sungguhan.
 
 ## Asumsi yang diambil lead
 
 - Lihat `docs/rencana-tahap1.md` bagian 2 (17 keputusan desain).
 
 ## Masalah terbuka
+
+- R7: hasil kosong tanpa alasan dan tanpa pelonggaran saat wilayah jemput travel tidak mencakup titik warga (`providers.ts` belum menawarkan pelonggaran area layanan).
+- R8: kontak warga tetap terbuka lewat tautan token tanpa batas waktu setelah diterima (perlu keputusan: tutup N hari setelah selesai?).
+- R9: 3 kasus `eval:chat` meleset (salah ketik nama tempat, "cuci karpet").
+- R11: `/api/wa/otp` belum punya batas per IP; wajib sebelum API WA aktif (OTP berbayar).
 
 - Poligon dan titik tengah baru ada untuk Kota Padang; lokasi lain belum.
 - Template Meta (13) perlu didaftarkan pemilik sebelum API WA diaktifkan; daftar lengkap di laporan agent-wa (diringkas di `src/lib/engines/notify/templates.ts`).

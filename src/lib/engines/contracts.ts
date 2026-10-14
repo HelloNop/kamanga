@@ -33,41 +33,7 @@ export type Actor = { kind: ActorKind; userId?: string | null };
 export const appUrl = (path: string) =>
   `${(process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')}${path}`;
 
-/** Alamat halaman yang ditautkan dari pesan WA dan antarhalaman. Dipakai mesin, chat, dan UI agar sama.
- *  Jangan menaruh koordinat perangkat atau data pribadi di query URL (tercatat di log server). */
-export const paths = {
-  /** Halaman pesanan untuk warga (cek kepemilikan di halaman). */
-  citizenBooking: (id: number) => `/pesanan/${id}`,
-  /** Riwayat pesanan warga. */
-  citizenBookings: () => '/pesanan',
-  /** Halaman Terima/Tolak untuk penyedia lewat token dari pesan WA, tanpa login. */
-  providerBookingToken: (token: string) => `/mitra/pesanan/t/${token}`,
-  /** Halaman pesanan di dashboard mitra (penyedia berakun). */
-  providerBooking: (id: number) => `/mitra/pesanan/${id}`,
-  /** Daftar pertanyaan warga yang menunggu dijawab penyedia. */
-  providerQuestions: () => '/mitra/tanya-jawab',
-  /** Halaman pintu, mis. /pintu/ka-main. */
-  door: (slug: string) => `/pintu/${slug}`,
-  /** Mulai memesan satu penyedia: ringkasan aturan → masuk OTP bila perlu → kirim. */
-  bookingStart: (
-    listingSlug: string,
-    q?: { unitId?: number; startsAt?: Date; endsAt?: Date; seats?: number }
-  ) => {
-    const p = new URLSearchParams();
-    if (q?.unitId) p.set('unit', String(q.unitId));
-    if (q?.startsAt) p.set('mulai', q.startsAt.toISOString());
-    if (q?.endsAt) p.set('selesai', q.endsAt.toISOString());
-    if (q?.seats) p.set('kursi', String(q.seats));
-    const qs = p.toString();
-    return `/pesan/${listingSlug}${qs ? `?${qs}` : ''}`;
-  },
-  /** Masuk warga dengan nomor WA + OTP. */
-  citizenSignIn: (next?: string) => `/masuk${next ? `?next=${encodeURIComponent(next)}` : ''}`,
-  /** Profil publik listing. */
-  listing: (slug: string) => `/listing/${slug}`,
-  /** Chat bebas, opsional dengan pesan pertama. */
-  chat: (q?: string) => `/chat${q ? `?q=${encodeURIComponent(q)}` : ''}`
-};
+export { paths } from './paths';
 
 // ───────────────────────────── Mesin Jadwal (PRD 8.4) ─────────────────────────────
 
@@ -303,10 +269,11 @@ export interface BookingEngine {
   ): Promise<TransitionResult>;
   /** accepted → in_progress. */
   startBooking(id: number, actor: Actor): Promise<TransitionResult>;
-  /** accepted | in_progress → completed, lalu kirim review_request ke warga. */
+  /** accepted | in_progress → completed (pesanan ber-jadwal: hanya setelah starts_at), lalu review_request. */
   completeBooking(id: number, actor: Actor): Promise<TransitionResult>;
   /** Warga: sent kapan saja; accepted hanya sebelum batas pembatalan (rules_snapshot), selain itu too_late.
-   *  Penyedia dan admin: sent/accepted/in_progress dengan alasan wajib. */
+   *  Penyedia, admin, dan sistem (akun warga dihapus): sent/accepted/in_progress dengan alasan wajib.
+   *  Yang diberi tahu: pihak yang tidak membatalkan (sistem → penyedia). */
   cancelBooking(id: number, actor: Actor, reason: string): Promise<TransitionResult>;
   /** sent yang lewat respond_by → expired, warga diberi tahu. Juga dipanggil malas saat pesanan dibaca. */
   expireStaleBookings(now?: Date): Promise<{ expired: number[] }>;

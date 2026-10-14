@@ -1,11 +1,12 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getBookingById, getBookings, getForwardQueue } from './service';
+import { getBookingById, getBookings, getForwardQueue, getPendingCitizenMessages } from './service';
 import type { BookingFilters } from './types';
 
 export const bookingKeys = {
   all: ['admin-bookings'] as const,
   list: (filters: BookingFilters) => [...bookingKeys.all, 'list', filters] as const,
   queue: () => [...bookingKeys.all, 'queue'] as const,
+  citizenQueue: () => [...bookingKeys.all, 'citizen-queue'] as const,
   detail: (id: number) => [...bookingKeys.all, 'detail', id] as const
 };
 
@@ -22,3 +23,10 @@ export const forwardQueueOptions = () =>
 
 export const bookingByIdOptions = (id: number) =>
   queryOptions({ queryKey: bookingKeys.detail(id), queryFn: () => getBookingById(id) });
+
+export const citizenQueueOptions = () =>
+  queryOptions({
+    queryKey: bookingKeys.citizenQueue(),
+    queryFn: () => getPendingCitizenMessages(),
+    refetchInterval: 60_000
+  });

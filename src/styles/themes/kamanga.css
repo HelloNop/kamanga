@@ -13,7 +13,7 @@
   --secondary: #f1f2f5;
   --secondary-foreground: #1c1f24;
   --muted: #f4f4f6;
-  --muted-foreground: #6c727c;
+  --muted-foreground: #646a74; /* 4.96:1 di atas --muted */
   --accent: #eceef2;
   --accent-foreground: #1c1f24;
   --destructive: #cf3f3f;
@@ -63,9 +63,10 @@
   --card-foreground: #edf0f3;
   --popover: #20232a;
   --popover-foreground: #edf0f3;
-  --primary: #3f7f9c;
-  --primary-hi: #5aa3bd;
-  --primary-foreground: #ffffff;
+  /* Biru lebih terang + teks gelap: teks biru di kartu 6.1:1, teks di tombol 6.8:1 (WCAG AA). */
+  --primary: #6aa9c6;
+  --primary-hi: #8cc0d8;
+  --primary-foreground: #0f1b22;
   --secondary: #272b33;
   --secondary-foreground: #edf0f3;
   --muted: #181a1f;
@@ -84,8 +85,8 @@
   --chart-5: #5aa3bd;
   --sidebar: #181a1f;
   --sidebar-foreground: #edf0f3;
-  --sidebar-primary: #3f7f9c;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #6aa9c6;
+  --sidebar-primary-foreground: #0f1b22;
   --sidebar-accent: #2a2e36;
   --sidebar-accent-foreground: #edf0f3;
   --sidebar-border: #2c3037;

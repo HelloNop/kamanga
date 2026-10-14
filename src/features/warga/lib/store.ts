@@ -29,6 +29,10 @@ export type Draft = {
   period?: string;
   address?: string;
   note?: string;
+  /** Pilihan di halaman pesan, agar tidak hilang setelah masuk OTP. Hanya berlaku untuk slot yang sama. */
+  slotKey?: string;
+  endsAt?: string;
+  racket?: boolean;
 };
 export const loadDraft = () => read<Draft>('warga:isian') ?? {};
 export const saveDraft = (patch: Draft) => write('warga:isian', { ...loadDraft(), ...patch });

@@ -4,7 +4,7 @@
 // Jalankan: bun run src/features/mitra/mitra.check.ts
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import {
   bookings,
@@ -439,6 +439,14 @@ try {
     'batal tanpa alasan'
   );
   ok(await actOnBooking({ bookingId: b2, userId: ownerA }, { action: 'start' }), 'mulai');
+  // Selesai baru boleh setelah jadwal mulai: geser jadwal pesanan uji 7 hari ke belakang (jam tetap).
+  no(
+    await actOnBooking({ bookingId: b2, userId: ownerA }, { action: 'complete' }),
+    'selesai sebelum jadwal'
+  );
+  await db.execute(
+    sql`update bookings set starts_at = starts_at - interval '7 days', ends_at = ends_at - interval '7 days' where id = ${b2}`
+  );
   const done = ok(
     await actOnBooking({ bookingId: b2, userId: ownerA }, { action: 'complete' }),
     'selesai'

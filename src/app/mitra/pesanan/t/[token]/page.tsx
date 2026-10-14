@@ -32,7 +32,13 @@ export default async function TokenBookingPage(props: { params: Promise<{ token:
             <h1 className='px-2 text-2xl font-bold'>Pesanan #{b.code}</h1>
             <BookingDetail
               b={b}
-              actions={<BookingActions target={{ token }} status={b.status} />}
+              actions={
+                <BookingActions
+                  target={{ token }}
+                  status={b.status}
+                  canComplete={!b.startsAt || b.startsAt <= new Date()}
+                />
+              }
             />
           </>
         ) : (

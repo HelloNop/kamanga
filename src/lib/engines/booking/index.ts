@@ -194,9 +194,9 @@ async function notifyFor(
         )
       );
   } else if (to === 'cancelled') {
-    // Beri tahu pihak yang TIDAK membatalkan.
+    // Beri tahu pihak yang TIDAK membatalkan. Pembatalan sistem (akun warga dihapus) → penyedia.
     const item = itemOf(i);
-    if (actor.kind === 'citizen') {
+    if (actor.kind === 'citizen' || actor.kind === 'system') {
       if (i.providerPhone)
         jobs.push(
           send(
@@ -316,11 +316,12 @@ async function startBooking(id: number, actor: Actor) {
 }
 
 async function completeBooking(id: number, actor: Actor) {
-  const r = await move(id, actor, null, (b, now) =>
-    b.status === 'accepted' || b.status === 'in_progress'
-      ? { to: 'completed', set: { completedAt: now, reviewRequestedAt: now } }
-      : 'invalid_transition'
-  );
+  const r = await move(id, actor, null, (b, now) => {
+    if (b.status !== 'accepted' && b.status !== 'in_progress') return 'invalid_transition';
+    // Pesanan ber-jadwal baru bisa selesai setelah jadwalnya mulai (mencegah ulasan untuk layanan yang belum ada).
+    if (b.startsAt && now < b.startsAt) return 'invalid_transition';
+    return { to: 'completed', set: { completedAt: now, reviewRequestedAt: now } };
+  });
   return finish(id, r, actor);
 }
 

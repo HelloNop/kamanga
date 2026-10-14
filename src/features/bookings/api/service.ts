@@ -2,6 +2,8 @@
 // Pintu masuk dari klien. SETIAP fungsi wajib memanggil requireAdmin() lebih dulu.
 // Perubahan status lewat Mesin Pesanan dengan pelaku admin (tercatat di riwayat).
 import { booking, type Actor, type TransitionResult } from '@/lib/engines/contracts';
+import { fill, WA_TEXTS } from '@/lib/engines/notify/templates';
+import { getSetting } from '@/lib/settings';
 import { requireAdmin } from '@/lib/session';
 import * as repo from './repository';
 import type {
@@ -75,4 +77,29 @@ export async function saveBookingNote(id: number, note: string): Promise<NoteRes
   return (await repo.saveAdminNote(Number(id), text))
     ? { ok: true }
     : { ok: false, message: FAIL.not_found };
+}
+
+/** Pesan mode cadangan ke warga yang perlu dikirim tim, lengkap dengan tautan wa.me berisi teks terisi. */
+export async function getPendingCitizenMessages() {
+  await requireAdmin();
+  const [rows, overrides] = await Promise.all([
+    repo.listPendingCitizenMessages(),
+    getSetting('wa.templates')
+  ]);
+  return rows.map((r) => {
+    const text = fill(overrides[r.template] || WA_TEXTS[r.template], r.params);
+    return {
+      id: r.id,
+      template: r.template,
+      code: r.code,
+      bookingId: r.bookingId,
+      createdAt: r.createdAt.toISOString(),
+      link: `https://wa.me/${r.phone}?text=${encodeURIComponent(text)}`
+    };
+  });
+}
+
+export async function markMessageSent(id: number) {
+  await requireAdmin();
+  await repo.markCitizenMessageSent(id);
 }
