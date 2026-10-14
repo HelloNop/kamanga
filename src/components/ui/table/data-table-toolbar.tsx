@@ -5,10 +5,8 @@ import * as React from 'react';
 
 import { DataTableDateFilter } from '@/components/ui/table/data-table-date-filter';
 import { DataTableFacetedFilter } from '@/components/ui/table/data-table-faceted-filter';
-import { DataTableSliderFilter } from '@/components/ui/table/data-table-slider-filter';
 import { DataTableViewOptions } from '@/components/ui/table/data-table-view-options';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
@@ -100,29 +98,6 @@ function DataTableToolbarFilter<TData>({ column }: DataTableToolbarFilterProps<T
               )}
             </div>
           );
-
-        case 'number':
-          return (
-            <div className='relative'>
-              <Input
-                type='number'
-                inputMode='numeric'
-                placeholder={columnMeta.placeholder ?? columnMeta.label}
-                aria-label={columnMeta.label ?? 'Filter'}
-                value={(column.getFilterValue() as string) ?? ''}
-                onChange={(event) => column.setFilterValue(event.target.value)}
-                className={cn('h-8 w-[120px]', columnMeta.unit && 'pr-8')}
-              />
-              {columnMeta.unit && (
-                <span className='bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 flex items-center rounded-r-md px-2 text-sm'>
-                  {columnMeta.unit}
-                </span>
-              )}
-            </div>
-          );
-
-        case 'range':
-          return <DataTableSliderFilter column={column} title={columnMeta.label ?? column.id} />;
 
         case 'date':
         case 'dateRange':

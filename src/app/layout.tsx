@@ -1,11 +1,8 @@
-import Providers from '@/components/layout/providers';
+import QueryProvider from '@/components/layout/query-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/components/themes/font.config';
-import { DEFAULT_THEME, THEMES } from '@/components/themes/theme.config';
 import ThemeProvider from '@/components/themes/theme-provider';
-import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import '../styles/globals.css';
@@ -19,22 +16,18 @@ export const metadata: Metadata = {
   ...(process.env.NEXT_PUBLIC_APP_URL
     ? { metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL) }
     : {}),
-  title: { default: 'Kamanga AI', template: '%s | Kamanga' },
-  description: 'Asisten kebutuhan lokal Sumatera Barat: jasa, tempat, wisata, dan UMKM.'
+  title: { default: 'Kamanga', template: '%s | Kamanga' },
+  description:
+    'Ka manga? Sabuik se, Kamanga carikan. Asisten urusan sehari-hari warga Sumatra Barat.'
 };
 
 export const viewport: Viewport = {
   themeColor: META_THEME_COLORS.light
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const activeThemeValue = cookieStore.get('active_theme')?.value;
-  const isValidTheme = THEMES.some((t) => t.value === activeThemeValue);
-  const themeToApply = isValidTheme ? activeThemeValue! : DEFAULT_THEME;
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='en' suppressHydrationWarning data-theme={themeToApply}>
+    <html lang='id' suppressHydrationWarning data-theme='kamanga' className={fontVariables}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -49,12 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
       </head>
-      <body
-        className={cn(
-          'bg-background overflow-x-hidden overscroll-none font-sans antialiased',
-          fontVariables
-        )}
-      >
+      <body className='bg-background overflow-x-hidden overscroll-none font-sans antialiased'>
         <NextTopLoader color='var(--primary)' showSpinner={false} />
         <NuqsAdapter>
           <ThemeProvider
@@ -64,10 +52,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             disableTransitionOnChange
             enableColorScheme
           >
-            <Providers activeThemeValue={themeToApply}>
+            <QueryProvider>
               <Toaster />
               {children}
-            </Providers>
+            </QueryProvider>
           </ThemeProvider>
         </NuqsAdapter>
       </body>

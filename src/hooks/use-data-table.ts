@@ -60,7 +60,6 @@ interface UseDataTableProps<TData>
   debounceMs?: number;
   throttleMs?: number;
   clearOnDefault?: boolean;
-  enableAdvancedFilter?: boolean;
   scroll?: boolean;
   shallow?: boolean;
   startTransition?: React.TransitionStartFunction;
@@ -75,7 +74,6 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     debounceMs = DEBOUNCE_MS,
     throttleMs = THROTTLE_MS,
     clearOnDefault = false,
-    enableAdvancedFilter = false,
     scroll = false,
     shallow = true,
     startTransition,
@@ -160,15 +158,12 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     [sorting, setSorting]
   );
 
-  const filterableColumns = React.useMemo(() => {
-    if (enableAdvancedFilter) return [];
-
-    return columns.filter((column) => column.enableColumnFilter);
-  }, [columns, enableAdvancedFilter]);
+  const filterableColumns = React.useMemo(
+    () => columns.filter((column) => column.enableColumnFilter),
+    [columns]
+  );
 
   const filterParsers = React.useMemo(() => {
-    if (enableAdvancedFilter) return {};
-
     return filterableColumns.reduce<Record<string, Parser<string> | Parser<string[]>>>(
       (acc, column) => {
         if (column.meta?.options) {
@@ -182,7 +177,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       },
       {}
     );
-  }, [filterableColumns, queryStateOptions, enableAdvancedFilter]);
+  }, [filterableColumns, queryStateOptions]);
 
   const [filterValues, setFilterValues] = useQueryStates(filterParsers);
 
@@ -192,8 +187,6 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   }, debounceMs);
 
   const initialColumnFilters: ColumnFiltersState = React.useMemo(() => {
-    if (enableAdvancedFilter) return [];
-
     return Object.entries(filterValues).reduce<ColumnFiltersState>((filters, [key, value]) => {
       if (value !== null) {
         const processedValue = Array.isArray(value)
@@ -209,15 +202,13 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       }
       return filters;
     }, []);
-  }, [filterValues, enableAdvancedFilter]);
+  }, [filterValues]);
 
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>(initialColumnFilters);
 
   const onColumnFiltersChange = React.useCallback(
     (updaterOrValue: Updater<ColumnFiltersState>) => {
-      if (enableAdvancedFilter) return;
-
       // Efek samping (mengubah URL) TIDAK boleh berada di dalam fungsi pembaruan setState:
       // React menjalankannya saat render sehingga memicu "Cannot update a component while rendering".
       const prev = columnFilters;
@@ -237,7 +228,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       }
       debouncedSetFilterValues(filterUpdates);
     },
-    [columnFilters, debouncedSetFilterValues, filterableColumns, enableAdvancedFilter]
+    [columnFilters, debouncedSetFilterValues, filterableColumns]
   );
 
   const table = useReactTable({

@@ -20,8 +20,8 @@ Urutan penting: `lokasi-sumbar.csv` dulu, karena data resmi merujuk ke slug kota
 ## Hal yang perlu diketahui
 
 - Nama resmi memakai ejaan Minang ("Guguak Panjang", "Lamposi Tigo Nagori", "Aie Pacah"). Ejaan umum disimpan sebagai sebutan lain agar tetap ditemukan.
-- Nama kecamatan unik di seluruh Sumbar, tetapi **54 nama nagari/kelurahan kembar** (136 lokasi, mis. "Koto Baru"). Chatbot harus meminta kecamatan/kotanya saat nama kembar muncul.
-- Koordinat kecamatan dan nagari belum ada. Pencarian jarak memakai koordinat listing, bukan koordinat lokasi.
+- Nama kecamatan unik di seluruh Sumbar, tetapi **54 nama nagari/kelurahan kembar** (136 lokasi, mis. "Koto Baru"). Menurut PRD 8.15, nama kembar diselesaikan dulu lewat cakupan layanan (selama hanya Padang, "Koto Baru" = Koto Baru di Padang), lokasi terakhir, dan alamat tersimpan; warga baru ditanya bila tetap ambigu.
+- Koordinat dan poligon batas kecamatan/nagari belum ada; poligon (PostGIS) direncanakan di tahap 1. Pencarian jarak saat ini memakai koordinat listing.
 
 ## Perintah database (setara `artisan migrate` di Laravel)
 

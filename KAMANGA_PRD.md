@@ -1,267 +1,708 @@
-# Kamanga — Rumusan Proyek (PRD v2)
+# PRD Kamanga
 
-Status: v2, 12 Oktober 2026. **Satu-satunya dokumen acuan produk di repo ini.** Menggabungkan PRD v0.1, `KAMANGA_CONTEXT.md`, dan hasil diskusi konsep v2 (`KAMANGA_V2.md`, 11–12 Oktober 2026). Ketiganya sudah dihapus dari repo; isinya masih bisa dilihat di riwayat git (commit pertama).
+| | |
+|---|---|
+| Versi | 1.0 (draf) |
+| Tanggal | 12 Oktober 2026 |
+| Pemilik produk | [Nama pendiri] |
+| Status | Acuan kerja pengembangan |
+| Bahasa produk | Bahasa Indonesia dan bahasa Minang sehari-hari |
 
-Penanda: **[DIPUTUSKAN]** sudah disepakati pemilik. **[USULAN]** rekomendasi, belum dikonfirmasi. **[TERBUKA]** butuh jawaban. **(nanti)** sengaja ditunda, bukan bagian tahap sekarang.
+Penanda di dokumen ini: **[DIPUTUSKAN]** sudah disepakati, **[USULAN]** rekomendasi yang masih bisa berubah, **[TERBUKA]** belum ada jawaban.
 
-## 1. Apa itu Kamanga
+---
 
-Asisten lokal untuk warga Sumatra Barat. Nama dari "ka manga" (mau apa / mau mencari apa). Tagline: **"Ka manga? Sabuik se, Kamanga carikan."**
+## 1. Ringkasan produk
 
-| | v1 (repo `kamanga-ai`) | v2 (repo ini) |
+Kamanga (dari bahasa Minang *"ka manga?"* = "mau apa?") adalah asisten urusan sehari-hari untuk warga Sumatra Barat, dimulai dari Kota Padang.
+
+Warga memilih kebutuhan lewat **pintu "Ka-"** (Ka servis, Ka main, Ka rawat diri, Ka uda anta, dan seterusnya) atau langsung bercerita dengan bahasa sehari-hari. Kamanga memahami kebutuhannya, membantu memperjelas bila perlu, menampilkan penyedia lokal yang terverifikasi beserta slot atau jadwal yang tersedia, lalu meneruskan pesanan ke penyedia lewat WhatsApp. Setiap pesanan tercatat dan ditutup dengan ulasan.
+
+Kalimat pegangan: **"Ka manga? Sabuik se, Kamanga carikan."**
+
+Kamanga **bukan chat AI umum** dan **bukan sekadar direktori**. Nilainya ada pada data penyedia lokal yang dicek, jadwal dan harga nyata, sambungan langsung ke penyedia, serta pesanan yang tercatat.
+
+---
+
+## 2. Masalah
+
+### Warga
+- Informasi jasa dan tempat lokal tersebar di Instagram, grup WhatsApp, spanduk, dan mulut ke mulut.
+- Yang punya kenalan aman. Yang tidak punya (pendatang, mahasiswa, perantau, wisatawan) menebak-nebak.
+- Harga tidak transparan; warga takut dikenai harga tidak wajar.
+- Untuk tempat yang disewa per jam (lapangan, barber), warga harus bertanya bolak-balik lewat WA hanya untuk tahu jam yang kosong.
+- Chat AI umum tidak tahu penyedia mana yang jujur atau harga pasar Padang, dan bisa mengarang.
+
+### Penyedia (UMKM, jasa, perorangan)
+- Sulit ditemukan di luar lingkaran kenalan; Google Maps lemah untuk usaha rumahan dan jasa panggilan.
+- Kewalahan membalas pertanyaan yang sama di WA ("besok ado kursi?", "jam 8 kosong?", "paket berapa?").
+- Jadwal dicatat manual sehingga sering bentrok; jam sepi tidak terisi.
+- Kehilangan pelanggan karena terlambat membalas.
+
+---
+
+## 3. Tujuan dan non-tujuan
+
+### Tujuan tahap 1 **[DIPUTUSKAN]**
+1. Warga Padang bisa menemukan dan memesan lapangan, perawatan diri, travel antarkota, dan jasa servis dalam beberapa ketukan, tanpa bertanya bolak-balik.
+2. Penyedia menerima pesanan yang jelas lewat WhatsApp tanpa perlu memasang aplikasi.
+3. Setiap pesanan tercatat sehingga nilai Kamanga bagi penyedia bisa dibuktikan dengan angka.
+4. Biaya AI per percakapan tetap rendah karena sebagian besar alur berjalan tanpa AI.
+
+### Non-tujuan (tidak dikerjakan di tahap 1)
+- Menjadi chat AI serba bisa (menulis puisi, mengedit gambar, tanya jawab umum).
+- Pembayaran di dalam aplikasi, saldo, komisi, atau tagihan apa pun.
+- Pemesanan hotel (cukup informasi dan tautan keluar).
+- Aplikasi native; produk berupa web yang nyaman di ponsel.
+- Wilayah di luar Kota Padang (struktur data sudah siap untuk seluruh Sumatra Barat).
+
+---
+
+## 4. Pengguna dan peran
+
+| Peran | Siapa | Bisa apa | Akun |
+|---|---|---|---|
+| **Tamu** | Warga yang belum masuk | Menjelajah pintu, melihat penyedia dan tempat, chat (dengan batas harian) | Tidak perlu |
+| **Warga** | Warga yang sudah verifikasi nomor WA | Semua kemampuan tamu + memesan, melihat status dan riwayat pesanan, memberi ulasan | Nomor WA + OTP |
+| **Mitra** | Pemilik usaha atau penyedia perorangan | Mendaftarkan usaha, mengelola profil, layanan, harga, jadwal, aturan, tanya jawab; menerima atau menolak pesanan; melihat ulasan dan statistik | Akun mitra; satu akun bisa memiliki beberapa usaha |
+| **Admin** | Tim Kamanga | Mengelola pintu, kategori, aturan kategori, kamus, wilayah; meninjau dan memverifikasi penyedia; memantau dan menangani pesanan; mengelola panduan dan harga acuan | Akun admin |
+
+Pengguna utama tahap 1 adalah **warga yang sedang membutuhkan sesuatu**. Penyedia adalah sumber data sekaligus pengguna aktif dashboard mitra.
+
+---
+
+## 5. Prinsip produk **[DIPUTUSKAN]**
+
+1. **Bereskan urusannya dulu, baru sambungkan.** Nilai tambah muncul sebelum daftar penyedia: memahami kebutuhan, memperjelas, memberi gambaran biaya, menunjukkan jadwal yang benar-benar kosong.
+2. **Database adalah sumber fakta.** AI tidak boleh menyebut penyedia, harga, jadwal, atau kontak yang tidak berasal dari database. Kartu hasil dibuat oleh kode, bukan oleh AI.
+3. **Jangan bangun yang bisa dilakukan ChatGPT sama baiknya.** Setiap fitur harus memakai sesuatu yang hanya dimiliki Kamanga: data lokal yang dicek, jadwal nyata, sambungan ke penyedia, atau pesanan yang tercatat.
+4. **AI dipanggil hanya bila perlu.** Urutan penanganan pesan: template → aturan kode → AI.
+5. **Syarat wajib dipisahkan dari preferensi.** Data kosong tidak dianggap memenuhi syarat. Syarat tidak dilonggarkan diam-diam; pelonggaran ditawarkan dan dipilih warga.
+6. **Kepercayaan lebih penting dari jumlah.** Lebih baik sedikit penyedia yang benar-benar baik daripada banyak yang tidak jelas. Tidak ada urutan berbayar.
+7. **Penyedia tidak dipaksa berpindah kebiasaan.** Urusan harian penyedia tetap lewat WhatsApp.
+8. **Jujur soal batas.** Bila data tidak ada, katakan tidak tahu dan tawarkan langkah lain.
+
+---
+
+## 6. Konsep inti
+
+### 6.1 Pintu dan mesin
+- **Pintu** adalah pintu masuk yang dilihat warga, dikelompokkan berdasarkan **"warga sedang ingin apa"**. Contoh: Ka main (olahraga dan hiburan).
+- **Mesin** adalah kemampuan di belakang layar, dikelompokkan berdasarkan **cara transaksinya**. Contoh: Mesin Jadwal (pemesanan slot waktu).
+- Satu mesin dipakai banyak pintu. Pintu baru sebisa mungkin hanya berupa **data dan pengaturan**, bukan kode baru.
+
+Aturan pembagian **[DIPUTUSKAN]**:
+- Kategori baru masuk ke pintu yang sudah ada berdasarkan "mau apa" (laundry → Ka servis; sewa tenda → Ka manyewa; rental PS → Ka main).
+- Pintu dinamai menurut **niat warga**, bukan cara transaksinya. Kata "sewa" pada kategori tidak otomatis berarti Ka manyewa (lihat 6.5).
+- Setiap kategori punya **satu pintu utama**. Kategori boleh tampil di pintu rencana (mis. Kabaralek), tetapi tidak ganda di dua pintu tunggal.
+- Pintu baru hanya dibuat bila niatnya benar-benar berbeda dari semua pintu yang ada.
+- Satu penyedia boleh muncul di beberapa pintu bila punya beberapa kategori (contoh: salon yang juga menyediakan rias acara tampil di Ka rawat diri dan, nanti, di Kabaralek). Datanya tetap satu.
+- Kategori yang belum punya pintu tetap boleh diisi datanya dan tetap ditemukan lewat chat bebas (contoh: MUA/rias acara, freelancer desain dan website).
+- Beranda menampilkan maksimal sekitar 6 pintu. Pintu yang datanya belum cukup disembunyikan, tetapi kategorinya tetap bisa ditemukan lewat chat.
+
+### 6.2 Jenis pintu
+- **Pintu tunggal**: satu kebutuhan, satu jenis penyedia. Dibangun lebih dulu.
+- **Pintu rencana**: menggabungkan beberapa pintu tunggal ke dalam satu rencana (contoh: Kabaralek menarik vendor dari Ka manyewa, rias acara, fotografer, Ka balanjo). Dibangun belakangan, setelah data pintu tunggalnya terisi.
+- **Pintu panduan**: berisi informasi terkurasi, bukan pemesanan (Kabatanyo).
+
+### 6.3 Penyedia dan Tempat
+| | Penyedia | Tempat |
 |---|---|---|
-| Rasa | direktori yang bisa diajak ngobrol; terasa seperti ChatGPT (teman yang mencoba langsung bertanya "bisa input gambar?") | asisten yang **membereskan urusan dulu**, baru menyambungkan ke penyedia terverifikasi |
-| Alur | mengetik → ditanya lokasi → daftar usaha → klik WhatsApp | pilih pintu "Ka-" (atau chat bebas) → pahami kebutuhan → (bila perlu) panduan/diagnosis → estimasi biaya dari data nyata → penyedia terverifikasi / slot kosong → pesan lewat WhatsApp penyedia |
+| Contoh | Bengkel, travel, lapangan padel, barber, rental kamera | Kafe, resto, wisata, hotel, apotek 24 jam, IGD |
+| Bisa dipesan lewat Kamanga | Ya | Tidak, informasi saja |
+| Aksi utama | Pesan | Arahkan ke lokasi atau tautan keluar |
 
-Cakupannya seluas kebutuhan warga, tetapi masuk lewat **pintu** (§3). Keluasan datang dari **data**, bukan fitur baru per bidang. **[DIPUTUSKAN]**
+Sebuah Tempat bisa berubah menjadi Penyedia bila pemiliknya mendaftar dan mengaktifkan pemesanan.
 
-Repo dan data **[DIPUTUSKAN]**: v2 dikerjakan di repo `kamanga` (salinan kamanga-ai tanpa riwayat git, mulai 12 Oktober 2026). `kamanga-ai` tetap menjadi v1 dan tidak diubah. Database lokal v2 bernama `kamanga_v2`; database `kamanga` milik v1. Konsep (bukan kode) boleh diambil dari `~/Code/projek/kamanga.id`.
+### 6.4 Istilah data
+- **Kategori**: jenis layanan (Servis AC, Lapangan Padel, Barbershop). Setiap kategori punya pintu utama, isian aturan, dan (bila memakai Mesin Jadwal) jenis jadwal.
+- **Kebutuhan**: situasi warga yang dipetakan ke beberapa kategori ("pindahan rumah" → angkut barang, tukang, sewa pickup). Dipakai AI untuk memahami cerita warga.
+- **Unit**: sesuatu yang dijadwalkan di dalam satu penyedia (Lapangan 1, Kursi barber A, Mobil travel jam 06.30, Kamera #2).
+- **Kamus**: istilah sehari-hari dan bahasa Minang beserta artinya (onda → motor, baralek → pesta pernikahan).
+- **Wilayah (gazetteer)**: provinsi → kota/kabupaten → kecamatan → nagari/kelurahan, dengan kode resmi, ejaan alternatif, titik tengah, dan **poligon batas wilayah** (PostGIS).
+- **Lokasi layanan**: tempat layanan benar-benar dilakukan. Untuk penyedia yang didatangi warga, ini titik usaha. Untuk penyedia yang datang ke warga, ini alamat warga (yang bisa berbeda dari posisi warga saat memesan).
 
-## 2. Posisi: jangan jual AI, jual urusan yang beres **[DIPUTUSKAN]**
+### 6.5 Pembeda pintu yang mirip **[DIPUTUSKAN]**
 
-- Beranda **bukan kolom chat kosong**. Beranda bertanya "Kamanga hari ko?" dengan teks berganti (ka servis… ka main… ka uda anta…) + tombol pintu yang sudah siap. Kolom ketik bebas tetap ada.
-- **Uji setiap fitur:** kalau ChatGPT bisa melakukannya sama baiknya, jangan dibangun.
-- Nilai yang tidak dimiliki ChatGPT: data penyedia lokal yang dicek, harga pasar setempat, tersambung ke penyedia nyata, slot/jadwal nyata, bahasa Minang dan wilayah sampai nagari, permintaan pesan yang tercatat.
-- Pertanyaan di luar layanan ditolak sopan lewat template (tanpa memanggil AI).
+Pertanyaan penguji: **"Dipakai di tempat penyedia, atau dibawa pergi/ditinggali?"**
 
-## 3. Struktur: pintu dan mesin **[DIPUTUSKAN]**
+| Pintu | Niat warga | Ciri | Contoh |
+|---|---|---|---|
+| **Ka main** | Beraktivitas di tempat penyedia | Dipakai di lokasi itu, hitungan jam, lalu pulang | Lapangan futsal/padel/badminton, billiard, karaoke, gym, studio musik |
+| **Ka rawat diri** | Merawat diri secara rutin di tempat penyedia atau dipanggil ke rumah | Layanan pada diri warga, hitungan jam/sesi | Barber, salon, spa, pijat, refleksi |
+| **Ka manyewa** | Membawa pulang barang, atau menempati tempat beberapa hari ke atas | Barang dibawa keluar atau tempat ditinggali; hitungan hari/bulan/tahun | Motor, mobil, kamera, tenda, baju adat, gedung/aula, kos, kontrakan |
 
-Dua pertanyaan pembagi:
-1. **Warga sedang ingin apa?** → menentukan **pintu**.
-2. **Bagaimana transaksinya?** → menentukan **mesin**.
+Kasus perbatasan:
+- "Sewa lapangan futsal" → Ka main (kamus mengarahkan kata "sewa lapangan" ke Ka main).
+- Gedung/aula untuk acara → Ka manyewa; nanti juga ditarik Kabaralek.
+- Ruang meeting/coworking per jam → Ka manyewa (tempat) untuk sementara; ditinjau ulang bila datanya banyak.
+- Rias acara (MUA) → bukan Ka rawat diri, karena niatnya acara; kategori tanpa pintu sampai Kabaralek dibuka.
 
-Aturan:
-- Kategori baru masuk ke pintu yang sudah ada berdasarkan "mau apa" (laundry → Ka servis, sewa tenda → Ka manyewa, rental PS → Ka main). Pintu baru hanya bila niatnya benar-benar berbeda.
-- Satu penyedia boleh muncul di beberapa pintu (MUA: Ka rancak + Kabaralek; fotografer: Ka mambuek + Kabaralek). Datanya tetap satu.
-- Beranda maksimal ±6 pintu; pintu yang datanya belum cukup disembunyikan (tetap bisa ditemukan lewat chat bebas).
+---
 
-### 3a. Pintu dan tahap
-
-**Pintu tunggal** (satu kebutuhan, satu jenis penyedia) dibangun dulu. **Pintu rencana** (gabungan banyak pintu tunggal) dibangun belakangan di atas data pintu tunggal.
+## 7. Daftar pintu dan tahap rilis
 
 | Tahap | Pintu | Mau apa | Contoh kategori | Mesin |
 |---|---|---|---|---|
-| 1 | **Ka main** | olahraga & hiburan | futsal, padel, badminton, billiard, karaoke, gym | Jadwal (slot jam) |
-| 1 | **Ka rancak** | merawat diri | barber, salon, spa, pijat, refleksi, perawatan kecantikan | Jadwal (slot jam) |
-| 1 | **Ka uda anta** | memindahkan orang/barang | travel antarkota (hanya berizin), titip paket, pindahan | Jadwal (kursi per keberangkatan) |
-| 1 | **Ka servis** | memperbaiki | AC, motor, mobil, elektronik, tukang, kebersihan | Pesanan (diagnosis menyusul tahap 2) |
-| 1 | *Database Tempat* (belum jadi pintu) | informasi | kafe, resto, wisata, hotel, apotek 24 jam, IGD | — (info saja) |
-| 2 | Ka servis (lanjutan) | | diagnosis + estimasi biaya bersama bengkel/teknisi mitra | Panduan + Estimasi |
-| 2 | **Ka manyewa** | memakai barang/tempat sementara | motor, mobil, kamera, alat, tenda, baju adat; kos & kontrakan | Jadwal (per tanggal + stok unit; kos = jadwal survei) |
-| 2 | **Ka mambuek** | membuat sesuatu | website, aplikasi, desain, foto produk, video, studio foto | Pesanan + penyusun brief (Panduan) |
-| 2 | **Ka jalan-jalan** | ide main & wisata | rekomendasi dari database Tempat + slot pintu lain | Rekomendasi |
-| 2 | **Kabatanyo** | urusan publik | KTP, Samsat, NIB, BPJS | Panduan (kartu bersumber) |
-| 3 | **Kabaralek** (rencana) | menggelar acara | pernikahan, aqiqah, sunatan; menarik vendor dari pintu tunggal | Acara |
-| 3 | **Ka balanjo** | membeli barang | produk UMKM, oleh-oleh, kue, katering harian | Produk |
-| 3 | **Ka baubek** (booking) | berobat | klinik, praktik mandiri, bidan, gigi, fisioterapi, klinik hewan | Jadwal + verifikasi izin praktik |
+| 1 | **Ka main** | Olahraga dan hiburan | Futsal, mini soccer, padel, badminton, billiard, karaoke, gym | Jadwal (slot jam) |
+| 1 | **Ka rawat diri** *(nama sementara)* | Merawat diri secara rutin | Barbershop, salon, spa, pijat, refleksi, perawatan wajah dan kulit | Jadwal (slot jam) |
+| 1 | **Ka uda anta** | Memindahkan orang atau barang | Travel antarkota (hanya berizin), titip paket, pindahan | Jadwal (kursi per keberangkatan) |
+| 1 | **Ka servis** | Memperbaiki | AC, motor, mobil, elektronik, tukang, kebersihan rumah, laundry | Pesanan |
+| 1 | *Tempat* (belum menjadi pintu) | Informasi | Kafe, resto, wisata, hotel, apotek 24 jam, IGD | Informasi |
+| 2 | Ka servis (lanjutan) | | Diagnosis dan estimasi biaya bersama mitra | Panduan + Estimasi |
+| 2 | **Ka manyewa** | Membawa pulang barang atau menempati tempat untuk hari, bulan, atau tahun | Motor, mobil, kamera, alat, tenda, baju adat, gedung/aula, kos, kontrakan | Jadwal (tanggal + stok; kos = jadwal survei) |
+| 2 | **Ka jalan-jalan** | Ide main dan wisata | Rekomendasi dari data Tempat dan slot pintu lain | Rekomendasi |
+| 2 | **Kabatanyo** | Urusan layanan publik | KTP, KK, Samsat, izin usaha, BPJS | Panduan |
+| 3 | **Kabaralek** (rencana) | Menggelar acara | Pernikahan, aqiqah, sunatan, syukuran | Acara |
+| 3 | **Ka balanjo** | Membeli barang | Produk UMKM, oleh-oleh, kue, katering harian | Produk |
+| 3 | **Ka baubek** | Berobat | Klinik, praktik mandiri, bidan, dokter gigi, fisioterapi, klinik hewan | Jadwal + verifikasi izin praktik |
 
-Ditunda (bukan pintu beranda warga): Kakarajo (kerja), Kabaraja (belajar), Kabausaho (alat usaha UMKM di dashboard mitra, mis. pencatatan keuangan lewat voice note dan AI Marketing Kit).
+Ditunda tanpa jadwal:
+- **Pintu untuk mencari freelancer** (website, desain, video, foto produk). Nama dan konsep belum diputuskan; dibuka bila log permintaan menunjukkan banyak yang mencari. Datanya tetap boleh diisi sebagai penyedia biasa.
+- **Rias acara (MUA)** sebagai pintu sendiri; untuk sementara kategori tanpa pintu, nanti ditarik Kabaralek.
+- Kakarajo (mencari kerja), Kabaraja (belajar), Kabausaho (alat usaha untuk mitra).
+- **Asisten AI untuk admin** (input data cepat dari teks/foto brosur, cek kualitas data, deteksi duplikat, ringkasan tinjauan revisi, moderasi ulasan, rekap permintaan warga, usulan kamus, draf panduan). **Dibahas dalam diskusi terpisah** sebelum masuk rencana; prinsip yang sudah disepakati: AI tidak pernah menerbitkan data (semua hasil masuk sebagai draf), setiap isian mencatat sumbernya, dan tidak ada scraping Google Maps atau Instagram.
 
-Catatan Ka jalan-jalan: **tidak menggarap booking hotel** (Traveloka/tiket.com sudah kuat). Hotel cukup ditampilkan sebagai informasi + tautan keluar. Fokusnya ide kegiatan ("main sore di Padang ke mana?") yang tersambung ke slot Ka main, kafe/resto, wisata.
+Nama pintu adalah pengaturan di dashboard admin dan bisa diganti tanpa koding. Setiap nama diuji ke warga saat wawancara lapangan ("Kalau lihat tombol ini, isinya apa?") sebelum dipakai.
 
-### 3b. Mesin
+---
 
-| Mesin | Isi tahap ini | (nanti) | Dipakai pintu |
-|---|---|---|---|
-| **Fondasi** | akun & peran (admin, penyedia), data penyedia + verifikasi, **jenis listing: penyedia (bisa dipesan) vs tempat (info saja)**, wilayah Sumbar, kamus Minang, router AI hemat, log permintaan | login lewat WhatsApp | semua |
-| **Pesanan** | warga memilih layanan/slot → tombol **"Pesan via WhatsApp"** dengan pesan terisi → klik dicatat (§4) | Terima/Tolak lewat WhatsApp Business API, status, selesai, ulasan | semua yang bisa dipesan |
-| **Jadwal** | unit yang dijadwalkan (lapangan 1, kursi travel, kamera #2), jam buka, durasi slot, harga per slot (jam ramai beda), slot terisi manual (walk-in/WA), per tanggal + stok, jadwal survei | pengingat lewat WhatsApp | Ka main, Ka rancak, Ka uda anta, Ka manyewa, Ka mambuek (studio), Kabaralek (tanggal vendor), Ka baubek |
-| **Mitra** | dashboard penyedia (web enak di HP / PWA): permintaan masuk, kalender, profil & harga, aturan, tanya jawab, statistik | ulasan, chatbot di nomor penyedia (Mitra Pro) | semua |
-| **Panduan** | pohon keputusan + kartu panduan (§6) | | Ka servis, Kabatanyo, Ka mambuek, Kabaralek, Ka uda anta, Ka manyewa, Ka baubek (hanya pengarah + darurat) |
-| **Estimasi** | kisaran harga dari data harga nyata mitra | | Ka servis, Ka mambuek, Kabaralek |
-| Rekomendasi | menyusun ide dari konteks (waktu, budget, rombongan, lokasi) + data Tempat + slot | | Ka jalan-jalan |
-| Acara, Produk, Kerja | — | semuanya | Kabaralek, Ka balanjo, Kakarajo |
+## 8. Kebutuhan fungsional
 
-**Urutan bangun:** Fondasi (rapikan) → **Pesanan → Jadwal → Mitra**. Empat mesin ini cukup untuk Ka main, Ka rancak, Ka uda anta, dan Ka servis dasar, hampir tanpa AI. **Mesin Jadwal adalah jantung Kamanga.**
+### 8.1 Beranda
 
-Karena kesepakatan terjadi di chat WhatsApp (§4), Kamanga tidak tahu pasti apakah sebuah slot jadi dipesan. Slot ditandai terisi oleh pemilik di dashboard, sama seperti pelanggan walk-in.
+**Tujuan:** warga langsung paham apa yang bisa dibantu, tanpa kesan "chat AI kosong".
 
-## 4. Pesan dan akun (tahap ini) **[DIPUTUSKAN 12 Okt 2026]**
+- Judul "Kamanga hari ko?" dengan teks berganti di bawahnya (ka servis… ka main… ka uda anta…).
+- Grid tombol pintu yang **aktif**. Pintu yang belum siap tidak ditampilkan, atau ditampilkan dengan tanda "Segera" sesuai pengaturan admin.
+- Kolom ketik bebas di bagian bawah ("Atau ceritakan saja…").
+- Tautan masuk/akun di pojok atas.
+- Tampil baik di layar 360 px ke atas; target sentuh minimal 44 px.
 
-WhatsApp dipakai **sama seperti v1**: sebatas tombol yang ditekan warga untuk menghubungi penyedia. Login tetap cara yang sekarang.
+**Kriteria diterima**
+- Urutan, nama, ikon, dan status setiap pintu diambil dari pengaturan admin, bukan ditulis di kode.
+- Beranda bisa dibuka tanpa akun dan tanpa memanggil AI.
 
-- Warga melihat, bertanya, dan memesan **tanpa akun**.
-- Memesan = menekan **"Pesan via WhatsApp"**. Tombol membuka WhatsApp penyedia (tautan `wa.me`) dengan pesan yang sudah terisi: layanan, tanggal/jam yang dipilih, nama tempat, dan keterangan bahwa warga datang dari Kamanga. Kesepakatan selanjutnya terjadi langsung antara warga dan penyedia.
-- Setiap klik dicatat sebagai bukti nilai bagi penyedia. Pencatatan klik dari chat sudah ada (`chat_events`, tipe `whatsapp_click`); perlu diperluas ke halaman pintu dan profil.
-- Sebelum tombol Pesan, aturan penting tempat itu (§5) ditampilkan ringkas.
-- Login dashboard untuk admin dan penyedia tetap **email + kata sandi** (Better Auth).
-- Jangan memakai jalur WhatsApp tidak resmi (bot di nomor pribadi, aplikasi pihak ketiga): risiko nomor diblokir.
+### 8.2 Chat bebas dan pemahaman bahasa
 
-### Rancangan untuk nanti (bukan tahap ini)
+**Tujuan:** warga boleh bercerita dengan bahasa sehari-hari kapan saja, termasuk di tengah alur.
 
-Disimpan agar tidak hilang. Dikerjakan setelah Pesanan, Jadwal, dan Mitra berjalan:
-- **WhatsApp Business API resmi** dari nomor Kamanga: pesanan dikirim ke penyedia dengan tombol **Terima / Tolak** → webhook → status berubah. Pesan pertama memakai template yang disetujui Meta; ada biaya per pesan.
-- Nomor/alamat warga baru dibuka ke penyedia setelah penyedia menekan Terima.
-- Tidak dibalas dalam batas waktu (mis. 30 menit) atau ditolak → tawarkan penyedia lain ke warga.
-- Setelah selesai → Kamanga bertanya "Puas?" lewat WhatsApp → ulasan → memengaruhi verifikasi dan urutan.
-- Akun warga dengan verifikasi nomor WhatsApp (OTP) saat memesan; login lewat WhatsApp.
-- Pengingat jadwal; pertanyaan warga diteruskan otomatis ke pemilik dan jawabannya disimpan sebagai tanya jawab.
-- Chatbot di nomor WhatsApp penyedia sendiri (Mitra Pro).
+Alur penanganan setiap pesan:
+1. **Template** (gratis): sapaan, terima kasih, menu, batas pemakaian, lokasi di luar wilayah layanan, pertanyaan di luar layanan.
+2. **Aturan kode** (gratis): kalimat yang jelas. Kategori dikenali lewat kamus dan nama kategori/kebutuhan; lokasi lewat lokasi perangkat atau gazetteer (lihat 8.15); waktu, jumlah orang, dan anggaran lewat pengurai.
+3. **AI** (berbayar, ada batas harian): kalimat rumit, lanjutan ("yang lebih murah", "bisa jam 5?"), pertanyaan penjelasan.
 
-## 5. Chat bebas dan aturan per penyedia
+Keluaran pemahaman adalah **niat terstruktur**: pintu, kategori, lokasi, waktu, jumlah, anggaran, syarat wajib, preferensi. Niat ini diteruskan ke mesin (Jadwal, Pesanan, pencarian), bukan dijawab bebas oleh AI.
 
-- Warga boleh mengetik bebas kapan saja, juga di tengah alur ("bisa jam 5?", "yang lebih dekat?"). AI menangkap pintu + parameter (jenis, waktu, lokasi lewat gazetteer, jumlah orang, anggaran) lalu meneruskan ke Jadwal/Pesanan; bila kurang, tanya **satu hal** dengan tombol. Pola router template → kode → AI di `src/lib/kamanga-ai` sudah ada (§8); tinggal diteruskan ke mesin baru.
-- **Aturan per penyedia** dua lapis:
-  1. **Isian terstruktur per kategori** (didefinisikan admin, diisi pemilik; memakai atribut JSONB yang sudah ada). Contoh padel: durasi minimal, termasuk raket?, harga sewa raket, batas pembatalan, DP?, harga jam ramai. Pertanyaan perbandingan ("padel mana yang termasuk raket?") dijawab **lewat filter mesin**, bukan AI.
-  2. **Tanya jawab bebas per penyedia** yang ditulis pemilik.
-- Saat membahas satu tempat, AI **hanya diberi data tempat itu**. Tidak ada jawaban → "belum ada info, tanyakan langsung ke pengelola" + tombol WhatsApp. Pertanyaannya dicatat agar pemilik bisa menambahkannya sebagai tanya jawab di dashboard. **[USULAN]**
+Aturan:
+- Bila informasi kurang, tanyakan **satu hal** dengan tombol pilihan.
+- Konteks terbawa dalam satu sesi; mengubah satu parameter mempertahankan parameter lain; berganti topik mengganti kebutuhan (anggaran per porsi tidak terbawa ke pencarian lapangan).
+- Pertanyaan tentang satu penyedia dijawab **hanya dari data penyedia itu** (lihat 8.8).
+- Pertanyaan di luar layanan ditolak sopan lewat template, tanpa memanggil AI.
+- Konten penyedia diperlakukan sebagai data, bukan instruksi.
+- Pesan dipotong maksimal 500 karakter.
+- Pembatas: pesan per sesi, per IP per hari, dan rem biaya AI harian.
+- AI tidak pernah menerima nomor kontak, alamat rumah, atau identitas warga.
 
-## 6. Panduan: cara mengisi (bukan RAG dokumen mentah)
+**Kriteria diterima**
+- "Ado lapangan padel kosong nanti malam dakek Lubeg? Barampek kami." menghasilkan pintu Ka main, kategori padel, waktu malam ini, lokasi Lubuk Begalung, 4 orang, lalu menampilkan slot kosong yang cocok.
+- Pertanyaan yang tidak berkaitan dengan layanan tidak memanggil AI.
+- Set uji percakapan dijalankan otomatis dan hasilnya tercatat.
 
-- **Pohon keputusan (data terstruktur)** untuk diagnosis Ka servis, penyusun brief Ka mambuek, pengarah Ka baubek. Simpul pertanyaan (pilihan → simpul berikut) dan simpul akhir (kemungkinan penyebab, saran keamanan, kategori penyedia, tautan estimasi). Disusun bersama ahli (bengkel mitra, 1–2 jam, 10 keluhan tersering) lewat editor di panel admin. AI hanya menerjemahkan cerita bebas ke pilihan pohon. Harus konsisten dan bisa diuji.
-- **Kartu panduan + RAG ringan** untuk Kabatanyo, adat, aturan titip paket/sewa: judul, langkah, syarat, **sumber resmi + tanggal dicek**, wilayah berlaku. Pencocokan pertanyaan → 1–3 kartu lewat kategori + embedding (pgvector). AI merangkai **hanya dari kartu itu** dan menyebut sumber. Tidak ada kartu → bilang belum tahu + catat.
-- Hindari RAG dari tumpukan PDF/scraping web mentah.
-- Set uji untuk Panduan (seperti `eval:chat`) dan jadwal cek ulang kartu (mis. 3 bulan).
+### 8.3 Pencarian dan peringkat
 
-## 7. Aturan kepercayaan (wajib)
+- Kandidat hanya dari penyedia/tempat berstatus **terbit**.
+- **Syarat wajib** (kategori, wilayah layanan, waktu tersedia, kapasitas, anggaran bila diminta) menyaring kandidat. Kandidat dengan data kosong pada syarat wajib tidak dianggap lolos; boleh ditampilkan terpisah sebagai "belum pasti".
+- Skor peringkat (bobot awal **[USULAN]**, disimpan di satu berkas agar bisa disetel):
 
-- AI tidak boleh mengarang usaha, harga, jadwal, kontak. Kartu hasil, harga, dan tombol WhatsApp dibuat **kode** dari database; nomor kontak tidak dikirim ke model. Hasil kosong → jujur dan tawarkan alternatif.
-- Diagnosis Ka servis = "kemungkinan penyebab", bukan vonis; untuk rem/listrik/gas/kebakaran: hentikan pemakaian dan hubungi teknisi.
-- Estimasi hanya dari data harga nyata; tanpa data → jujur belum tahu.
-- Tingkat verifikasi: terbit / kontak dicek / dicek langsung; mitra perantara lebih ketat. (nanti) verifikasi juga diperbarui lewat ulasan.
-- Ka uda anta hanya travel berizin.
-- Ka baubek: **tidak ada diagnosis penyakit / saran obat**; kata darurat (sesak napas, pingsan, pendarahan) → arahkan ke IGD dan nomor darurat; verifikasi izin praktik; data kesehatan disimpan seminimal mungkin.
-- Tidak ada urutan berbayar yang mengalahkan relevansi; sponsor/afiliasi (nanti) wajib berlabel.
-- Konsep dari kamanga.id yang dipindahkan: syarat wajib vs preferensi, data kosong ≠ memenuhi syarat, pelonggaran ditawarkan bukan diam-diam, harga dengan tipe dan satuan, jadwal multi-interval per hari.
-- UU PDP (UU 27/2022): consent jelas, kebijakan privasi, data ke pihak lain hanya agregat dan anonim.
-
-## 8. Fondasi yang sudah ada (dibawa dari v1)
-
-Semua di bawah ini sudah dibangun dan tetap dipakai. Detailnya ada di kode.
-
-### Model data **[DIPUTUSKAN]**
-
-```
-KEBUTUHAN (situasi warga)  →  KATEGORI (jenis listing)  →  LISTING (data nyata)
-"Pindahan rumah"              Angkut barang, Tukang         "Pak Joni Pickup, Lubeg"
-"AC rusak"                    Servis AC                     "Dedi AC Panggilan"
-```
-
-- **Listing**: satu entitas generik untuk jasa, tempat, wisata, freelancer, produk UMKM. Atribut khusus per kategori di kolom JSONB (`attributes`), definisinya per kategori (`attribute_schema`); tipe isian: teks, angka, ya/tidak, pilihan, pilihan ganda. Wisata dan tempat umum boleh tanpa kontak (info saja). v2 menambah **jenis listing: penyedia vs tempat** (§3b).
-- **Kategori**: dikelompokkan ke **kelompok** yang dibuat admin sendiri (satu kelompok utama + kelompok tambahan). Aturan chatbot (perlu lokasi, hanya informasi) menempel pada kategori. Satu listing boleh punya beberapa kategori, satu di antaranya utama.
-- **Kebutuhan**: nama situasi + kategori terkait + sebutan lain. Menambah "Pindahan rumah" cukup menambah data, tanpa koding.
-- **Lokasi**: gazetteer Sumbar sampai nagari/kelurahan (dari `data/*.csv`) dengan sebutan lain ("Bukiktinggi", "Aia Pacah", "Lubeg").
-- **Kamus**: istilah Minang/sehari-hari → arti. Hanya istilah yang sudah dicek penutur asli dipakai chatbot.
-- Penamaan tabel, kolom, dan enum **bahasa Inggris**; teks untuk pengguna Bahasa Indonesia. Skema di `src/db/schema.ts`, migrasi di `src/db/migrations`.
-
-### Peran dan alur data listing
-
-| Peran | Bisa apa |
-|---|---|
-| Admin (tim Kamanga) | input listing, setujui/tolak listing dan perubahan dari penyedia, verifikasi, kelola kategori, kebutuhan, lokasi, kamus |
-| Penyedia (`vendor`) | daftar sendiri (email + kata sandi), isi dan ubah listing miliknya |
-| Warga | tanpa akun |
-
-- Dua jalur data, satu tabel: tim mengisi data awal (juga lewat impor CSV); penyedia mengisi sendiri atau **mengklaim** listing yang dibuat tim.
-- Status listing: `draft` → `pending_review` → `published` (atau `rejected`, `archived`). **Tidak ada listing penyedia yang tampil ke warga sebelum disetujui admin.** Tingkat verifikasi terpisah dari status: `unverified`, `contact_checked` (nomor dicek aktif), `visited` (dicek langsung).
-- Perubahan penyedia pada listing terbit masuk `listing_revisions`; versi terbit tetap tampil sampai admin menyetujui.
-
-### Pencarian dan ranking (`src/lib/directory`)
-
-Kata warga dipahami **kode** (gazetteer, kamus, nama kategori/kebutuhan) → kandidat disaring di database (hanya `published`) → diberi skor → diurutkan. Skor = rata-rata berbobot dari sinyal yang berlaku:
-
-| Sinyal | Bobot | Arti |
+| Sinyal | Bobot | Keterangan |
 |---|---|---|
-| Relevansi | 40% | kategori utama/tambahan cocok, kata cocok dengan nama, kata kunci, atau ringkasan |
-| Lokasi | 30% | satu tempat (1,0), melayani area itu (0,8), satu kota induk (0,7), daring (0,5), atau berdasar jarak |
-| Verifikasi | 15% | belum 0, kontak dicek 0,6, dicek langsung 1 |
-| Kelengkapan | 10% | kontak, ringkasan, deskripsi, lokasi, koordinat, harga, tautan |
-| Harga | 5% | hanya bila ada anggaran; yang melebihi anggaran dikeluarkan |
+| Relevansi | 35% | kecocokan kategori dan kata |
+| Lokasi | 25% | jarak dari lokasi layanan; untuk penyedia yang datang ke warga, lokasi warga harus berada di dalam area layanan (syarat wajib) lalu diurutkan dari markas terdekat |
+| Ketersediaan | 15% | ada slot/jadwal yang cocok dengan waktu yang diminta |
+| Verifikasi | 10% | belum, kontak dicek, dicek langsung |
+| Ulasan | 10% | rata-rata dan jumlah ulasan pesanan selesai |
+| Kelengkapan | 5% | foto, harga, aturan, jam buka |
 
-Bila hasil sedikit, pencarian memberi saran pelonggaran yang jujur beserta jumlahnya (perluas radius, seluruh Sumbar, abaikan anggaran). Bobot ada di `ranking.ts`. Pencarian semantik (pgvector) menunggu pemilihan model embedding. Halaman admin **Uji Pencarian** menampilkan pembentukan skor tiap hasil.
+- Hasil kosong atau sedikit: jelaskan alasannya dan tawarkan pelonggaran beserta jumlah hasilnya (perluas radius, ganti jam, abaikan anggaran). Pelonggaran hanya diterapkan setelah dipilih warga.
+- Tidak ada faktor berbayar dalam peringkat.
+- Halaman admin **Uji Pencarian** menampilkan rincian skor setiap hasil.
 
-### Chatbot (`src/lib/kamanga-ai`, halaman `/chat`, rute `/api/chat`)
+### 8.4 Mesin Jadwal
 
-- Tiga jalur: **template** (sapaan, menu, tanya balik lokasi, batas pemakaian; gratis), **kode** (kalimat jelas: kategori + lokasi + anggaran/kapasitas; gratis), **model AI** (kalimat rumit, lanjutan, penjelasan; berbayar, ada rem harian). Bawaan sekarang **AI-first**: selain sapaan/terima kasih/menu, pesan dijawab model AI bila tersedia dan kode menjadi cadangan; `CHAT_MODE=hybrid` mendahulukan kode.
-- Model AI memakai persona tetap (di depan, agar bisa di-cache vendor) dan dua tool: `search_listings` dan `listing_detail`.
-- Pembatas: pesan per sesi dan per IP per hari, rem harian token/biaya, antrean panggilan model, pesan dipotong 500 karakter, permintaan lintas situs ditolak. Percakapan, panggilan model, pencarian, dan klik WhatsApp dicatat tanpa akun (ID sesi acak + hash IP); teks pencarian dihapus setelah masa simpan (`db:purge-chat`).
-- Vendor model diatur lewat `LLM_PROVIDER` (anthropic, openai, google, router; lihat `env.example.txt`). Tanpa itu chatbot tetap jalan lewat template dan kode. Set uji: `bun run eval:chat`.
-- Aturan kode: `kamanga-ai` boleh memanggil `directory`, tidak sebaliknya. Inti chatbot tidak terikat saluran (web dulu).
+**Tujuan:** menunjukkan waktu yang benar-benar kosong dan mencegah jadwal bentrok.
 
-### Halaman yang sudah ada
+Jenis jadwal per kategori:
 
-- Publik: `/` (sementara dialihkan ke `/chat`), `/chat`, `/jelajah` (telusuri), `/listing/[slug]` (profil usaha).
-- Dashboard admin: Ringkasan, Listing (+ impor CSV), Antrean review, Permintaan (pencarian yang hasilnya nol), Kategori, Kebutuhan, Lokasi (+ impor), Kamus, Uji Pencarian.
-- Dashboard penyedia: Ringkasan, Listing saya.
+| Jenis | Contoh | Satuan |
+|---|---|---|
+| Slot jam | Lapangan, barber, salon, studio musik | Durasi tetap (mis. 60 menit) per unit |
+| Kursi per keberangkatan | Travel | Jam berangkat × jumlah kursi per rute |
+| Rentang tanggal + stok | Sewa kamera, motor, tenda (tahap 2) | Hari, dengan jumlah unit |
+| Jadwal survei | Kos, kontrakan (tahap 2) | Slot kunjungan |
 
-### Kepintaran tanpa melatih model, dan hemat biaya
+Kemampuan:
+- Penyedia mengatur **unit**, **jam buka per hari** (boleh beberapa interval per hari dan melewati tengah malam), **durasi slot**, **harga per slot**, dan **harga jam ramai** bila berbeda.
+- **Pengecualian tanggal** (libur, acara khusus).
+- **Blokir manual**: penyedia menandai slot terisi dari luar Kamanga (walk-in, pesanan lewat WA) agar tidak bentrok.
+- **Tahan sementara**: saat warga memesan, slot ditahan sampai penyedia menjawab atau batas waktu habis.
+- **Durasi minimal** dan **jeda antarslot** mengikuti aturan penyedia.
+- Semua waktu dalam zona Asia/Jakarta.
+- Pengingat ke warga sebelum jadwal (mis. 2 jam sebelumnya) **[USULAN]**.
 
-- Kepintaran datang dari persona + contoh percakapan, kamus Minang, gazetteer, tools ke direktori, dan set uji yang diperbaiki berkala (target 200–300 pertanyaan nyata). Tidak melatih model sendiri.
-- Hemat: tampilan (bukan model) yang menyajikan usaha; tombol untuk slot agar chat pendek; template dan kode dulu; model murah sebagai bawaan, model lebih kuat hanya bila perlu; prompt caching; konteks ramping; batas pemakaian dan rem biaya harian; semua panggilan lewat satu gateway agar vendor mudah diganti.
-- Vendor LLM **belum dipilih** **[DIPUTUSKAN]**: ditentukan hasil set uji (akurasi Minang dan slot, keandalan tool calling, biaya per percakapan, latensi). Akun AI gratisan / 9router hanya untuk uji coba, bukan layanan warga (tidak stabil, risiko melanggar aturan penyedia, data warga). Cari program kredit startup yang sah.
+**Kriteria diterima**
+- Dua warga tidak bisa mendapatkan slot yang sama untuk unit yang sama (dijamin di tingkat database).
+- Slot yang diblokir manual tidak tampil sebagai kosong.
+- Perubahan jam buka tidak menghapus pesanan yang sudah dikonfirmasi; konflik ditampilkan ke penyedia.
 
-## 9. Teknologi
+### 8.5 Mesin Pesanan
+
+**Tujuan:** pesanan sampai ke penyedia dengan jelas, tercatat, dan berakhir dengan ulasan.
+
+Status pesanan:
+
+```
+dikirim → diterima → berjalan → selesai → (diulas)
+   │          └──────→ dibatalkan (oleh warga/penyedia, dengan alasan)
+   ├→ ditolak
+   └→ kedaluwarsa (tidak dijawab dalam batas waktu)
+```
+
+Aturan:
+- Pesanan dibuat dari slot (Mesin Jadwal) atau dari formulir permintaan (Ka servis: masalah, alamat/kecamatan, waktu yang diinginkan).
+- Pesanan dikirim ke penyedia lewat WhatsApp dengan tombol **Terima** dan **Tolak**. Penyedia juga bisa menjawab dari dashboard mitra.
+- **Nomor dan alamat lengkap warga baru dibuka ke penyedia setelah penyedia menekan Terima.** Sebelumnya penyedia hanya melihat kecamatan.
+- Batas waktu menjawab dapat diatur per kategori (bawaan 30 menit **[USULAN]**; travel dan servis mendesak bisa lebih pendek). Bila ditolak atau kedaluwarsa, warga ditawari penyedia lain yang cocok.
+- Pembatalan mengikuti aturan pembatalan penyedia yang sudah ditampilkan sebelum memesan.
+- Setelah selesai (ditandai penyedia, atau otomatis setelah waktu slot lewat), warga ditanya "Puas?" lewat WhatsApp. Ulasan memengaruhi peringkat dan verifikasi.
+- Setiap perubahan status dicatat (siapa, kapan, alasan).
+
+**Kriteria diterima**
+- Penyedia tidak pernah melihat nomor warga untuk pesanan yang tidak diterimanya.
+- Pesanan yang tidak dijawab otomatis berubah menjadi kedaluwarsa dan warga diberi tahu.
+- Admin bisa melihat dan menangani semua pesanan yang macet.
+
+### 8.6 Notifikasi WhatsApp
+
+- Memakai **WhatsApp Business API resmi** dari nomor resmi Kamanga **[DIPUTUSKAN]**. Tidak memakai jalur tidak resmi.
+- Pesan yang dimulai Kamanga memakai template yang disetujui Meta; biaya mengikuti harga Meta yang berlaku.
+- Selama verifikasi WhatsApp Business API belum selesai, cadangan: tombol yang membuka WhatsApp penyedia dengan pesan pesanan yang sudah terisi.
+
+Daftar pesan tahap 1:
+
+| Kepada | Pesan | Tombol |
+|---|---|---|
+| Penyedia | Pesanan baru (ringkasan, kecamatan, waktu) | Terima, Tolak |
+| Penyedia | Data warga setelah diterima | — |
+| Penyedia | Pengingat pesanan belum dijawab | Terima, Tolak |
+| Penyedia | Pertanyaan warga yang belum ada jawabannya | Balas |
+| Penyedia | Ringkasan bulanan (jumlah pesanan dan pelanggan baru) | — |
+| Warga | Kode OTP | — |
+| Warga | Pesanan diterima / ditolak / kedaluwarsa | Lihat pesanan |
+| Warga | Pengingat sebelum jadwal | — |
+| Warga | "Puas?" setelah selesai | Puas, Kurang puas |
+
+### 8.7 Akun warga
+
+- Menjelajah dan chat tanpa akun.
+- Saat memesan pertama kali: masukkan nomor WhatsApp → kode OTP → nama panggilan. Akun terbentuk.
+- Warga bisa melihat pesanan aktif, riwayat, dan ulasannya; menghapus akun dan datanya.
+- Persetujuan privasi ditampilkan saat membuat akun.
+
+### 8.8 Aturan kategori dan tanya jawab penyedia
+
+**Lapis 1 — isian aturan per kategori.** Admin mendefinisikan isian standar untuk setiap kategori (tipe: teks, angka, ya/tidak, pilihan, pilihan ganda, rupiah, durasi). Penyedia mengisinya di dashboard. Contoh untuk Lapangan Padel:
+
+| Isian | Tipe |
+|---|---|
+| Durasi minimal | durasi |
+| Termasuk raket | ya/tidak |
+| Harga sewa raket | rupiah |
+| Batas pembatalan | durasi |
+| Wajib DP | ya/tidak |
+| Fasilitas | pilihan ganda (kamar mandi, tempat ganti, parkir mobil, musala, kantin) |
+
+Isian bertipe terstruktur bisa dipakai sebagai **filter** ("padel yang termasuk raket"), sehingga dijawab oleh mesin, bukan ditebak AI.
+
+**Lapis 2 — tanya jawab bebas per penyedia.** Penyedia menulis pasangan pertanyaan dan jawaban sendiri.
+
+Cara AI menjawab pertanyaan tentang satu penyedia:
+1. AI hanya menerima isian aturan dan tanya jawab penyedia tersebut.
+2. Ada jawabannya → dirangkai dari data itu.
+3. Tidak ada → "Belum ada info soal itu. Mau ditanyakan ke pengelolanya?" → pertanyaan dikirim ke penyedia lewat WA → jawaban penyedia disimpan sebagai tanya jawab baru dan dikirim ke warga.
+
+Sebelum warga menekan Pesan, aturan penting (durasi minimal, pembatalan, DP) ditampilkan ringkas dan harus disetujui.
+
+### 8.9 Panduan (tahap 2)
+
+Dua bentuk isi:
+
+1. **Pohon keputusan** (data terstruktur) untuk diagnosis Ka servis, pengarah Ka baubek, dan (nanti) penyusun brief untuk pintu freelancer.
+   - Simpul pertanyaan dengan pilihan yang mengarah ke simpul berikutnya.
+   - Simpul akhir berisi kemungkinan penyebab, peringatan keamanan, kategori penyedia yang cocok, dan tautan ke estimasi biaya.
+   - Disusun bersama ahli (mis. bengkel mitra) lewat editor di dashboard admin, tanpa koding.
+   - AI hanya menerjemahkan cerita bebas warga menjadi pilihan di pohon.
+2. **Kartu panduan** untuk Kabatanyo, adat, aturan titip paket, dan aturan sewa.
+   - Isi: judul, langkah, syarat, **sumber resmi**, **tanggal terakhir dicek**, wilayah berlaku.
+   - Pertanyaan dicocokkan ke 1–3 kartu lewat kategori dan kemiripan makna (embedding pgvector). AI merangkai jawaban hanya dari kartu itu dan menyebut sumbernya.
+   - Tidak ada kartu yang cocok → katakan belum ada informasinya dan catat pertanyaannya.
+
+Aturan:
+- Tidak memakai RAG dari kumpulan PDF atau hasil scraping web mentah.
+- Diagnosis selalu disebut "kemungkinan penyebab", bukan vonis.
+- Untuk rem, listrik, gas, atau risiko kebakaran: "hentikan pemakaian dan hubungi teknisi", tanpa langkah perbaikan sendiri.
+- Kartu yang melewati masa cek ulang (bawaan 3 bulan **[USULAN]**) ditandai "perlu dicek" di dashboard admin.
+- Ada set uji untuk Panduan yang dijalankan setiap kali isinya berubah.
+
+### 8.10 Estimasi biaya (tahap 2)
+
+- Kisaran harga per jenis pekerjaan, diambil dari daftar harga penyedia mitra dan harga acuan yang diisi admin.
+- Ditampilkan sebagai rentang dengan rincian komponen dan catatan "harga final dari penyedia".
+- Tanpa data cukup → tidak menampilkan estimasi dan mengatakannya dengan jujur.
+
+### 8.11 Rekomendasi untuk Ka jalan-jalan (tahap 2)
+
+- Menyusun ide kegiatan dari konteks (waktu, anggaran, rombongan, lokasi, minat) dan data Tempat, ditambah slot kosong dari pintu lain (mis. padel yang masih kosong jam 16.00).
+- Atribut Tempat yang dipakai: cocok untuk siapa, suasana, jam ramai, kisaran harga per orang, tempat melihat matahari terbenam, Wi-Fi/colokan, musala, parkir.
+- Hotel hanya sebagai informasi dan tautan keluar.
+- Tempat dipilih oleh mesin dari database; AI hanya merangkai kalimat.
+
+### 8.12 Dashboard mitra
+
+Dibuat untuk ponsel (bisa dipasang ke layar utama sebagai PWA). Menu menyesuaikan kategori yang dipilih penyedia.
+
+| Menu | Isi | Muncul untuk |
+|---|---|---|
+| Beranda | Pesanan hari ini, pesanan menunggu jawaban, ringkasan bulan berjalan, tugas (lengkapi aturan, jawab pertanyaan warga) | Semua |
+| Pesanan | Daftar masuk / diterima / selesai / dibatalkan; terima, tolak, tandai selesai | Semua |
+| Jadwal | Kalender per unit, jam buka, harga per slot, pengecualian tanggal, blokir manual | Kategori yang memakai Mesin Jadwal |
+| Usaha & layanan | Profil, foto, layanan dan harga, area layanan, kontak | Semua |
+| Aturan & tanya jawab | Isian aturan kategori, tanya jawab bebas, pertanyaan warga yang menunggu dijawab | Semua |
+| Ulasan | Ulasan dari pesanan selesai | Semua |
+| Statistik | Dilihat, dipesan, diterima, jam paling ramai | Semua |
+
+Pendaftaran mitra:
+1. Daftar akun → pilih "Daftarkan usaha" atau "Klaim usaha" (bila sudah diinput tim).
+2. Isi profil, kategori, lokasi/area layanan, layanan dan harga, aturan, jadwal (bila relevan).
+3. Ajukan → status menunggu tinjauan → terbit atau perlu perbaikan (dengan catatan admin).
+4. Klaim usaha diverifikasi lewat nomor WhatsApp yang terdaftar pada usaha tersebut.
+5. Perubahan pada usaha yang sudah terbit disimpan sebagai revisi; versi terbit tetap tampil sampai revisi disetujui.
+
+### 8.13 Dashboard admin
+
+| Menu | Isi |
+|---|---|
+| Ringkasan | Pesanan hari ini, pesanan belum dijawab, penyedia menunggu tinjauan, pertanyaan warga belum terjawab, pencarian tanpa hasil |
+| Pesanan | Semua pesanan lintas pintu, filter status, penanganan pesanan macet, catatan admin |
+| Penyedia & Tempat | Daftar, formulir input, antrean tinjauan dan revisi, klaim, tingkat verifikasi, impor CSV |
+| Pintu | Daftar pintu, kategori di dalamnya, tampil di beranda/segera/tersembunyi, urutan, ikon, teks berganti |
+| Kategori & aturan | Kategori, kelompok, sebutan lain, isian aturan, jenis jadwal, batas waktu menjawab |
+| Kebutuhan | Situasi warga dan kategori terkaitnya |
+| Kamus & Wilayah | Istilah dan bahasa Minang; gazetteer dan sebutan lain wilayah |
+| Panduan (tahap 2) | Editor pohon keputusan dan kartu panduan, tanggal cek |
+| Harga acuan (tahap 2) | Data untuk estimasi biaya |
+| Permintaan warga | Pencarian tanpa hasil dan pertanyaan tak terjawab, dikelompokkan per kategori dan wilayah |
+| Uji | Uji pencarian dengan rincian skor, set uji percakapan, set uji panduan |
+| Pengaturan | Template pesan WA, batas waktu menjawab bawaan, batas pemakaian chat, rem biaya AI harian |
+
+### 8.14 Kurasi dan verifikasi
+
+Status penerbitan dan tingkat verifikasi dipisahkan.
+
+- **Status:** draf → menunggu tinjauan → terbit / ditolak → diarsipkan.
+- **Tingkat verifikasi:**
+
+| Tingkat | Arti |
+|---|---|
+| Belum | Lolos pemeriksaan dasar admin saja |
+| Kontak dicek | Nomor aktif dan benar milik usaha |
+| Dicek langsung | Tim memastikan di lapangan (kunjungan atau panggilan video) |
+
+- Hanya penyedia dengan tingkat minimal **kontak dicek** yang bisa menerima pesanan **[USULAN]**.
+- Ulasan setelah pesanan menjadi verifikasi berkelanjutan; penyedia yang sering dikeluhkan diturunkan atau dinonaktifkan.
+- Aturan khusus:
+  - **Travel** hanya yang memiliki izin angkutan resmi.
+  - **Kesehatan** (tahap 3): izin praktik diverifikasi sebelum bisa dipesan.
+  - **Foto tempat tinggal** (kos/kontrakan): lencana "Foto dicek langsung" hanya setelah dikunjungi tim.
+
+### 8.15 Lokasi dan wilayah
+
+**Tujuan:** mencarikan penyedia terdekat tanpa membuat warga mengetik dan menjawab pertanyaan berulang ("daerah mana?", "Koto Baru yang di mana?").
+
+**Cara Kamanga mengetahui lokasi warga, berurutan:**
+
+1. **Lokasi perangkat (utama)**
+   - Kamanga lebih dulu menjelaskan alasannya di dalam percakapan, misalnya *"Biar ambo carikan yang paling dekat, boleh pakai lokasi uda?"* dengan tombol **[Pakai lokasi saya]** dan **[Ketik daerah]**.
+   - Izin lokasi browser baru diminta **setelah** warga menekan tombol itu. Tidak ada permintaan izin otomatis saat halaman dibuka.
+   - Koordinat diubah menjadi nama wilayah (titik → kelurahan/kecamatan lewat poligon) dan ditampilkan untuk dicek: *"Lokasi: Kuranji, Padang · [Ganti]"*.
+2. **Ketik nama daerah (cadangan)**: bila izin ditolak, perangkat tanpa GPS, atau lokasi layanan berbeda dari posisi warga (mis. perantau memesan tukang untuk rumah orang tua). Nama dicocokkan ke gazetteer beserta ejaan alternatif dan sebutan populer.
+3. **Pilih di peta**: geser penanda untuk alamat yang tidak dikenali gazetteer **[USULAN]**.
+4. **Alamat tersimpan** untuk warga yang punya akun (Rumah, Kantor, alamat lain).
+
+**Menyelesaikan nama yang ambigu, tanpa bertanya bila bisa:**
+- Batasi ke wilayah yang dilayani (selama layanan hanya di Padang, "Koto Baru" otomatis berarti Koto Baru di Padang).
+- Gunakan konteks: lokasi terakhir warga, alamat tersimpan, lalu wilayah yang paling sering dicari.
+- Hanya bila tetap ambigu, tanyakan sekali dengan tombol pilihan.
+
+**Lokasi layanan per jenis penyedia:**
+
+| Mode penyedia | Data lokasi penyedia | Lokasi warga yang dipakai | Pencocokan |
+|---|---|---|---|
+| Warga datang ke tempat (lapangan, barber, bengkel) | Titik koordinat usaha | Posisi warga saat ini atau titik awal yang dipilih | Urutkan dari jarak terdekat |
+| Penyedia datang ke warga (teknisi AC, pijat panggilan, tukang) | Titik markas + **area layanan**: daftar wilayah (kecamatan/kelurahan/seluruh kota) atau radius (km) | **Alamat tempat layanan** ("Servisnya di mana?": lokasi saya, alamat tersimpan, atau ketik/pilih di peta) | Lokasi warga harus di dalam area layanan (syarat wajib), lalu urutkan dari markas terdekat |
+| Daring | — | — | Tanpa syarat lokasi |
+| Travel antarkota | Rute (kota asal → kota tujuan) + wilayah jemput | Titik jemput warga | Rute cocok dan titik jemput di dalam wilayah jemput |
+
+**Teknis:**
+- **PostGIS dipakai sejak awal [DIPUTUSKAN]** untuk: titik di dalam poligon wilayah (kelurahan/kecamatan), titik di dalam area layanan, dan pengurutan jarak.
+- Poligon batas wilayah diimpor dari data batas wilayah resmi (kode Kemendagri) dan disimpan per tingkat wilayah. Perluasan ke kota/kabupaten lain cukup menambah data.
+- Jarak tahap 1 memakai jarak garis lurus; jarak tempuh lewat jalan dipertimbangkan nanti.
+- Jarak ditampilkan dibulatkan (mis. "1,8 km").
+
+**Privasi:**
+- Koordinat perangkat hanya dipakai untuk pencarian saat itu dan **tidak disimpan**, kecuali warga menyimpannya sebagai alamat.
+- Alamat lengkap hanya disimpan pada pesanan dan baru terlihat oleh penyedia setelah pesanan diterima.
+- Penyedia rumahan atau perorangan hanya menampilkan kecamatan ke publik; titik tepatnya disimpan privat untuk perhitungan jarak.
+
+**Kriteria diterima**
+- Warga yang mengizinkan lokasi tidak ditanya "daerah mana" sama sekali.
+- Menolak izin lokasi tidak menghalangi pencarian; warga bisa mengetik daerah.
+- "Koto Baru" tidak memicu pertanyaan tambahan selama layanan hanya mencakup Padang.
+- Teknisi panggilan tidak muncul untuk alamat di luar area layanannya.
+- Penyedia yang didatangi warga muncul berurutan dari yang terdekat.
+
+---
+
+## 9. Alur pengguna utama (tahap 1)
+
+### 9.1 Warga memesan lapangan (Ka main)
+1. Beranda → Ka main → pilih jenis (padel).
+2. Pilih tanggal dan jam (atau ketik "padel nanti malam dakek Lubeg").
+3. Kamanga menawarkan **[Pakai lokasi saya]**; bila diizinkan, lokasi langsung terisi (bisa diganti).
+4. Daftar lapangan dengan slot kosong, harga per slot, jarak, verifikasi, ulasan, diurutkan dari yang terdekat.
+5. Pilih slot → lihat ringkasan aturan (durasi minimal, pembatalan, raket) → setujui.
+6. Masuk dengan nomor WA (OTP) bila belum punya akun.
+7. Pesanan dikirim; slot ditahan sementara.
+8. Pengelola menekan Terima di WA → warga menerima konfirmasi → pengingat sebelum jadwal → "Puas?" setelahnya.
+
+### 9.2 Warga memesan servis (Ka servis)
+1. Beranda → Ka servis → pilih jenis (AC) → ceritakan keluhan.
+2. "Servisnya di mana?" → lokasi saya sekarang, alamat tersimpan, atau ketik/pilih di peta.
+3. Pilih waktu yang diinginkan (tanggal + pagi/siang/sore).
+4. Daftar teknisi yang area layanannya mencakup alamat itu, diurutkan dari yang terdekat (tahap 2: ditambah diagnosis dan estimasi biaya).
+5. Pesan → teknisi menerima di WA → nomor dan alamat dibuka → teknisi menghubungi warga.
+6. Teknisi menandai selesai → warga memberi ulasan.
+
+### 9.3 Warga memesan travel (Ka uda anta)
+1. Beranda → Ka uda anta → penumpang atau titip paket.
+2. Rute (asal, tujuan), tanggal, waktu (pagi/siang/sore/malam), jumlah penumpang, titik jemput (lokasi saya, alamat tersimpan, atau pilih di peta).
+3. Daftar travel berizin dengan jam keberangkatan, sisa kursi, harga per orang, jenis jemput (alamat/titik kumpul), info lokal (mis. kondisi jalur akhir pekan).
+4. Pesan kursi → travel menerima → konfirmasi dan pengingat.
+
+### 9.4 Penyedia bergabung
+1. Tim mengunjungi atau menghubungi penyedia → penyedia mendaftar (atau mengklaim data yang sudah diinput tim).
+2. Isi profil, jadwal, harga, aturan → diajukan → ditinjau admin → terbit.
+3. Pesanan pertama datang lewat WA → Terima → layani → ulasan masuk.
+4. Setiap bulan menerima ringkasan pesanan dari Kamanga.
+
+---
+
+## 10. Model data (garis besar)
+
+| Entitas | Isi penting |
+|---|---|
+| Pengguna & peran | admin, mitra, warga; nomor WA terverifikasi untuk warga |
+| Alamat tersimpan | warga, label (Rumah/Kantor), alamat teks, titik koordinat, wilayah hasil pencocokan |
+| Pintu | slug, nama, ikon, urutan, status tampil (aktif/segera/tersembunyi), jenis (tunggal/rencana/panduan) |
+| Kelompok kategori, Kategori | pintu utama, pintu tambahan, sebutan lain, skema isian aturan, jenis jadwal, batas waktu menjawab, perlu lokasi, hanya informasi |
+| Kebutuhan | sebutan lain, kategori terkait, slot yang perlu ditanyakan |
+| Wilayah & sebutan lain | tingkat, kode resmi, induk, titik tengah, poligon batas (PostGIS) |
+| Listing | jenis (**penyedia** / **tempat**), nama, ringkasan, deskripsi, titik koordinat (PostGIS), titik publik atau privat, area layanan (daftar wilayah dan/atau radius km), mode layanan (datang ke tempat / dipanggil / daring), kontak, harga (min, maks, satuan), jam buka, isian aturan (JSON), foto, status, tingkat verifikasi, pemilik, sumber data |
+| Kategori listing, Area listing, Revisi listing, Klaim listing | relasi dan alur kurasi |
+| Tanya jawab listing | pertanyaan, jawaban, asal (penyedia / dari pertanyaan warga), tanggal |
+| Unit | listing, nama, kapasitas (mis. kursi), aktif |
+| Aturan jadwal | unit, hari, interval jam, durasi slot, harga, harga jam ramai, jeda |
+| Pengecualian jadwal | unit, tanggal, tutup/jam khusus |
+| Blokir slot | unit, mulai, selesai, alasan (walk-in, WA, lainnya) |
+| Pesanan | warga, listing, unit, waktu mulai/selesai atau tanggal, jumlah, lokasi layanan (alamat + titik, terlihat penyedia hanya setelah diterima), wilayah (kecamatan, terlihat sejak awal), rincian (JSON sesuai jenis), status, batas waktu menjawab, harga tertera |
+| Riwayat status pesanan | status, pelaku, waktu, alasan |
+| Ulasan | pesanan, nilai (puas/kurang puas + bintang **[TERBUKA]**), komentar |
+| Pesan WA | arah, template, status kirim/baca, pesanan terkait |
+| Sesi & pesan chat, panggilan AI, log pencarian, peristiwa (klik keluar, klik WA) | untuk evaluasi, biaya, dan rekap kebutuhan |
+| Pohon panduan, kartu panduan, harga acuan | tahap 2 |
+
+Kunci keamanan data: slot dan pesanan untuk unit yang sama tidak boleh tumpang tindih (constraint di database); nomor dan alamat warga disimpan terpisah dan hanya dapat dibaca penyedia untuk pesanan yang diterimanya.
+
+---
+
+## 11. Kebutuhan non-fungsional
+
+| Aspek | Kebutuhan |
+|---|---|
+| Perangkat | Web responsif, nyaman mulai lebar 360 px; dashboard mitra bisa dipasang sebagai PWA |
+| Kinerja | Beranda dan daftar hasil tampil < 2 detik di jaringan 4G; jawaban berbasis template/kode < 1 detik |
+| Ketersediaan | Pesanan dan notifikasi WA tetap jalan saat AI gagal atau kuota AI habis; pencarian dengan filter selalu tersedia |
+| Keamanan | Otorisasi diperiksa di server untuk setiap operasi; rahasia hanya di server; kunci API tidak pernah di browser |
+| Privasi (UU PDP No. 27/2022) | Persetujuan jelas; data warga minimum; koordinat perangkat tidak disimpan kecuali dijadikan alamat; nomor/alamat hanya dibuka ke penyedia yang menerima pesanan; data ke pihak lain hanya agregat dan anonim; warga bisa menghapus akun; log chat dengan masa simpan terbatas |
+| Aksesibilitas | Kontras teks minimal 4.5:1, target sentuh 44 px, fokus keyboard terlihat, label pada semua kontrol |
+| Bahasa | Antarmuka Bahasa Indonesia; AI memahami bahasa Minang, campuran, singkatan, dan salah ketik |
+| Biaya | Rem biaya AI harian; batas pengeluaran di dasbor penyedia AI dan WA; biaya AI per percakapan dipantau |
+| Zona waktu | Asia/Jakarta untuk semua jadwal |
+
+---
+
+## 12. Teknologi **[DIPUTUSKAN]**
 
 | Kebutuhan | Pilihan |
 |---|---|
-| Bahasa / framework | TypeScript, Next.js 16 (App Router), React 19, Bun |
-| Database | PostgreSQL 18 + pgvector, pg_trgm, unaccent; jarak pakai `earthdistance`. PostGIS ditunda sampai perlu poligon wilayah. |
-| ORM / validasi | Drizzle, Zod |
-| AI | Vercel AI SDK + lapisan tipis (batas pemakaian, pencatatan biaya) |
-| UI | Tailwind CSS v4 + shadcn/ui; TanStack Query, Form, Table |
-| Auth | Better Auth, email + kata sandi, peran `admin` dan `vendor`. TODO: verifikasi email dan reset kata sandi (butuh layanan email). (nanti) login lewat WhatsApp. |
-| Foto | Cloudflare R2 (saat pengembangan: `public/uploads`) |
-| Lingkungan sekarang | lokal di Mac, Postgres Homebrew, tanpa Docker (disk terbatas) |
-| Lingkungan launching | VPS sendiri (2 vCPU, 8 GB RAM, 100 GB NVMe) dengan Docker Compose + Caddy; backup database harian ke penyimpanan eksternal, SSH key-only, firewall (port database tertutup), update berkala, uptime monitoring |
+| Bahasa, framework | TypeScript, Next.js (App Router) |
+| Database | PostgreSQL + **PostGIS** (lokasi, poligon wilayah, area layanan, jarak) + pgvector (pencocokan makna) |
+| Lokasi perangkat | Geolocation API browser, diminta hanya setelah warga menekan tombol |
+| ORM, validasi | Drizzle, Zod |
+| UI | Tailwind CSS + shadcn/ui |
+| Auth | Better Auth (admin, mitra, warga; OTP WA untuk warga) |
+| AI | Vercel AI SDK dengan lapisan gateway tipis (penyedia bisa diganti: Anthropic, OpenAI, Google), batas pemakaian, pencatatan biaya |
+| Pesan | WhatsApp Business API resmi |
+| Media | Cloudflare R2 |
+| Pengembangan | Lokal di Mac (Postgres Homebrew) |
+| Produksi | VPS dengan Docker Compose + Caddy, backup harian ke penyimpanan eksternal, SSH key-only, firewall, pemantauan uptime |
 
-Sengaja tidak dilakukan: melatih model, self-host LLM, vector DB terpisah, microservices, router ML, WhatsApp Business API (tahap ini), menampung uang warga.
+Penyedia AI dipilih berdasarkan set uji (akurasi bahasa Minang dan pengisian slot, keandalan pemanggilan tool, biaya per percakapan, latensi). Akun AI gratisan hanya untuk uji coba, tidak untuk layanan warga.
 
-## 10. Bisnis (sekarang: TANPA BIAYA) **[DIPUTUSKAN]**
+---
 
-- Tahap awal **gratis penuh** untuk warga dan penyedia; diumumkan sebagai "masa perintisan / Mitra Perintis", bukan "gratis selamanya".
-- **Setiap permintaan pesan dicatat** (klik WhatsApp, slot yang ditandai terisi) sebagai bukti nilai. Penyedia melihat ringkasan bulanan di dashboard ("bulan ini 9 warga menghubungi lewat Kamanga"). **[USULAN]**
-- Nanti (bukan sekarang): bayar per pesanan diterima (saldo prabayar) dengan kuota gratis, Mitra Pro (langganan), komisi transaksi lewat payment gateway (jangan menampung uang sendiri), afiliasi (hotel, produk UMKM), Promo Lokal UMKM, kerja sama Pemda/hibah (data agregat anonim).
-- Mulai menagih bila 2 bulan berturut-turut: penyedia aktif rutin mendapat permintaan, penyedia mengakui manfaatnya, ada warga yang kembali. Syarat "pesanan sebagian besar diterima" baru bisa diukur setelah WhatsApp Business API.
-- Batas pengeluaran bulanan untuk AI dan server sejak awal (WhatsApp API menyusul).
-- Catat setiap klik keluar (WhatsApp, situs hotel, marketplace).
+## 13. Ukuran keberhasilan
 
-## 11. Ukuran sukses **[USULAN]**
+| Ukuran | Definisi | Target tahap 1 **[USULAN]** |
+|---|---|---|
+| **Angka utama** | % sesi dengan niat jelas yang berakhir dengan pesanan terkirim | ditetapkan setelah 4 minggu data |
+| Pesanan diterima | % pesanan yang diterima penyedia | ≥ 70% |
+| Waktu jawab penyedia | median waktu sampai Terima/Tolak | ≤ 15 menit |
+| Kepuasan | % ulasan "Puas" | ≥ 85% |
+| Penyedia aktif | penyedia yang menerima ≥ 1 pesanan per bulan | bertambah setiap bulan |
+| Warga kembali | % warga yang memesan lagi dalam 60 hari | dipantau |
+| Biaya AI | rata-rata biaya AI per percakapan | dipantau, ada batas atas |
+| Kualitas pemahaman | akurasi niat dan slot di set uji | ≥ 85% |
 
-- Angka utama: jumlah warga yang menekan "Pesan via WhatsApp" per minggu dari pintu tahap 1.
-- Pendamping: penyedia yang memperbarui jadwalnya tiap minggu, warga yang kembali, akurasi maksud dan slot di set uji, biaya AI per percakapan.
+---
 
-## 12. Urutan kerja
+## 14. Rencana rilis
 
-1. ✅ Mulai v2: repo `kamanga`, database `kamanga_v2`, migrasi dan data acuan.
-2. ✅ Rapikan fondasi: bersihkan sisa template starter (nama paket, komponen dan paket tak terpakai, kbar, README), perbaiki skrip seed.
-3. Skema baru (Drizzle, migrasi): jenis listing penyedia/tempat; unit terjadwal + jam buka + durasi + harga per slot + slot terisi manual; catatan permintaan pesan (dari klik WhatsApp); tanya jawab per penyedia; isian aturan per kategori.
-4. Bangun **Mesin Jadwal + Pesanan dengan Ka main sebagai pintu pertama**: kalender di dashboard pemilik, slot kosong untuk warga, tombol "Pesan via WhatsApp" dengan pesan terisi.
-5. Beranda baru "Kamanga hari ko?" (lihat mockup).
-6. Pintu tahap 1 berikutnya: Ka rancak, Ka uda anta, Ka servis dasar; database Tempat.
-7. Deploy ke VPS, backup, peluncuran terbatas.
-8. (nanti) WhatsApp Business API, akun/login warga lewat WhatsApp, ulasan (§4).
+### Tahap 1 — Padang (sekitar 12 minggu)
 
-Data awal: mulai dari Padang dan pintu tahap 1, target 100–200 listing sebelum dibuka ke warga **[USULAN]**. Pemilik (penutur asli) mengecek kamus Minang dan penamaan lokasi.
+| Minggu | Pekerjaan |
+|---|---|
+| 1–2 | Wawancara lapangan; fondasi proyek, skema data, auth, pengaturan pintu dan kategori |
+| 3–6 | Mesin Jadwal, Mesin Pesanan, dashboard mitra (jadwal, pesanan, profil, aturan), dashboard admin (pesanan, pintu, kategori & aturan); mulai input data |
+| 5–8 | Beranda dan alur warga untuk Ka main, Ka rawat diri, Ka uda anta, Ka servis; chat bebas tersambung ke mesin; OTP WA |
+| 7–10 | Integrasi WhatsApp Business API (cadangan tautan WA selama verifikasi); peluncuran terbatas ke kenalan dan komunitas |
+| 10–12 | Perbaikan dari data nyata; ringkasan bulanan untuk mitra; evaluasi ukuran keberhasilan |
 
-## 13. Validasi lapangan (paralel, tanpa koding)
+**Kriteria tahap 1 selesai**
+- Minimal 20 lapangan/tempat main, 15 tempat perawatan diri, 5 travel berizin, dan 15 penyedia servis terbit dengan data lengkap **[USULAN]**.
+- Warga bisa memesan dari awal sampai ulasan tanpa bantuan tim.
+- Penyedia bisa menerima pesanan hanya lewat WA.
+- Tidak ada jadwal bentrok dalam uji beban sederhana.
+- Set uji percakapan dan pencarian lulus di atas ambang yang ditetapkan.
 
-- 5 warga: terakhir butuh servis/travel/lapangan cari ke mana? apa yang bikin pusing?
-- 5 pemilik lapangan (padel/futsal) & barber: cara booking sekarang? pernah bentrok? jam sepi? mau memperbarui slot di dashboard?
-- 3–5 pemilik travel: berapa chat WA/hari? titip paket? izin resmi?
-- 5–10 teknisi/bengkel: dari mana pelanggan? pertanyaan tersering?
-- Cek apakah aplikasi booking lapangan nasional sudah masuk Padang.
+### Tahap 2
+Ka servis dengan diagnosis dan estimasi; Ka manyewa; Ka jalan-jalan; Kabatanyo; Mesin Panduan, Estimasi, Rekomendasi.
 
-## 14. Pertanyaan terbuka **[TERBUKA]**
+### Tahap 3
+Kabaralek; Ka balanjo; Ka baubek (booking); perluasan wilayah ke kota/kabupaten lain di Sumatra Barat.
 
-1. Apakah klik "Pesan via WhatsApp" dicatat sebagai **permintaan** yang bisa ditandai penyedia di dashboard (jadi / batal), sekaligus mengisi slot? Usulan: ya, sederhana dan memberi angka nyata untuk ringkasan bulanan.
-2. Ulasan warga tanpa akun dan tanpa WhatsApp API: tunggu WA API, atau ada cara sederhana yang sulit dicurangi?
-3. Data awal tim dari mana, dan standar verifikasi (kapan `contact_checked`, kapan `visited`)?
-4. Kapan mulai mengurus WhatsApp Business API (verifikasi bisnis Meta, biaya per pesan)?
-5. VPS sudah dibeli? OS?
+---
 
-## 15. Risiko utama
+## 15. Model bisnis
 
-- **Data penyedia sedikit atau basi**: secanggih apa pun, Kamanga jadi tidak berguna. Mitigasi: fokus kualitas, pintu tahap 1 dulu, mulai dari Padang.
-- **Jadwal tidak akurat** karena slot diisi manual dan kesepakatan terjadi di WhatsApp. Mitigasi: dashboard yang cepat dipakai di HP, label "konfirmasi ke pemilik lewat WhatsApp", pantau penyedia yang aktif memperbarui.
-- **Penyedia enggan mengisi platform yang masih sepi**: tim mengisi data awal, penyedia diundang mengklaim listingnya.
-- **Model murah lemah di Minang kental**: kamus, contoh, eskalasi, set uji sebelum memilih vendor.
-- **Biaya AI membengkak di layanan gratis**: batas pesan, rem darurat, pencatatan biaya sejak hari pertama.
-- **Spam dan data asal dari pendaftaran terbuka**: semua listing lewat antrean admin; batasi pendaftaran per hari.
-- **Lingkup melebar**: disiplin pintu dan tahap (§3a) dan uji "ChatGPT bisa?" (§2).
+**Masa perintisan: gratis penuh** untuk warga dan penyedia **[DIPUTUSKAN]**. Diumumkan sebagai "Program Mitra Perintis", bukan "gratis selamanya".
 
-## 16. Artefak terkait
+Selama masa perintisan:
+- Semua pesanan dicatat sebagai bukti nilai bagi penyedia.
+- Penyedia menerima ringkasan bulanan ("bulan ini 9 pelanggan baru dari Kamanga").
+- Setiap klik keluar (WA, situs, marketplace) dicatat.
+- Batas pengeluaran bulanan untuk AI, WhatsApp, dan server dipasang sejak awal.
 
-- `docs/kamanga-v2/Kamanga-v2-Konsep-Pengembangan.pdf` — konsep 11 Okt (sebagian usang: pembagian pintu, urutan tahap, dan peran WhatsApp di dokumen ini yang berlaku).
-- `docs/kamanga-v2/Kamanga-Pitch-Deck.pdf` — pitch untuk investor/tim (versi 11 Okt; bagian berwarna kuning masih placeholder).
-- `docs/design/` — rancangan tampilan chat v1 dan panel.
-- Mockup layar (kanvas desain di claude.ai milik pemilik): beranda "Kamanga hari ko?", alur Ka servis (masalah → diagnosis → estimasi & bengkel → status), Ka uda anta (rute → pilih travel), dan notifikasi WA penyedia Terima/Tolak (untuk nanti). Belum ada layar Ka main & Ka rancak.
+Rencana setelah masa perintisan **[USULAN, tidak dibangun di tahap 1]**:
+- Bayar per pesanan yang diterima (saldo prabayar, dengan kuota gratis bulanan).
+- Langganan Mitra Pro (chatbot di nomor WA penyedia sendiri, statistik lanjutan, lencana).
+- Komisi transaksi bila pembayaran lewat payment gateway (Kamanga tidak menampung uang sendiri).
+- Afiliasi (hotel, produk UMKM) dan promo lokal, selalu berlabel jelas.
+- Kerja sama Pemda dan hibah berbasis data kebutuhan warga yang agregat dan anonim.
+
+Sinyal mulai menagih: selama 2 bulan berturut-turut penyedia aktif rutin menerima pesanan, penyedia mengakui manfaatnya, sebagian besar pesanan diterima, dan ada warga yang memesan kembali.
+
+Larangan tetap: tidak ada urutan berbayar yang mengalahkan relevansi; tidak menjual data pribadi.
+
+---
+
+## 16. Risiko dan mitigasi
+
+| Risiko | Mitigasi |
+|---|---|
+| Warga menganggap Kamanga chat AI umum | Beranda berbasis pintu, jawaban selalu berujung aksi, penolakan sopan untuk permintaan di luar layanan |
+| Data penyedia sedikit atau basi | Fokus Padang dan 4 pintu; tim input data awal; pengingat ke penyedia untuk memperbarui; pintu kosong disembunyikan |
+| Penyedia tidak membalas pesanan | Batas waktu + tawaran penyedia lain; pengingat; penyedia yang sering tidak membalas diturunkan |
+| Jadwal bentrok dengan pesanan di luar Kamanga | Blokir manual yang mudah dari HP; tahan sementara; constraint database |
+| Penyedia nakal | Verifikasi berlapis, ulasan, penonaktifan |
+| Biaya AI dan WA membengkak | Template/kode lebih dulu, model kelas murah, rem harian, batas pengeluaran |
+| Verifikasi WhatsApp Business API lambat | Cadangan tautan WA dengan pesan terisi |
+| Pelanggaran privasi | Pembukaan data bertahap, data minimum, kepatuhan UU PDP |
+| Pemain nasional (aplikasi booking lapangan, kos, hotel) | Kedalaman lokal, relasi langsung dengan penyedia, satu aplikasi untuk banyak urusan; tidak bersaing di hotel |
+| Fokus terpecah karena banyak ide pintu | Pintu baru hanya dibuka bila data permintaan dan kesiapan penyedia mendukung |
+
+---
+
+## 17. Di luar cakupan (seluruh tahap 1)
+
+Pembayaran dan saldo; tagihan dan langganan; chatbot di nomor penyedia; asisten AI untuk admin (dibahas terpisah); pemesanan hotel; promo dan afiliasi; aplikasi native; peringkat berbayar; diagnosis kesehatan; wilayah di luar Padang; Kakarajo, Kabaraja, Kabausaho.
+
+---
+
+## 18. Pertanyaan terbuka **[TERBUKA]**
+
+1. Pintu pertama yang paling diprioritaskan untuk isi data: Ka main atau Ka uda anta? (ditentukan dari wawancara lapangan)
+2. Batas waktu menjawab bawaan per kategori (servis mendesak, travel, lapangan).
+3. Bentuk ulasan: dua pilihan (puas/kurang puas) atau bintang 1–5?
+4. Apakah penyedia boleh memilih "konfirmasi otomatis" untuk slot tertentu?
+5. Masa simpan log chat dan riwayat pesanan.
+6. Penyedia AI yang dipakai setelah evaluasi set uji.
+7. Apakah aplikasi booking lapangan nasional sudah banyak dipakai di Padang?
+8. Sumber dan versi data poligon batas wilayah yang dipakai, serta penyedia peta untuk fitur "pilih di peta".
+9. Area layanan bawaan untuk penyedia panggilan yang belum mengisinya (mis. kecamatan sendiri + radius 5 km?).
+10. Ruang lingkup dan urutan fitur Asisten AI untuk admin (diskusi terpisah).
+
+---
+
+## Lampiran A — Glosarium
+
+| Istilah | Arti |
+|---|---|
+| Pintu "Ka-" | Pintu masuk berdasarkan kebutuhan warga; "Ka-___" berarti "mau ___" |
+| Mesin | Kemampuan di belakang layar yang dipakai banyak pintu |
+| Penyedia | Usaha atau perorangan yang bisa dipesan lewat Kamanga |
+| Tempat | Lokasi yang ditampilkan sebagai informasi saja |
+| Unit | Bagian dari penyedia yang dijadwalkan (lapangan, kursi, kendaraan) |
+| Slot | Satu rentang waktu pada satu unit |
+| Mitra | Penyedia yang memiliki akun di Kamanga |
+| Masa perintisan | Periode awal gratis penuh |
+
+## Lampiran B — Contoh isian aturan kategori
+
+**Barbershop**: durasi layanan (potong, cukur jenggot, cuci), perlu reservasi atau bisa walk-in, batas keterlambatan, batas pembatalan, menerima anak-anak.
+
+**Travel antarkota**: rute, jam keberangkatan, jemput di alamat atau titik kumpul, jenis kendaraan, barang bawaan maksimal, menerima titip paket, batas pembatalan, nomor izin angkutan.
+
+**Servis AC**: merek yang dilayani, biaya kunjungan/cek, garansi pengerjaan, melayani di luar jam kerja, area layanan.
+
+## Lampiran C — Contoh pesan WhatsApp ke penyedia
+
+```
+Pesanan baru · Ka main
+Lapangan Padel 2 · Sabtu, 18 Okt · 19.00–20.00
+4 orang · sewa raket: ya
+Lokasi pemesan: Lubuk Begalung
+
+[Terima]  [Tolak]
+Tidak dijawab dalam 30 menit, pesanan ditawarkan ke tempat lain.
+```
