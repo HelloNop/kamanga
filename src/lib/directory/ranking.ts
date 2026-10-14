@@ -18,6 +18,36 @@ export const WEIGHTS = {
 } as const;
 export type SignalName = keyof typeof WEIGHTS;
 
+// Bobot pencarian penyedia tahap 1 (PRD 8.3 [USULAN]), dipakai providers.ts untuk pintu dan chat.
+// Sinyal yang tidak berlaku (mis. ketersediaan untuk Ka servis) dikeluarkan lalu bobot dinormalkan.
+export const PROVIDER_WEIGHTS = {
+  relevance: 0.35,
+  location: 0.25,
+  availability: 0.15,
+  verification: 0.1,
+  reviews: 0.1,
+  completeness: 0.05
+} as const;
+export type ProviderSignal = keyof typeof PROVIDER_WEIGHTS;
+
+export function providerScore(s: Partial<Record<ProviderSignal, number>>) {
+  const active = (Object.keys(PROVIDER_WEIGHTS) as ProviderSignal[]).filter(
+    (k) => s[k] !== undefined
+  );
+  const total = active.reduce((a, k) => a + PROVIDER_WEIGHTS[k], 0);
+  const parts: Partial<Record<ProviderSignal, { value: number; weight: number }>> = {};
+  let score = 0;
+  for (const k of active) {
+    const weight = PROVIDER_WEIGHTS[k] / total;
+    parts[k] = { value: s[k]!, weight };
+    score += weight * s[k]!;
+  }
+  return { score, parts };
+}
+
+/** Ulasan: proporsi puas dengan prior (1 puas, 1 kurang) agar 1 ulasan tidak langsung bernilai 100%. */
+export const reviewScore = (satisfied: number, count: number) => (satisfied + 1) / (count + 2);
+
 export type Signals = Partial<Record<SignalName, number>> & {
   verification: number;
   completeness: number;

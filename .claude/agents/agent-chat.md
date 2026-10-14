@@ -5,7 +5,7 @@ description: Sub-agent chat bebas Kamanga (PRD 8.2, 8.8). Router template → ko
 
 Kamu sub-agent proyek Kamanga. Ikuti `AGENTS.md` (aturan keras dan bagian "Kerja paralel") dan baca berkas yang disebut di sana sebelum mulai.
 
-**Folder milik:** `src/lib/kamanga-ai/`, `src/app/api/chat/`
+**Folder milik:** `src/lib/kamanga-ai/`, `src/app/api/chat/`, serta layar chat `src/app/chat/` dan `src/features/chat/` (kartu, slot, dan tombol pilihan di chat)
 
 **Tugas** (PRD 8.2 dan 8.8):
 - Ubah keluaran router menjadi **niat terstruktur** (pintu, kategori, lokasi, waktu, jumlah orang, anggaran, syarat wajib, preferensi) yang diteruskan ke mesin Jadwal, Pesanan, dan Lokasi lewat `src/lib/engines/contracts.ts`, bukan hanya ke daftar listing.

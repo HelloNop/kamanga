@@ -26,7 +26,21 @@ Status: **selesai** (15 Okt 2026)
 
 ## Gelombang 2 — Mesin
 
-Status: belum mulai
+Status: **selesai** (15 Okt 2026). Empat sub-agent paralel, lalu digabung lead.
+
+- **Jadwal** (`src/lib/engines/schedule/`, agent-jadwal): slot kosong dari jam buka (beberapa interval sehari, lewat tengah malam, jeda, durasi minimal, harga jam ramai), pengecualian tanggal, blokir manual, kursi travel, `findConflicts`. Uji `check:schedule` (11 kelompok, termasuk dua permintaan bersamaan).
+- **Pesanan** (`src/lib/engines/booking/`, `src/app/api/cron/bookings`, `scripts/bookings-tick.ts`, agent-pesanan + lead): semua transisi + riwayat, kontak warga terkunci sampai diterima, kedaluwarsa (tick, cron, malas saat dibaca), pengingat, selesai otomatis, ulasan, alternatif. Lead menambah `resendProviderNotice` dan template `booking_cancelled`. Uji `check:booking`.
+- **Lokasi** (`src/lib/engines/location/`, `scripts/wilayah/`, `data/wilayah/`, agent-lokasi): poligon Kota Padang (11 kecamatan, 104 kelurahan, kode Kemendagri, sumber `cahyadsn/wilayah_boundaries` MIT), titik → wilayah, nama → wilayah ("Koto Baru" → Koto Baru Nan XX tanpa bertanya), area layanan, urutan jarak. Uji `check:location` (berjalan di koneksi baca-saja untuk membuktikan koordinat tidak disimpan).
+- **Notifikasi WA** (`src/lib/engines/notify/`, `src/app/api/wa/`, agent-wa): satu adapter, mode cadangan `wa.me` tanpa env, API resmi bila 4 env diisi, 13 template, OTP ber-hash (HMAC) dengan batas percobaan/permintaan, webhook bertanda tangan. Uji `check:notify`.
+- **Pencarian penyedia** (`src/lib/directory/providers.ts`, lead): `findProviders` untuk pintu dan chat (syarat wajib, slot kosong, jarak/area layanan, rute travel, "belum pasti", pelonggaran ditawarkan). Uji `check:providers`.
+- Semua uji lulus: typecheck, 14 script `check:*`. Lint 0 galat.
+- `check:search` disesuaikan: Lubuk Begalung kini punya titik sendiri (bukan titik kota).
+
+Keputusan lead di gelombang ini:
+- Mode cadangan: pesan ke penyedia diteruskan tim dari nomor resmi Kamanga, bukan warga (privasi nomor warga dan token). Lihat rencana keputusan 8.
+- Token penyedia diturunkan dari kode pesanan + rahasia server (rencana keputusan 7).
+- Pengecualian tanggal berlaku per "hari usaha": interval lewat tengah malam ikut tanggal mulainya.
+- Area layanan bawaan penyedia panggilan tanpa data: kecamatannya + 5 km (PRD §18 no. 9 masih terbuka).
 
 ## Gelombang 3 — Antarmuka dan chat
 
@@ -42,5 +56,9 @@ Status: belum mulai
 
 ## Masalah terbuka
 
-- Hanya 7 dari 1.476 lokasi punya titik tengah. Mesin Lokasi perlu mengisi lat/lng dari poligon saat impor.
+- Poligon dan titik tengah baru ada untuk Kota Padang; lokasi lain belum.
+- Template Meta (13) perlu didaftarkan pemilik sebelum API WA diaktifkan; daftar lengkap di laporan agent-wa (diringkas di `src/lib/engines/notify/templates.ts`).
+- Batas permintaan OTP per IP belum ada (perlu sebelum API WA aktif, karena OTP berbayar).
+- Balasan penyedia atas pertanyaan warga lewat WA baru dicatat; alur menyimpannya ke `listing_qa` menyusul (tahap 1 lewat dashboard mitra).
+- `search.ts` lama masih memakai earthdistance; usulan pindah ke PostGIS.
 - Formulir listing di panel belum menampilkan isian jenis, titik publik, dan radius (agent-ui-admin, Gelombang 3).

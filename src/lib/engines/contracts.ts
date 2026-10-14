@@ -33,16 +33,40 @@ export type Actor = { kind: ActorKind; userId?: string | null };
 export const appUrl = (path: string) =>
   `${(process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')}${path}`;
 
-/** Alamat halaman yang ditautkan dari pesan WA. Dipakai mesin dan UI agar sama. */
+/** Alamat halaman yang ditautkan dari pesan WA dan antarhalaman. Dipakai mesin, chat, dan UI agar sama.
+ *  Jangan menaruh koordinat perangkat atau data pribadi di query URL (tercatat di log server). */
 export const paths = {
   /** Halaman pesanan untuk warga (cek kepemilikan di halaman). */
   citizenBooking: (id: number) => `/pesanan/${id}`,
+  /** Riwayat pesanan warga. */
+  citizenBookings: () => '/pesanan',
   /** Halaman Terima/Tolak untuk penyedia lewat token dari pesan WA, tanpa login. */
   providerBookingToken: (token: string) => `/mitra/pesanan/t/${token}`,
   /** Halaman pesanan di dashboard mitra (penyedia berakun). */
   providerBooking: (id: number) => `/mitra/pesanan/${id}`,
   /** Daftar pertanyaan warga yang menunggu dijawab penyedia. */
-  providerQuestions: () => '/mitra/tanya-jawab'
+  providerQuestions: () => '/mitra/tanya-jawab',
+  /** Halaman pintu, mis. /pintu/ka-main. */
+  door: (slug: string) => `/pintu/${slug}`,
+  /** Mulai memesan satu penyedia: ringkasan aturan → masuk OTP bila perlu → kirim. */
+  bookingStart: (
+    listingSlug: string,
+    q?: { unitId?: number; startsAt?: Date; endsAt?: Date; seats?: number }
+  ) => {
+    const p = new URLSearchParams();
+    if (q?.unitId) p.set('unit', String(q.unitId));
+    if (q?.startsAt) p.set('mulai', q.startsAt.toISOString());
+    if (q?.endsAt) p.set('selesai', q.endsAt.toISOString());
+    if (q?.seats) p.set('kursi', String(q.seats));
+    const qs = p.toString();
+    return `/pesan/${listingSlug}${qs ? `?${qs}` : ''}`;
+  },
+  /** Masuk warga dengan nomor WA + OTP. */
+  citizenSignIn: (next?: string) => `/masuk${next ? `?next=${encodeURIComponent(next)}` : ''}`,
+  /** Profil publik listing. */
+  listing: (slug: string) => `/listing/${slug}`,
+  /** Chat bebas, opsional dengan pesan pertama. */
+  chat: (q?: string) => `/chat${q ? `?q=${encodeURIComponent(q)}` : ''}`
 };
 
 // ───────────────────────────── Mesin Jadwal (PRD 8.4) ─────────────────────────────
@@ -252,13 +276,23 @@ export interface BookingEngine {
   /**
    * Membuat pesanan berstatus `sent`: cek listing, tahan slot (schedule.holdSlot), simpan kontak terpisah,
    * catat booking_events, set respond_by dari kategori (atau pengaturan bawaan), lalu kirim `booking_new`
-   * ke penyedia. providerNotice berisi tautan wa.me pada mode cadangan.
+   * ke penyedia. providerNotice berisi tautan wa.me pada mode cadangan: tautan itu memuat token Terima/Tolak,
+   * jadi JANGAN ditampilkan ke warga (warga tidak boleh melihat token, dan penyedia tidak boleh melihat nomor
+   * warga sebelum menerima). Di mode cadangan pesan diteruskan tim dari nomor resmi Kamanga lewat
+   * resendProviderNotice di dashboard admin.
    */
   createBooking(
     input: CreateBookingInput
   ): Promise<
     | { ok: true; bookingId: number; code: string; providerNotice: WaSendResult }
     | { ok: false; reason: CreateBookingFail }
+  >;
+  /** Bangun ulang pesan `booking_new` untuk pesanan `sent` (tautan token sama). Dipakai tim di dashboard admin
+   *  untuk meneruskan pesanan ke penyedia dari nomor resmi Kamanga saat mode cadangan. Pemanggil wajib requireAdmin(). */
+  resendProviderNotice(
+    id: number
+  ): Promise<
+    { ok: true; notice: WaSendResult } | { ok: false; reason: 'not_found' | 'invalid_transition' }
   >;
   /** sent → accepted | rejected. Menerima membuka kontak dan mengirim booking_contact + booking_accepted. */
   respondBooking(
@@ -402,6 +436,8 @@ export type WaParams = {
   booking_accepted: { code: string; listing: string; item: string; link: string };
   booking_rejected: { code: string; listing: string; reason: string; link: string };
   booking_expired: { code: string; listing: string; link: string };
+  /** Warga atau penyedia: pesanan dibatalkan pihak lain. link = halaman pesanan pihak penerima. */
+  booking_cancelled: { code: string; listing: string; item: string; reason: string; link: string };
   /** Warga: pengingat sebelum jadwal. */
   booking_reminder: { code: string; listing: string; item: string; link: string };
   /** Warga: "Puas?" setelah selesai. */

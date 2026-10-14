@@ -44,10 +44,10 @@ Lihat bagian **Aturan keras** dan **Kerja paralel** di `AGENTS.md`. Ringkasnya: 
 | `agent-pesanan` | 2 | `src/lib/engines/booking/`, `src/app/api/cron/`, `scripts/bookings-tick.ts` |
 | `agent-lokasi` | 2 | `src/lib/engines/location/`, `scripts/wilayah/`, `data/wilayah/` |
 | `agent-wa` | 2 | `src/lib/engines/notify/`, `src/app/api/wa/` |
-| `agent-ui-warga` | 3 | `src/app/page.tsx`, `src/app/(publik)/`, `src/app/chat/`, `src/features/{warga,jelajah,chat}/` |
+| `agent-ui-warga` | 3 | `src/app/page.tsx`, `src/app/(publik)/`, `src/features/{warga,jelajah}/` |
 | `agent-ui-mitra` | 3 | `src/app/mitra/`, `src/features/mitra/`, `src/app/dashboard/my-listings/`, `src/features/vendor/` |
 | `agent-ui-admin` | 3 | `src/app/dashboard/` (kecuali `my-listings/`), fitur admin di `src/features/`, `src/config/nav-config.ts` |
-| `agent-chat` | 3 | `src/lib/kamanga-ai/`, `src/app/api/chat/` |
+| `agent-chat` | 3 | `src/lib/kamanga-ai/`, `src/app/api/chat/`, `src/app/chat/`, `src/features/chat/` |
 | `agent-penguji` | 4 | `tests/`, `docs/laporan-uji.md` |
 
 Folder yang tidak tercantum (termasuk `src/app/auth/`, `src/lib/auth.ts`, `src/db/`) milik lead. Bila `docs/rencana-tahap1.md` memutuskan pembagian lain, perbarui tabel ini dan berkas di `.claude/agents/`.

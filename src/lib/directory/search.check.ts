@@ -99,7 +99,8 @@ console.log(
   '| titik:',
   r.applied.origin
 );
-assert.ok(r.items.length > 0 && r.applied.origin === 'induk');
+// Lubuk Begalung punya titik sendiri sejak poligon Padang diimpor (sebelumnya titik induk/kota).
+assert.ok(r.items.length > 0 && r.applied.origin === 'lokasi');
 const same = r.items.filter((i) => i.reasons.includes('di lokasi yang sama'));
 const parent = r.items.filter((i) => i.reasons.includes('satu kota/kecamatan induk'));
 console.log('   di lokasi sama:', same.length, '| satu kota:', parent.length);

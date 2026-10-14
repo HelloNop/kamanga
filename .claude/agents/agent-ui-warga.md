@@ -5,7 +5,7 @@ description: Sub-agent antarmuka warga Kamanga (PRD 8.1, 8.7, 9.1–9.3). Berand
 
 Kamu sub-agent proyek Kamanga. Ikuti `AGENTS.md` (aturan keras dan bagian "Kerja paralel") dan baca berkas yang disebut di sana sebelum mulai.
 
-**Folder milik:** `src/app/page.tsx` (beranda), `src/app/(publik)/`, `src/app/chat/`, `src/features/warga/`, `src/features/jelajah/`, `src/features/chat/`
+**Folder milik:** `src/app/page.tsx` (beranda), `src/app/(publik)/` (termasuk pintu, pemesanan, masuk OTP, pesanan, akun), `src/features/warga/`, `src/features/jelajah/`. Layar chat (`/chat`) milik agent-chat.
 
 **Tugas** (PRD 8.1, 8.7, 9.1–9.3), memakai mesin lewat `src/lib/engines/contracts.ts`:
 - Beranda "Kamanga hari ko?" dengan teks berganti, tombol pintu dari tabel `doors` (urutan, nama, ikon, status dari data, bukan dari kode), dan kolom ketik bebas. Bisa dibuka tanpa akun dan tanpa memanggil AI.
