@@ -817,6 +817,9 @@ export const chatSessions = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     ipHash: text(),
     messageCount: integer().notNull().default(0),
+    // Niat terstruktur yang sedang berjalan (pintu, kategori, wilayah, waktu, jumlah, anggaran, ...), agar konteks
+    // terbawa dalam satu sesi (PRD 8.2). Tidak pernah memuat koordinat perangkat, nomor, atau alamat warga.
+    state: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow()
   },
