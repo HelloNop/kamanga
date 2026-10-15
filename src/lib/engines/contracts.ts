@@ -445,8 +445,9 @@ export interface NotifyEngine {
     params: WaParams[T],
     opts?: { bookingId?: number }
   ): Promise<WaSendResult>;
-  /** Membuat kode, menyimpan hash-nya, mengirim lewat WA (cadangan: dicetak ke log server saat pengembangan). */
-  requestOtp(phone: string): Promise<OtpRequestResult>;
+  /** Membuat kode, menyimpan hash-nya, mengirim lewat WA (cadangan: dicetak ke log server saat pengembangan).
+   *  Dibatasi per nomor dan per ipHash (ipHashOf); ipHash null hanya untuk pemanggil internal/uji. */
+  requestOtp(phone: string, ipHash: string | null): Promise<OtpRequestResult>;
   /** Dipakai Better Auth (verifyOTP) saat warga memasukkan kode. Kode sekali pakai. */
   verifyOtp(phone: string, code: string): Promise<OtpVerifyResult>;
 }

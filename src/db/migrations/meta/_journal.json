@@ -92,6 +92,13 @@
       "when": 1792001412342,
       "tag": "0012_chat_state",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792022753168,
+      "tag": "0013_otp_ip_hash",
+      "breakpoints": true
     }
   ]
 }

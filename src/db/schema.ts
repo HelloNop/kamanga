@@ -754,9 +754,14 @@ export const waOtps = pgTable(
     attempts: integer().notNull().default(0),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     consumedAt: timestamp({ withTimezone: true }),
+    // Hash IP peminta (ipHashOf), hanya untuk batas permintaan per IP; null = pemanggil internal.
+    ipHash: text(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
   },
-  (t) => [index('wa_otps_phone_idx').on(t.phone, t.createdAt)]
+  (t) => [
+    index('wa_otps_phone_idx').on(t.phone, t.createdAt),
+    index('wa_otps_ip_hash_idx').on(t.ipHash, t.createdAt)
+  ]
 );
 
 // ───────────────────────────── Pengaturan & statistik ─────────────────────────────

@@ -4,7 +4,7 @@
 // - WhatsApp Business Cloud API resmi (Meta): hanya bila semua env WA_* wajib diisi.
 // Tidak ada jalur WhatsApp tidak resmi. Binding dari ../contracts dipakai hanya di dalam fungsi (impor melingkar).
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
-import { and, desc, eq, isNull, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/db';
 import { waMessages, waOtps } from '@/db/schema';
 import { normalizeWhatsapp } from '@/features/listings/lib/format';
@@ -16,6 +16,9 @@ const OTP_TTL_MS = 5 * 60_000;
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_PER_10_MIN = 3;
 const OTP_PER_DAY = 10;
+// Satu IP bisa dipakai banyak warga (CGNAT operator seluler), jadi lebih longgar dari batas per nomor.
+const OTP_PER_IP_HOUR = 10;
+const OTP_PER_IP_DAY = 30;
 
 type ApiConfig = { phoneNumberId: string; accessToken: string; version: string; lang: string };
 
@@ -121,6 +124,8 @@ async function sendTemplate(
   return id;
 }
 
+const countWhere = (where: SQL) => sql<number>`count(*) filter (where ${where})`.mapWith(Number);
+
 function hashOtp(phone: string, code: string) {
   const secret =
     process.env.BETTER_AUTH_SECRET ||
@@ -174,7 +179,7 @@ export const notifyEngine: NotifyEngine = {
     return { mode, status, messageId: row.id, link, text };
   },
 
-  async requestOtp(raw) {
+  async requestOtp(raw, ipHash) {
     const phone = normalizeWhatsapp(raw);
     if (!phone) return { ok: false, reason: 'invalid_phone' };
     const mode = apiConfig() ? 'api' : 'fallback';
@@ -184,26 +189,42 @@ export const notifyEngine: NotifyEngine = {
 
     // Kode lama tidak dibutuhkan lagi; nomor warga jangan disimpan lebih lama dari perlu.
     await db.delete(waOtps).where(sql`${waOtps.createdAt} < now() - interval '2 days'`);
-    const [count] = await db
-      .select({
-        recent:
-          sql<number>`count(*) filter (where ${waOtps.createdAt} > now() - interval '10 minutes')`.mapWith(
-            Number
-          ),
-        day: sql<number>`count(*)`.mapWith(Number)
-      })
-      .from(waOtps)
-      .where(and(eq(waOtps.phone, phone), sql`${waOtps.createdAt} > now() - interval '1 day'`));
-    // ponytail: hitung lalu sisipkan tanpa kunci; permintaan serentak bisa lolos 1–2 kode lebih.
-    if (count.recent >= OTP_PER_10_MIN || count.day >= OTP_PER_DAY)
-      return { ok: false, reason: 'rate_limited' };
-
     const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    await db.insert(waOtps).values({
-      phone,
-      codeHash: hashOtp(phone, code),
-      expiresAt: new Date(Date.now() + OTP_TTL_MS)
+    // Hitung lalu sisipkan di bawah kunci agar permintaan serentak tidak lolos melewati batas.
+    // ponytail: satu kunci untuk semua nomor/IP (dipegang beberapa ms); kunci per nomor+IP bila OTP ramai.
+    const allowed = await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext('kamanga:wa_otps'))`);
+      // ipHash null → `= null` tidak pernah benar, jadi batas per IP tidak berlaku.
+      const byPhone = sql`${waOtps.phone} = ${phone}`;
+      const byIp = sql`${waOtps.ipHash} = ${ipHash}`;
+      const [c] = await tx
+        .select({
+          phone10: countWhere(
+            sql`${byPhone} and ${waOtps.createdAt} > now() - interval '10 minutes'`
+          ),
+          phoneDay: countWhere(byPhone),
+          ipHour: countWhere(sql`${byIp} and ${waOtps.createdAt} > now() - interval '1 hour'`),
+          ipDay: countWhere(byIp)
+        })
+        .from(waOtps)
+        .where(and(or(byPhone, byIp), sql`${waOtps.createdAt} > now() - interval '1 day'`));
+      if (
+        c.phone10 >= OTP_PER_10_MIN ||
+        c.phoneDay >= OTP_PER_DAY ||
+        c.ipHour >= OTP_PER_IP_HOUR ||
+        c.ipDay >= OTP_PER_IP_DAY
+      )
+        return false;
+      await tx.insert(waOtps).values({
+        phone,
+        ipHash,
+        codeHash: hashOtp(phone, code),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS)
+      });
+      return true;
     });
+    if (!allowed) return { ok: false, reason: 'rate_limited' };
+
     const sent = await notifyEngine.sendWa('otp', { phone, role: 'citizen' }, { code });
     if (sent.status === 'failed') return { ok: false, reason: 'unavailable' };
     if (mode === 'fallback')

@@ -5,7 +5,7 @@
 // lalu diisi nilai uji untuk jalur API dengan fetch tiruan; tidak ada pesan sungguhan yang dikirim.
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { eq, like, sql } from 'drizzle-orm';
+import { eq, like, sql, type SQL } from 'drizzle-orm';
 import { POST as otpPost } from '@/app/api/wa/otp/route';
 import { GET as webhookGet, POST as webhookPost } from '@/app/api/wa/webhook/route';
 import { db } from '@/db';
@@ -19,6 +19,7 @@ import {
   type WaParams,
   type WaTemplate
 } from '@/lib/engines/contracts';
+import { ipHashOf } from '@/lib/kamanga-ai/request';
 import { WA_TEXTS, fill, metaParamKeys } from './templates';
 
 const PREFIX = '62800999';
@@ -150,6 +151,19 @@ const verify = (token: string) =>
     )
   );
 
+/** Jumlah panggilan serentak yang lolos. */
+const okCount = async (n: number, call: (i: number) => Promise<{ ok: boolean }>) =>
+  (await Promise.all(Array.from({ length: n }, (_, i) => call(i)))).filter((r) => r.ok).length;
+
+const otpReq = (phone: string, headers: Record<string, string>) =>
+  otpPost(
+    new Request('http://localhost/api/wa/otp', {
+      method: 'POST',
+      headers: { host: 'localhost', ...headers },
+      body: JSON.stringify({ phone })
+    })
+  );
+
 // Jawaban tiruan Cloud API (diganti per kasus uji).
 let reply = () => Response.json({ messages: [{ id: 'wamid.UJI-1' }] });
 type SentTemplate = {
@@ -224,7 +238,7 @@ try {
 
   // ───── 3. OTP ─────
   // benar dan sekali pakai; yang tersimpan hanya hash
-  assert.deepEqual(await notify.requestOtp(num(2)), { ok: true, mode: 'fallback' });
+  assert.deepEqual(await notify.requestOtp(num(2), null), { ok: true, mode: 'fallback' });
   const c2 = lastCode();
   assert.match(c2, /^\d{6}$/);
   const [stored] = await db
@@ -243,7 +257,7 @@ try {
   assert.deepEqual(await notify.verifyOtp(num(2), c2), { ok: false, reason: 'not_found' });
 
   // salah: percobaan bertambah sampai too_many, lalu kode benar pun ditolak
-  await notify.requestOtp(num(3));
+  await notify.requestOtp(num(3), null);
   const c3 = lastCode();
   const wrong = c3 === '000000' ? '000001' : '000000';
   for (let i = 1; i <= 4; i++)
@@ -257,7 +271,7 @@ try {
   assert.deepEqual(await notify.verifyOtp(num(3), c3), { ok: false, reason: 'too_many' });
 
   // kedaluwarsa
-  await notify.requestOtp(num(4));
+  await notify.requestOtp(num(4), null);
   const c4 = lastCode();
   await db
     .update(waOtps)
@@ -266,14 +280,14 @@ try {
   assert.deepEqual(await notify.verifyOtp(num(4), c4), { ok: false, reason: 'expired' });
 
   // hanya kode terbaru yang berlaku; batas 3 kode per 10 menit
-  await notify.requestOtp(num(5));
+  await notify.requestOtp(num(5), null);
   const c5a = lastCode();
-  await notify.requestOtp(num(5));
+  await notify.requestOtp(num(5), null);
   const c5b = lastCode();
   if (c5a !== c5b)
     assert.deepEqual(await notify.verifyOtp(num(5), c5a), { ok: false, reason: 'wrong' });
-  assert.equal((await notify.requestOtp(num(5))).ok, true);
-  assert.deepEqual(await notify.requestOtp(num(5)), { ok: false, reason: 'rate_limited' });
+  assert.equal((await notify.requestOtp(num(5), null)).ok, true);
+  assert.deepEqual(await notify.requestOtp(num(5), null), { ok: false, reason: 'rate_limited' });
 
   // batas 10 kode per hari
   await db.insert(waOtps).values(
@@ -284,33 +298,73 @@ try {
       createdAt: sql`now() - interval '2 hours'`
     }))
   );
-  assert.deepEqual(await notify.requestOtp(num(6)), { ok: false, reason: 'rate_limited' });
+  assert.deepEqual(await notify.requestOtp(num(6), null), { ok: false, reason: 'rate_limited' });
 
-  assert.deepEqual(await notify.requestOtp('12345'), { ok: false, reason: 'invalid_phone' });
+  // batas per IP lintas nomor: 10 per jam, 30 per hari; IP lain tidak terpengaruh
+  const ipRows = (ipHash: string, from: number, n: number, ago: SQL) =>
+    db.insert(waOtps).values(
+      Array.from({ length: n }, (_, i) => ({
+        phone: num(from + i),
+        ipHash,
+        codeHash: 'x',
+        expiresAt: new Date(),
+        createdAt: sql`now() - ${ago}`
+      }))
+    );
+  const limited = { ok: false, reason: 'rate_limited' };
+  await ipRows('uji-ip-jam', 30, 10, sql`interval '30 minutes'`);
+  assert.deepEqual(await notify.requestOtp(num(40), 'uji-ip-jam'), limited);
+  assert.equal((await notify.requestOtp(num(40), 'uji-ip-lain')).ok, true);
+  await ipRows('uji-ip-hari', 41, 30, sql`interval '2 hours'`);
+  assert.deepEqual(await notify.requestOtp(num(71), 'uji-ip-hari'), limited);
+
+  // serentak: kunci membuat batas tetap tepat (3 per nomor per 10 menit, 10 per IP per jam)
+  assert.equal(await okCount(6, () => notify.requestOtp(num(80), null)), 3);
+  assert.equal(await okCount(15, (i) => notify.requestOtp(num(81 + i), 'uji-ip-serentak')), 10);
+
+  assert.deepEqual(await notify.requestOtp('12345', null), { ok: false, reason: 'invalid_phone' });
   // produksi tanpa API: kode tidak bisa dikirim
   Reflect.set(process.env, 'NODE_ENV', 'production');
-  assert.deepEqual(await notify.requestOtp(num(8)), { ok: false, reason: 'unavailable' });
+  assert.deepEqual(await notify.requestOtp(num(8), null), { ok: false, reason: 'unavailable' });
   if (savedNodeEnv === undefined) Reflect.deleteProperty(process.env, 'NODE_ENV');
   else Reflect.set(process.env, 'NODE_ENV', savedNodeEnv);
 
-  // route: jawaban tidak memuat kode
-  const r7 = await otpPost(
-    new Request('http://localhost/api/wa/otp', {
-      method: 'POST',
-      body: JSON.stringify({ phone: '0800 999 00007' })
-    })
+  // route: Origin wajib dan sama; jawaban tidak memuat kode; batas per IP memakai X-Forwarded-For
+  const IP = '203.0.113.7';
+  const same = { origin: 'http://localhost', 'x-forwarded-for': IP };
+  assert.equal((await otpReq(num(9), { 'x-forwarded-for': IP })).status, 403);
+  assert.equal((await otpReq(num(9), { ...same, origin: 'https://jahat.example' })).status, 403);
+  assert.equal(
+    (
+      await db
+        .select()
+        .from(waOtps)
+        .where(eq(waOtps.phone, num(9)))
+    ).length,
+    0
   );
+
+  const r7 = await otpReq('0800 999 00007', same);
   const r7text = await r7.text();
   assert.equal(r7.status, 200);
   assert.deepEqual(JSON.parse(r7text), { ok: true, phone: num(7), mode: 'fallback' });
   assert.ok(!r7text.includes(lastCode()));
-  const rBad = await otpPost(
-    new Request('http://localhost/api/wa/otp', { method: 'POST', body: '{"phone":"abc"}' })
-  );
+  const rBad = await otpReq('abc', same);
   assert.equal(rBad.status, 400);
   assert.match((await rBad.json()).error, /Nomor WhatsApp tidak valid/);
+
+  const busyIp = '203.0.113.8';
+  await ipRows(
+    ipHashOf(new Headers({ 'x-forwarded-for': busyIp })),
+    100,
+    10,
+    sql`interval '1 minute'`
+  );
+  const r429 = await otpReq(num(110), { ...same, 'x-forwarded-for': busyIp });
+  assert.equal(r429.status, 429);
+  assert.equal((await r429.json()).reason, 'rate_limited');
   console.log(
-    '3. OTP: benar sekali pakai, salah→too_many, kedaluwarsa, batas permintaan, hanya hash OK'
+    '3. OTP: benar sekali pakai, salah→too_many, kedaluwarsa, batas per nomor/IP (juga serentak), Origin wajib, hanya hash OK'
   );
 
   // ───── 4. jalur API resmi (fetch tiruan) ─────
@@ -374,7 +428,7 @@ try {
   // OTP lewat API: template autentikasi, kode di badan dan tombol salin, tidak dicetak ke log
   reply = () => Response.json({ messages: [{ id: 'wamid.UJI-OTP' }] });
   const logCount = logs.length;
-  assert.deepEqual(await notify.requestOtp(num(11)), { ok: true, mode: 'api' });
+  assert.deepEqual(await notify.requestOtp(num(11), null), { ok: true, mode: 'api' });
   const otpTpl = calls.at(-1)!.body.template;
   assert.equal(otpTpl.name, 'kamanga_otp');
   const otpCode = otpTpl.components[0].parameters[0].text ?? '';

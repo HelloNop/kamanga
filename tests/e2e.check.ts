@@ -226,7 +226,7 @@ async function otpCode(phone: string) {
   const orig = console.info;
   console.info = (...a: unknown[]) => void logs.push(a.join(' '));
   try {
-    const r = await notify.requestOtp(phone);
+    const r = await notify.requestOtp(phone, null);
     assert.ok(r.ok, `requestOtp: ${JSON.stringify(r)}`);
   } finally {
     console.info = orig;
@@ -1048,6 +1048,12 @@ try {
         headers: { origin: 'https://jahat.example' }
       });
       assert.equal(otp.status, 403, 'OTP dari asal lain ditolak');
+      const noOrigin = await fetch(`${BASE}/api/wa/otp`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ phone: newPhone() })
+      });
+      assert.equal(noOrigin.status, 403, 'OTP tanpa Origin (skrip) ditolak');
 
       // Daftar dengan email sambil mengisi `role` sendiri: peran tidak boleh ikut.
       const password = randomBytes(18).toString('base64url');
