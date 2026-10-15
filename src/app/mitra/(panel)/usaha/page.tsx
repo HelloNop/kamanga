@@ -19,9 +19,14 @@ export default async function BusinessesPage() {
       pageTitle='Usaha & layanan'
       pageDescription='Profil, foto, layanan dan harga, area layanan, kontak, dan isian aturan.'
       pageHeaderAction={
-        <Link href='/mitra/usaha/baru' className={buttonVariants()}>
-          <Icons.add aria-hidden /> Tambah usaha
-        </Link>
+        <>
+          <Link href='/mitra/klaim' className={buttonVariants({ variant: 'outline' })}>
+            <Icons.key aria-hidden /> Klaim usaha
+          </Link>
+          <Link href='/mitra/usaha/baru' className={buttonVariants()}>
+            <Icons.add aria-hidden /> Tambah usaha
+          </Link>
+        </>
       }
     >
       <HydrationBoundary state={dehydrate(queryClient)}>

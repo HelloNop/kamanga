@@ -39,6 +39,7 @@
     "check:providers": "bun run src/lib/directory/providers.check.ts",
     "check:admin": "bun run src/features/bookings/admin.check.ts",
     "check:mitra": "bun run src/features/mitra/mitra.check.ts",
+    "check:klaim": "bun run src/features/mitra/claims.check.ts",
     "check:warga": "bun run src/features/warga/warga.check.ts",
     "check:auth": "bun run src/lib/auth.check.ts",
     "check:e2e": "bun run tests/e2e.check.ts",

@@ -8,7 +8,13 @@ import { cn } from '@/lib/utils';
 import { setActiveListing } from '../api/service';
 import type { OwnedListing } from '../api/types';
 
-const MORE = ['/mitra/lainnya', '/mitra/usaha', '/mitra/ulasan', '/mitra/statistik'];
+const MORE = [
+  '/mitra/lainnya',
+  '/mitra/usaha',
+  '/mitra/klaim',
+  '/mitra/ulasan',
+  '/mitra/statistik'
+];
 
 /** Navigasi bawah (ramah jempol). Jadwal hanya untuk kategori ber-jadwal slot/seat. */
 export function MitraNav({ showSchedule, waiting }: { showSchedule: boolean; waiting: number }) {

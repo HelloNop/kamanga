@@ -14,6 +14,12 @@ const ITEMS = [
     label: 'Usaha & layanan',
     hint: 'Profil, foto, harga, area, kontak, aturan'
   },
+  {
+    href: '/mitra/klaim',
+    icon: Icons.key,
+    label: 'Klaim usaha',
+    hint: 'Usaha Anda sudah diinput tim Kamanga'
+  },
   { href: '/mitra/ulasan', icon: Icons.star, label: 'Ulasan', hint: 'Dari pesanan selesai' },
   {
     href: '/mitra/statistik',

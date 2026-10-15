@@ -55,11 +55,11 @@ export default async function TokenBookingPage(props: { params: Promise<{ token:
           <p className='text-muted-foreground text-sm'>
             Dengan akun mitra Anda bisa melihat semua pesanan, mengatur jadwal, memblokir jam yang
             sudah terisi, dan menjawab pertanyaan warga. Gratis selama masa perintisan. Usaha Anda
-            sudah diinput tim? Setelah mendaftar, hubungi tim Kamanga dari nomor WhatsApp usaha
-            untuk mengklaimnya.
+            sudah diinput tim? Setelah mendaftar, pilih Klaim usaha lalu masukkan kode yang dikirim
+            ke WhatsApp usaha.
           </p>
           <div className='mt-3 grid grid-cols-2 gap-2'>
-            <Link href='/auth/sign-up?next=/mitra' className={buttonVariants()}>
+            <Link href='/auth/sign-up?next=/mitra/klaim' className={buttonVariants()}>
               Daftar
             </Link>
             <Link

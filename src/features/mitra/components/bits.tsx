@@ -39,11 +39,17 @@ export function NoListing() {
       <Icons.buildingStore className='text-muted-foreground mb-3 size-8' aria-hidden />
       <p className='font-semibold'>Belum ada usaha</p>
       <p className='text-muted-foreground mt-1 text-sm'>
-        Daftarkan usaha Anda supaya warga bisa memesan lewat Kamanga. Usaha yang sudah diinput tim
-        Kamanga bisa diklaim: hubungi tim Kamanga dari nomor WhatsApp usaha Anda.
+        Daftarkan usaha Anda supaya warga bisa memesan lewat Kamanga. Usaha Anda sudah diinput tim
+        Kamanga? Klaim usaha itu, lalu verifikasi lewat nomor WhatsApp usaha.
       </p>
       <Link href='/mitra/usaha/baru' className={cn(buttonVariants(), 'mt-4 w-full')}>
         <Icons.add aria-hidden /> Daftarkan usaha
+      </Link>
+      <Link
+        href='/mitra/klaim'
+        className={cn(buttonVariants({ variant: 'outline' }), 'mt-2 w-full')}
+      >
+        <Icons.key aria-hidden /> Klaim usaha
       </Link>
     </Panel>
   );

@@ -4,7 +4,7 @@
 // - editor(): admin ATAU mitra pemilik listing (ScheduleEditor dan QaEditor dipakai juga di panel admin,
 //   karena tim mengisi jadwal penyedia yang belum punya akun).
 // Kontak warga hanya lewat booking.getBookingForProvider (mesin yang menyaring).
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import {
   type Actor,
@@ -15,9 +15,11 @@ import {
   schedule
 } from '@/lib/engines/contracts';
 import { addDays, fromJakarta, jakartaDate } from '@/lib/engines/time';
+import { ipHashOf } from '@/lib/kamanga-ai/request';
 import { requireSession, requireVendor } from '@/lib/session';
 import { timed } from '../lib/format';
 import { actOnBooking } from './bookings';
+import * as claims from './claims';
 import { ACTIVE_LISTING_COOKIE } from './context';
 import * as repo from './repository';
 import type {
@@ -62,6 +64,34 @@ export async function setActiveListing(listingId: number) {
     maxAge: 60 * 60 * 24 * 365
   });
   revalidatePath('/mitra', 'layout');
+}
+
+// ───────────────────────────── Klaim usaha ─────────────────────────────
+
+export async function getClaimPage(q: string) {
+  const { user } = await requireVendor();
+  const [mine, results] = await Promise.all([
+    claims.myClaims(user.id),
+    claims.searchClaimable(String(q ?? '').slice(0, 80))
+  ]);
+  return { mine, results };
+}
+
+/** Membuka klaim dan mengirim kode ke WA usaha; dipanggil ulang = kirim ulang kode. */
+export async function requestClaimCode(listingId: number): Promise<claims.ClaimCodeResult> {
+  const { user } = await requireVendor();
+  if (!validId(listingId)) return { ok: false, message: 'Usaha tidak ditemukan' };
+  const r = await claims.requestClaimCode(user.id, listingId, ipHashOf(await headers()));
+  revalidatePath('/mitra/klaim');
+  return r;
+}
+
+export async function verifyClaimCode(claimId: number, code: string) {
+  const { user } = await requireVendor();
+  if (!validId(claimId)) return { ok: false as const, message: 'Klaim tidak ditemukan' };
+  const r = await claims.verifyClaimCode(user.id, claimId, String(code ?? ''));
+  if (r.ok) await setActiveListing(r.listingId); // usaha yang baru diklaim langsung tampil di /mitra
+  return r;
 }
 
 // ───────────────────────────── Beranda ─────────────────────────────
