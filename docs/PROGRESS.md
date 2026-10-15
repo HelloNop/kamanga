@@ -84,7 +84,7 @@ Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `
 ### Yang belum
 - WhatsApp Business API resmi belum aktif (mode cadangan: tim meneruskan pesan dari nomor resmi lewat dashboard admin). Perlu: verifikasi Meta, isi 4 env `WA_*`, daftarkan 13 template di `src/lib/engines/notify/templates.ts`.
 - Penjadwal berkala untuk `bun run bookings:tick` / `POST /api/cron/bookings` (isi `CRON_SECRET`). Tanpa itu kedaluwarsa tetap terjadi saat pesanan dibaca, tetapi pengingat dan selesai otomatis tidak jalan.
-- Alur klaim usaha oleh penyedia, notifikasi PWA, poligon wilayah di luar Padang, `search.ts` lama masih earthdistance.
+- Notifikasi PWA, poligon wilayah di luar Padang, `search.ts` lama masih earthdistance.
 
 ### Keputusan yang diambil lead (alasan di `docs/rencana-tahap1.md` bagian 2)
 - Slot ditahan = pesanan berstatus "dikirim"; anti-bentrok dijamin constraint database.
@@ -101,7 +101,13 @@ Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `
 2. Wawancara lapangan + isi data penyedia nyata (target PRD §14: 20 lapangan, 15 perawatan diri, 5 travel, 15 servis).
 3. Ajukan verifikasi WhatsApp Business API dan template Meta; tambah batas OTP per IP sebelum API aktif.
 4. Pasang penjadwal `bookings:tick` di VPS (cron tiap 1–5 menit).
-5. Alur klaim usaha; uji tampilan manual di ponsel sungguhan.
+5. Uji tampilan manual di ponsel sungguhan.
+
+## Sesudah tahap 1 (15 Okt 2026)
+
+- Batas OTP per IP, wajib header Origin, hitungan batas dikunci (temuan R11; migrasi `0013_otp_ip_hash.sql`).
+- Alur klaim usaha: mitra mengklaim listing yang diinput tim (`/mitra/klaim`), verifikasi kode lewat WA usaha, antrean klaim di `/dashboard/review`. Uji `check:klaim`.
+- Semua uji lulus setelah digabung: 21 script `check:*` termasuk `check:e2e` 18/18.
 
 ## Asumsi yang diambil lead
 
@@ -112,7 +118,6 @@ Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `
 - R7: hasil kosong tanpa alasan dan tanpa pelonggaran saat wilayah jemput travel tidak mencakup titik warga (`providers.ts` belum menawarkan pelonggaran area layanan).
 - R8: kontak warga tetap terbuka lewat tautan token tanpa batas waktu setelah diterima (perlu keputusan: tutup N hari setelah selesai?).
 - R9: 3 kasus `eval:chat` meleset (salah ketik nama tempat, "cuci karpet").
-- R11: `/api/wa/otp` belum punya batas per IP; wajib sebelum API WA aktif (OTP berbayar).
 
 - Poligon dan titik tengah baru ada untuk Kota Padang; lokasi lain belum.
 - Template Meta (13) perlu didaftarkan pemilik sebelum API WA diaktifkan; daftar lengkap di laporan agent-wa (diringkas di `src/lib/engines/notify/templates.ts`).
