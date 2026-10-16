@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Icons } from '@/components/icons';
 import { paths } from '@/lib/engines/paths';
 
@@ -19,8 +19,9 @@ const GAP = 10; // sama dengan gap .dc-track
 /**
  * Pintu di beranda sebagai slider. Kartu berikutnya terlihat sebagian sebagai isyarat geser.
  * Geser otomatis; sampai di kartu terakhir, kembali ke kartu pertama. Digeser manual berhenti di ujung.
- * Disentuh/diarahkan = berhenti sebentar; tombol jeda menghentikannya sampai diputar lagi (WCAG 2.2.2).
- * Warga yang memilih kurangi gerak: tidak bergerak sendiri.
+ * Tombol "berikutnya" menggeser satu kartu (di ujung kembali ke awal). Disentuh/diarahkan/difokus = berhenti
+ * sebentar; jalan lagi beberapa detik setelah warga selesai. Warga yang memilih kurangi gerak: tidak bergerak sendiri.
+ * ponytail: tanpa tombol jeda permanen (WCAG 2.2.2) atas permintaan pemilik; tambahkan bila ada keluhan gerak.
  */
 export function DoorSlider({
   doors,
@@ -31,25 +32,25 @@ export function DoorSlider({
   onFront: (name: string) => void;
 }) {
   const track = useRef<HTMLUListElement>(null);
-  const [stopped, setStopped] = useState(false);
   const holding = useRef(false);
   const resumeAt = useRef(0);
 
-  useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) setStopped(true);
-  }, []);
+  // Satu kartu ke kanan; di kartu terakhir kembali ke kartu pertama.
+  const next = () => {
+    const el = track.current;
+    if (!el) return;
+    const step = (el.firstElementChild?.getBoundingClientRect().width ?? 0) + GAP;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + step, behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (stopped) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const t = setInterval(() => {
-      const el = track.current;
-      if (!el || holding.current || Date.now() < resumeAt.current || document.hidden) return;
-      const step = (el.firstElementChild?.getBoundingClientRect().width ?? 0) + GAP;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + step, behavior: 'smooth' });
+      if (!holding.current && Date.now() >= resumeAt.current && !document.hidden) next();
     }, EVERY);
     return () => clearInterval(t);
-  }, [stopped]);
+  }, []);
 
   // Pintu terdepan = kartu paling dekat ke tepi kiri, dibaca setelah geseran berhenti.
   const settle = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -114,12 +115,14 @@ export function DoorSlider({
       </ul>
       <button
         type='button'
-        className='dc-pause'
-        aria-pressed={stopped}
-        aria-label={stopped ? 'Putar geser pintu' : 'Jeda geser pintu'}
-        onClick={() => setStopped((s) => !s)}
+        className='dc-next'
+        aria-label='Pintu berikutnya'
+        onClick={() => {
+          next();
+          resumeAt.current = Date.now() + REST;
+        }}
       >
-        {stopped ? <Icons.play size={18} aria-hidden /> : <Icons.pause size={18} aria-hidden />}
+        <Icons.chevronRight size={20} aria-hidden />
       </button>
     </section>
   );

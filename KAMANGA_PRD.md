@@ -178,7 +178,7 @@ Nama pintu adalah pengaturan di dashboard admin dan bisa diganti tanpa koding. S
 - **Slider pintu** di atas kolom ketik, bukan grid, supaya tetap rapi bila pintu bertambah. Kartu berikutnya terlihat sebagian sebagai isyarat geser. Pintu "segera" tampil di ujung dengan tanda "Segera".
   - Geser otomatis pelan (sekitar 4 detik per kartu); sampai di kartu terakhir, kembali ke kartu pertama. Digeser manual berhenti di ujung.
   - Berhenti selama disentuh atau diarahkan; jalan lagi beberapa detik setelah warga selesai menggeser.
-  - Ada tombol jeda/putar (WCAG 2.2.2). Warga yang memilih "kurangi gerak" tidak melihat slider bergerak sendiri.
+  - Ada tombol "berikutnya" (satu kartu; di ujung kembali ke awal). Warga yang memilih "kurangi gerak" tidak melihat slider bergerak sendiri.
 - Contoh pertanyaan siap ketuk di bawah kolom ketik ("Coba tanya"), agar warga tahu bentuk kalimat yang dipahami.
 - Tautan masuk/akun di pojok atas.
 - Warna dan gaya mengikuti tampilan chat (netral, terang/gelap).

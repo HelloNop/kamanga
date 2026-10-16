@@ -571,7 +571,7 @@
   font-size: 0.6875rem;
   font-weight: 600;
 }
-.kmg .dc-pause {
+.kmg .dc-next {
   position: absolute;
   top: 50%;
   right: 0;
@@ -587,10 +587,10 @@
   color: var(--muted);
   cursor: pointer;
 }
-.kmg .dc-pause:hover {
+.kmg .dc-next:hover {
   color: var(--text);
 }
-.kmg .dc-pause:focus-visible {
+.kmg .dc-next:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
