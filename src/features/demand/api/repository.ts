@@ -1,7 +1,7 @@
 // Laporan "permintaan belum terpenuhi". TANPA pemeriksaan login: hanya diimpor oleh service.ts.
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
-import type { DemandPeriod, DemandReport, DemandRow } from './types';
+import type { DemandPeriod, DemandReport, DemandRow, QuestionRow } from './types';
 
 export async function getDemandReport(days: DemandPeriod): Promise<DemandReport> {
   const since = sql`now() - make_interval(days => ${days})`;
@@ -43,4 +43,41 @@ export async function getDemandReport(days: DemandPeriod): Promise<DemandReport>
       })
     )
   };
+}
+
+export async function listUnansweredQuestions(): Promise<QuestionRow[]> {
+  const res = await db.execute(sql`
+    select qa.id, qa.question, qa.created_at, l.id as listing_id, l.name, l.whatsapp,
+      c.name as category, loc.name as place
+    from listing_qa qa
+    join listings l on l.id = qa.listing_id
+    left join listing_categories lc on lc.listing_id = l.id and lc.is_primary
+    left join categories c on c.id = lc.category_id
+    left join locations loc on loc.id = l.location_id
+    where qa.answer is null
+    order by qa.created_at
+    limit 100`);
+  return (res.rows as Record<string, unknown>[]).map((r) => ({
+    id: Number(r.id),
+    question: String(r.question),
+    createdAt: new Date(r.created_at as string).toISOString(),
+    listing: {
+      id: Number(r.listing_id),
+      name: String(r.name),
+      whatsapp: (r.whatsapp as string | null) ?? null
+    },
+    category: (r.category as string | null) ?? null,
+    place: (r.place as string | null) ?? null
+  }));
+}
+
+export async function getQuestion(id: number) {
+  const res = await db.execute(sql`
+    select qa.question, qa.answer, l.name, l.whatsapp
+    from listing_qa qa join listings l on l.id = qa.listing_id
+    where qa.id = ${id}`);
+  const r = res.rows[0] as
+    | { question: string; answer: string | null; name: string; whatsapp: string | null }
+    | undefined;
+  return r ?? null;
 }

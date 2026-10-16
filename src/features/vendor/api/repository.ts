@@ -10,7 +10,7 @@ import {
   updateListing
 } from '@/features/listings/api/repository';
 import type { ListingDetail, ListingOptions } from '@/features/listings/api/types';
-import type { ListingFormValues } from '@/features/listings/schemas/listing';
+import { listingFormSchema, type ListingFormValues } from '@/features/listings/schemas/listing';
 import type { ListingStatus } from '@/features/listings/constants/listing-options';
 import type { MyListing, SaveIntent, SaveResult, SimpleResult, VendorSummary } from './types';
 
@@ -122,15 +122,22 @@ async function submitProblems(v: ListingFormValues): Promise<string | null> {
 export async function saveMyListing(
   userId: string,
   id: number | null,
-  input: ListingFormValues,
+  raw: ListingFormValues,
   intent: SaveIntent
 ): Promise<SaveResult> {
+  // Server action = endpoint publik: validasi bentuk masukan dulu sebelum dipakai. Status dan catatan tinjauan
+  // milik tim (ditentukan di bawah), jadi tidak ikut divalidasi dari masukan vendor.
+  if (intent !== 'draft' && intent !== 'submit') return fail('Permintaan tidak valid');
+  const parsed = listingFormSchema.safeParse({ ...raw, status: 'draft', reviewNote: '' });
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Data tidak valid');
+  const input = parsed.data;
   if (intent === 'submit') {
     const problem = await submitProblems(input);
     if (problem) return fail(problem);
   }
 
-  // Isian yang hanya boleh diatur tim tidak diterima dari vendor.
+  // Isian yang hanya boleh diatur tim (jenis, status, verifikasi, sumber, catatan tinjauan) TIDAK diambil dari
+  // vendor walau dikirim lewat request buatan: listing baru selalu provider; listing lama memakai nilai lamanya.
   const base = { ...input, source: 'vendor' as const, sourceUrl: '', reviewNote: '' };
 
   if (id === null) {
@@ -145,7 +152,7 @@ export async function saveMyListing(
     const status: ListingStatus = intent === 'submit' ? 'pending_review' : 'draft';
     const r = await createListing(
       userId,
-      { ...base, status, verificationLevel: 'unverified' },
+      { ...base, kind: 'provider', status, verificationLevel: 'unverified' },
       userId
     );
     if (!r.ok) return r;
@@ -178,6 +185,7 @@ export async function saveMyListing(
 
   const r = await updateListing(userId, id, {
     ...base,
+    kind: prev.values.kind,
     source: prev.values.source,
     sourceUrl: prev.values.sourceUrl,
     status,

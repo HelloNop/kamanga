@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   cleanAttributes,
   coerceAttribute,
+  formatAttributeValue,
+  formatDuration,
   normalizeWhatsapp,
   parseAttributeSchema,
   parseMapsCoords,
@@ -76,5 +78,23 @@ assert.deepEqual(
     { key: 'd', label: 'D', type: 'boolean' }
   ]
 );
+
+// Tipe rupiah dan durasi (PRD 8.8)
+const rp: AttributeDef = { key: 'racket_price', label: 'Sewa raket', type: 'rupiah' };
+const dur: AttributeDef = { key: 'cancel_before', label: 'Batas pembatalan', type: 'duration' };
+assert.equal(coerceAttribute(rp, 'Rp20.000'), 20000);
+assert.equal(coerceAttribute(rp, 15000), 15000);
+assert.equal(coerceAttribute(rp, 'gratis'), undefined);
+assert.equal(coerceAttribute(dur, '90'), 90);
+assert.equal(coerceAttribute(dur, '1 jam 30 menit'), 90);
+assert.equal(coerceAttribute(dur, '2 hari'), 2880);
+assert.equal(coerceAttribute(dur, '1,5 jam'), 90);
+assert.equal(coerceAttribute(dur, 'besok'), undefined);
+assert.equal(formatDuration(90), '1 jam 30 menit');
+assert.equal(formatDuration(60), '1 jam');
+assert.equal(formatDuration(30), '30 menit');
+assert.equal(formatDuration(4320), '3 hari');
+assert.equal(formatAttributeValue(rp, 20000), 'Rp20.000');
+assert.equal(formatAttributeValue(dur, 120), '2 jam');
 
 console.log('format.check: OK');

@@ -1,4 +1,16 @@
 export type Overview = {
+  bookings: {
+    /** Pesanan masuk sejak pukul 00.00 WIB hari ini. */
+    today: number;
+    /** Menunggu jawaban penyedia (status sent). */
+    unanswered: number;
+    /** Hampir kedaluwarsa, atau jadwal lewat tanpa ditandai selesai. */
+    stuck: number;
+    /** Pertanyaan warga ke penyedia yang belum dijawab. */
+    questionsUnanswered: number;
+    /** Pencarian tanpa hasil, 7 hari terakhir. */
+    unmetSearches: number;
+  };
   listings: {
     total: number;
     published: number;

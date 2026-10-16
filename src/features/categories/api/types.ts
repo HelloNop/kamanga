@@ -22,6 +22,9 @@ export type CategoryRow = {
   sortOrder: number;
   attributeCount: number;
   listingCount: number;
+  /** Nama pintu utama; null = tanpa pintu. */
+  door: string | null;
+  scheduleKind: string;
 };
 
 export type CategoryGroupOption = { id: number; name: string; slug: string; categoryCount: number };

@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 
 export const SESSION_COOKIE = 'kamanga_sid';
 
-/** IP dipakai hanya untuk membatasi pemakaian; yang disimpan hanya hash-nya (UU PDP). */
+/** IP dipakai hanya untuk membatasi pemakaian; yang disimpan hanya hash-nya (UU PDP).
+ *  Mengandalkan reverse proxy (Caddy) yang menimpa X-Forwarded-For; tanpa proxy, header ini bisa dipalsukan. */
 export function ipHashOf(headers: Headers): string {
   const ip = (
     headers.get('x-forwarded-for')?.split(',')[0] ??

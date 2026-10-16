@@ -23,7 +23,7 @@ export default async function Page() {
       pageTitle='Ringkasan'
       pageDescription={
         isAdmin
-          ? 'Kondisi direktori dan pemakaian chat Kamanga dalam 7 hari terakhir.'
+          ? 'Pesanan hari ini, hal yang perlu ditangani, kondisi direktori, dan pemakaian chat.'
           : 'Ringkasan usaha Anda di Kamanga.'
       }
     >

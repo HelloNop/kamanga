@@ -2,11 +2,8 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/db';
 import { categories, listingAreas, listingCategories, listings, locations } from '@/db/schema';
-import { parseAttributeSchema } from '@/features/listings/lib/format';
+import { formatAttributeValue, parseAttributeSchema } from '@/features/listings/lib/format';
 import { photoUrl } from '@/lib/storage';
-
-const attrText = (v: unknown) =>
-  v === true ? 'Ya' : v === false ? 'Tidak' : Array.isArray(v) ? v.join(', ') : String(v ?? '');
 
 export async function getPublicListing(slug: string) {
   const [l] = await db
@@ -49,7 +46,7 @@ export async function getPublicListing(slug: string) {
   const values = (l.attributes ?? {}) as Record<string, unknown>;
   const attributes = parseAttributeSchema(primary?.attributeSchema)
     .filter((d) => values[d.key] !== undefined && values[d.key] !== '')
-    .map((d) => ({ label: d.label, text: attrText(values[d.key]) }));
+    .map((d) => ({ label: d.label, text: formatAttributeValue(d, values[d.key]) }));
 
   return {
     ...l,

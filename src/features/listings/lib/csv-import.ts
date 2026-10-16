@@ -38,6 +38,7 @@ export type PlannedRow = {
 const HEADERS = [
   'name',
   'slug',
+  'kind',
   'category',
   'extra_categories',
   'summary',
@@ -48,6 +49,8 @@ const HEADERS = [
   'lng',
   'service_modes',
   'areas',
+  'service_radius_km',
+  'point_public',
   'whatsapp',
   'phone',
   'instagram',
@@ -103,6 +106,12 @@ const VERIFY_MAP = dictionary<VerificationLevel>(VERIFICATIONS, {
   'kontak dicek': 'contact_checked',
   'dicek langsung': 'visited'
 });
+
+const KIND_MAP = dictionary<'provider' | 'place'>(['provider', 'place'], {
+  penyedia: 'provider',
+  tempat: 'place'
+});
+const YES_NO = dictionary<'yes' | 'no'>(['yes', 'no'], { ya: 'yes', tidak: 'no' });
 
 const list = (cell: string) => [
   ...new Set(
@@ -245,6 +254,19 @@ export function planListingImport(
         const m = mapped(MODE_MAP, s, 'cara layanan');
         return m ? [m] : [];
       });
+    }
+    if (cell('kind')) {
+      const k = mapped(KIND_MAP, cell('kind'), 'jenis');
+      if (k) values.kind = k;
+    }
+    if (cell('point_public')) {
+      const yn = mapped(YES_NO, cell('point_public'), 'point_public');
+      if (yn) values.pointIsPublic = yn === 'yes';
+    }
+    if (cell('service_radius_km')) {
+      const n = decimal(cell('service_radius_km'));
+      if (Number.isFinite(n) && n > 0) values.serviceRadiusKm = n;
+      else err(`service_radius_km "${cell('service_radius_km')}" bukan angka positif`);
     }
     for (const [h, to] of [
       ['lat', 'lat'],

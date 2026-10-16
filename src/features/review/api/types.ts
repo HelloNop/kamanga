@@ -33,6 +33,8 @@ export type ReviewDecision =
   | { id: number; decision: 'approve' }
   | { id: number; decision: 'reject'; note: string };
 
+export type ClaimDecision = { id: number; decision: 'approve' | 'reject' };
+
 export type MutationResult = { ok: true; id: number } | { ok: false; message: string };
 
 /** Rincian lengkap satu listing untuk dibaca admin sebelum memutuskan. */

@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { ATTRIBUTE_TYPES, hasOptions } from '@/features/listings/lib/format';
+import { SCHEDULE_KINDS } from '../constants';
 
 export const attributeDefSchema = z.object({
   // Kosong untuk isian baru: server membuatnya dari label. Isian lama mempertahankan kuncinya.
@@ -47,7 +48,17 @@ export const categoryFormSchema = z
     description: z.string().max(500, 'Maksimal 500 karakter'),
     sortOrder: z.number({ error: 'Wajib diisi' }).int('Bilangan bulat').min(0).max(9999),
     isActive: z.boolean(),
-    attributes: z.array(attributeDefSchema).max(15, 'Maksimal 15 isian')
+    attributes: z.array(attributeDefSchema).max(15, 'Maksimal 15 isian'),
+    // Pintu utama ('' = tanpa pintu, tetap ditemukan lewat chat).
+    doorId: z.string(),
+    scheduleKind: z.enum(SCHEDULE_KINDS),
+    // Batas waktu penyedia menjawab pesanan. Kosong = bawaan di Pengaturan.
+    responseMinutes: z
+      .number()
+      .int('Bilangan bulat')
+      .min(5, 'Minimal 5 menit')
+      .max(1440, 'Maksimal 1440 menit (24 jam)')
+      .optional()
   })
   .superRefine((v, ctx) => {
     const keys = new Set<string>();
@@ -95,5 +106,8 @@ export const emptyCategoryForm: CategoryFormValues = {
   description: '',
   sortOrder: 0,
   isActive: true,
-  attributes: []
+  attributes: [],
+  doorId: '',
+  scheduleKind: 'none',
+  responseMinutes: undefined
 };

@@ -13,9 +13,10 @@ import { useAppForm } from '@/lib/form';
 const emailSchema = z.email('Email tidak valid');
 const passwordSchema = z.string().min(8, 'Kata sandi minimal 8 karakter');
 
-// Hanya izinkan tujuan di dalam /dashboard agar `next` tidak bisa dipakai membelokkan ke situs lain.
+// Hanya izinkan tujuan di dalam /dashboard atau /mitra agar `next` tidak bisa membelokkan ke situs lain.
+// Bawaan /dashboard: admin ke ringkasan, mitra ke /mitra.
 const safeNext = (next: string | null) =>
-  next && next.startsWith('/dashboard') && !next.startsWith('//') ? next : '/dashboard/overview';
+  next && /^\/(dashboard|mitra)(\/|$)/.test(next) ? next : '/dashboard';
 
 function AuthCard({
   title,
@@ -140,7 +141,7 @@ export function SignUpForm() {
             ? 'Email ini sudah terdaftar.'
             : 'Pendaftaran gagal. Coba lagi.'
         );
-      router.push('/dashboard/overview');
+      router.push('/dashboard');
       router.refresh();
     }
   });

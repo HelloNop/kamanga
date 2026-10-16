@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
 import { categoryByIdOptions, categoryGroupsOptions } from '@/features/categories/api/queries';
 import CategoryViewPage from '@/features/categories/components/category-view-page';
+import { doorOptionsQueryOptions } from '@/features/doors/api/queries';
 import { getQueryClient } from '@/lib/query-client';
 import { requireAdmin } from '@/lib/session';
 
@@ -15,6 +16,7 @@ export default async function Page(props: { params: Promise<{ categoryId: string
 
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(categoryGroupsOptions());
+  void queryClient.prefetchQuery(doorOptionsQueryOptions());
   if (categoryId !== 'new') void queryClient.prefetchQuery(categoryByIdOptions(Number(categoryId)));
 
   return (

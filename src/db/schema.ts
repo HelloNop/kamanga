@@ -3,6 +3,8 @@ import {
   type AnyPgColumn,
   boolean,
   check,
+  customType,
+  date,
   doublePrecision,
   index,
   integer,
@@ -11,7 +13,9 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  smallint,
   text,
+  time,
   timestamp,
   uniqueIndex,
   uuid
@@ -70,6 +74,61 @@ export const listingSource = pgEnum('listing_source', ['team', 'vendor', 'import
 
 export const reviewStatus = pgEnum('review_status', ['pending', 'approved', 'rejected']);
 
+// Pintu "Ka-" di beranda. active: tampil; soon: tampil dengan tanda "Segera"; hidden: tidak tampil.
+export const doorStatus = pgEnum('door_status', ['active', 'soon', 'hidden']);
+// single: satu kebutuhan; plan: rencana gabungan (Kabaralek); guide: panduan (Kabatanyo).
+export const doorKind = pgEnum('door_kind', ['single', 'plan', 'guide']);
+
+// Cara Mesin Jadwal menghitung ketersediaan kategori. none = tanpa jadwal (formulir permintaan / informasi).
+export const scheduleKind = pgEnum('schedule_kind', [
+  'slot',
+  'seat',
+  'date_stock',
+  'survey',
+  'none'
+]);
+
+// provider: bisa dipesan lewat Kamanga. place: informasi saja (kafe, wisata, apotek 24 jam, IGD).
+export const listingKind = pgEnum('listing_kind', ['provider', 'place']);
+
+// sent → accepted → in_progress → completed; sent → rejected | expired; accepted/in_progress → cancelled.
+// Status sent juga berarti slot sedang ditahan.
+export const bookingStatus = pgEnum('booking_status', [
+  'sent',
+  'accepted',
+  'in_progress',
+  'completed',
+  'rejected',
+  'expired',
+  'cancelled'
+]);
+export const bookingActor = pgEnum('booking_actor', ['citizen', 'provider', 'admin', 'system']);
+
+export const slotBlockReason = pgEnum('slot_block_reason', ['walk_in', 'whatsapp', 'other']);
+
+// Asal tanya jawab penyedia: ditulis penyedia sendiri, atau berasal dari pertanyaan warga.
+export const qaSource = pgEnum('qa_source', ['provider', 'citizen']);
+
+export const waDirection = pgEnum('wa_direction', ['outbound', 'inbound']);
+// link = mode cadangan: pesan dibuat sebagai tautan wa.me dan dikirim oleh orang yang menekannya.
+export const waStatus = pgEnum('wa_status', [
+  'queued',
+  'sent',
+  'delivered',
+  'read',
+  'failed',
+  'link'
+]);
+
+// Titik dan poligon PostGIS (geography, SRID 4326). Nilai dibaca lewat SQL (ST_X, ST_Distance, ST_Covers),
+// bukan di TypeScript.
+const geoPoint = customType<{ data: string }>({ dataType: () => 'geography(Point, 4326)' });
+const geoMultiPolygon = customType<{ data: string }>({
+  dataType: () => 'geography(MultiPolygon, 4326)'
+});
+// Titik dihitung database dari kolom lat/lng (formulir dan CSV tetap menulis lat/lng).
+const pointFromLatLng = sql`case when lat is not null and lng is not null then st_setsrid(st_makepoint(lng, lat), 4326)::geography end`;
+
 // ───────────────────── Taksonomi: kategori & kebutuhan ─────────────────────
 
 const timestamps = {
@@ -79,6 +138,24 @@ const timestamps = {
     .defaultNow()
     .$onUpdate(() => new Date())
 };
+
+// Pintu "Ka-" yang dilihat warga di beranda (Ka main, Ka servis, ...). Nama, ikon, urutan, dan status diatur admin.
+export const doors = pgTable('doors', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  slug: text().notNull().unique(),
+  name: text().notNull(),
+  // Kunci ikon dari `Icons` (src/components/icons.tsx).
+  icon: text(),
+  description: text(),
+  // Teks berganti di bawah judul beranda, mis. "ka main…".
+  rotatingText: text(),
+  // Sebutan lain yang mengarah ke pintu ini (mis. "sewa lapangan" → Ka main). Disimpan sudah diseragamkan.
+  aliases: text().array().notNull().default([]),
+  sortOrder: integer().notNull().default(0),
+  status: doorStatus().notNull().default('hidden'),
+  kind: doorKind().notNull().default('single'),
+  ...timestamps
+});
 
 // Kelompok kategori (Jasa, Kesehatan, Acara & Pernikahan, ...). Daftarnya ditambah sendiri oleh admin
 // langsung dari formulir kategori; kelompok yang tidak lagi dipakai kategori mana pun dibersihkan otomatis.
@@ -111,6 +188,11 @@ export const categories = pgTable('categories', {
   attributeSchema: jsonb().$type<unknown[]>(),
   // Slot yang perlu ditanyakan chatbot untuk kategori ini. Diisi saat tahap chatbot.
   slots: jsonb().$type<unknown[]>(),
+  // Pintu utama (kosong = kategori tanpa pintu, tetap ditemukan lewat chat).
+  doorId: integer().references(() => doors.id, { onDelete: 'set null' }),
+  scheduleKind: scheduleKind().notNull().default('none'),
+  // Batas waktu penyedia menjawab pesanan. Kosong = bawaan di pengaturan (30 menit).
+  responseMinutes: integer(),
   isActive: boolean().notNull().default(true),
   sortOrder: integer().notNull().default(0),
   ...timestamps
@@ -174,13 +256,20 @@ export const locations = pgTable(
     slug: text().notNull().unique(),
     name: text().notNull(),
     level: locationLevel().notNull(),
+    // Kode wilayah resmi Kemendagri, mis. "13.71.06" (Kuranji). Kosong untuk landmark.
+    officialCode: text().unique(),
     lat: doublePrecision(),
     lng: doublePrecision(),
+    center: geoPoint().generatedAlwaysAs(pointFromLatLng),
+    // Poligon batas wilayah dari data resmi (diimpor skrip scripts/wilayah).
+    boundary: geoMultiPolygon(),
     ...timestamps
   },
   (t) => [
     index('locations_parent_idx').on(t.parentId),
     index('locations_name_trgm_idx').using('gin', t.name.op('gin_trgm_ops')),
+    index('locations_center_idx').using('gist', t.center),
+    index('locations_boundary_idx').using('gist', t.boundary),
     check('locations_lat_lng_pair', sql`(${t.lat} is null) = (${t.lng} is null)`)
   ]
 );
@@ -207,16 +296,21 @@ export const listings = pgTable(
   'listings',
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    kind: listingKind().notNull().default('provider'),
     slug: text().notNull().unique(),
     name: text().notNull(),
     summary: text(), // satu-dua kalimat untuk kartu
     description: text(),
 
-    // Titik lokasi (untuk yang didatangi pelanggan). Area layanan ada di `listing_areas`.
+    // Titik lokasi (usaha atau markas). Area layanan: daftar wilayah di `listing_areas` dan/atau radius.
     address: text(),
     locationId: integer().references(() => locations.id, { onDelete: 'set null' }),
     lat: doublePrecision(),
     lng: doublePrecision(),
+    point: geoPoint().generatedAlwaysAs(pointFromLatLng),
+    // false = usaha rumahan/perorangan: publik hanya melihat kecamatan; titik dipakai untuk jarak saja.
+    pointIsPublic: boolean().notNull().default(true),
+    serviceRadiusKm: doublePrecision(),
     serviceModes: serviceMode().array().notNull().default(['on_site']),
 
     // Kontak. Semua boleh kosong (mis. objek wisata umum). WhatsApp disimpan hanya angka, format 62xxx.
@@ -264,7 +358,9 @@ export const listings = pgTable(
     index('listings_keywords_idx').using('gin', t.keywords),
     index('listings_attributes_idx').using('gin', t.attributes),
     index('listings_earth_idx').using('gist', sql`ll_to_earth(lat, lng)`),
+    index('listings_point_idx').using('gist', t.point),
     check('listings_lat_lng_pair', sql`(${t.lat} is null) = (${t.lng} is null)`),
+    check('listings_service_radius', sql`${t.serviceRadiusKm} is null or ${t.serviceRadiusKm} > 0`),
     check(
       'listings_price_range',
       sql`${t.priceMin} is null or ${t.priceMax} is null or ${t.priceMin} <= ${t.priceMax}`
@@ -366,6 +462,335 @@ export const listingClaims = pgTable(
   (t) => [index('listing_claims_listing_status_idx').on(t.listingId, t.status)]
 );
 
+// Tanya jawab bebas per penyedia (PRD 8.8 lapis 2). answer kosong = pertanyaan warga yang menunggu dijawab.
+export const listingQa = pgTable(
+  'listing_qa',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    question: text().notNull(),
+    answer: text(),
+    source: qaSource().notNull().default('provider'),
+    // Penanya (warga berakun atau sesi chat tamu), agar jawaban bisa diteruskan kepadanya.
+    askedBy: text().references(() => user.id, { onDelete: 'set null' }),
+    chatSessionId: uuid().references((): AnyPgColumn => chatSessions.id, { onDelete: 'set null' }),
+    answeredAt: timestamp({ withTimezone: true }),
+    sortOrder: integer().notNull().default(0),
+    ...timestamps
+  },
+  (t) => [index('listing_qa_listing_idx').on(t.listingId, t.sortOrder)]
+);
+
+// ───────────────────────────── Mesin Jadwal ─────────────────────────────
+// Semua jam dinding di tabel ini (time, date) dalam zona Asia/Jakarta.
+
+// Sesuatu yang dijadwalkan di dalam satu penyedia: Lapangan 1, Kursi barber A, rute travel Padang → Bukittinggi.
+export const units = pgTable(
+  'units',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    // Jumlah kursi per keberangkatan (jadwal seat). Untuk jadwal slot selalu 1.
+    capacity: integer().notNull().default(1),
+    // Rute travel (jadwal seat).
+    originLocationId: integer().references(() => locations.id, { onDelete: 'set null' }),
+    destinationLocationId: integer().references(() => locations.id, { onDelete: 'set null' }),
+    isActive: boolean().notNull().default(true),
+    sortOrder: integer().notNull().default(0),
+    ...timestamps
+  },
+  (t) => [
+    index('units_listing_idx').on(t.listingId),
+    check('units_capacity', sql`${t.capacity} >= 1`)
+  ]
+);
+
+// Jam buka mingguan per unit. Boleh beberapa baris per hari. end_time <= start_time berarti lewat tengah malam.
+// Jadwal seat: satu baris = satu keberangkatan pada start_time, slot_minutes = lama perjalanan.
+export const scheduleRules = pgTable(
+  'schedule_rules',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    unitId: integer()
+      .notNull()
+      .references(() => units.id, { onDelete: 'cascade' }),
+    weekday: smallint().notNull(), // 0 = Minggu … 6 = Sabtu
+    startTime: time().notNull(),
+    endTime: time().notNull(),
+    slotMinutes: integer().notNull().default(60),
+    gapMinutes: integer().notNull().default(0), // jeda antarslot
+    minMinutes: integer(), // durasi minimal satu pesanan; kosong = satu slot
+    price: integer(), // rupiah per slot (seat: per kursi)
+    peakPrice: integer(), // harga jam ramai
+    peakStart: time(),
+    peakEnd: time(),
+    ...timestamps
+  },
+  (t) => [
+    index('schedule_rules_unit_idx').on(t.unitId, t.weekday),
+    check('schedule_rules_weekday', sql`${t.weekday} between 0 and 6`),
+    check('schedule_rules_slot', sql`${t.slotMinutes} > 0 and ${t.gapMinutes} >= 0`),
+    check('schedule_rules_peak_pair', sql`(${t.peakStart} is null) = (${t.peakEnd} is null)`)
+  ]
+);
+
+// Libur atau jam khusus pada tanggal tertentu. unit_id kosong = berlaku untuk semua unit penyedia.
+export const scheduleExceptions = pgTable(
+  'schedule_exceptions',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    unitId: integer().references(() => units.id, { onDelete: 'cascade' }),
+    date: date().notNull(),
+    isClosed: boolean().notNull().default(true),
+    // Jam khusus bila tidak tutup (menggantikan jam buka mingguan hari itu).
+    startTime: time(),
+    endTime: time(),
+    note: text(),
+    ...timestamps
+  },
+  (t) => [
+    index('schedule_exceptions_listing_date_idx').on(t.listingId, t.date),
+    check(
+      'schedule_exceptions_hours',
+      sql`${t.isClosed} or (${t.startTime} is not null and ${t.endTime} is not null)`
+    )
+  ]
+);
+
+// Blokir manual: slot terisi dari luar Kamanga (walk-in, pesanan lewat WA). Constraint anti-tumpang-tindih
+// antar-blokir ada di migrasi (exclusion constraint).
+export const slotBlocks = pgTable(
+  'slot_blocks',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    unitId: integer()
+      .notNull()
+      .references(() => units.id, { onDelete: 'cascade' }),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    reason: slotBlockReason().notNull().default('other'),
+    note: text(),
+    createdBy: text().references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (t) => [
+    index('slot_blocks_unit_idx').on(t.unitId, t.startsAt),
+    check('slot_blocks_range', sql`${t.startsAt} < ${t.endsAt}`)
+  ]
+);
+
+// ───────────────────────────── Mesin Pesanan ─────────────────────────────
+
+// Pesanan. Slot tertahan selama status sent. Anti-tumpang-tindih per unit (exclusive = true) dijamin
+// exclusion constraint `bookings_no_overlap` di migrasi. Kontak warga ada di booking_contacts.
+export const bookings = pgTable(
+  'bookings',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    code: text().notNull().unique(), // nomor pesanan untuk warga dan penyedia, mis. "K7F3QX"
+    citizenId: text().references(() => user.id, { onDelete: 'set null' }), // kosong bila akun warga dihapus
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    categoryId: integer()
+      .notNull()
+      .references(() => categories.id, { onDelete: 'restrict' }),
+    unitId: integer().references(() => units.id), // kosong untuk permintaan tanpa jadwal (Ka servis)
+    status: bookingStatus().notNull().default('sent'),
+    startsAt: timestamp({ withTimezone: true }),
+    endsAt: timestamp({ withTimezone: true }),
+    seats: integer().notNull().default(1), // jumlah orang / kursi
+    // false untuk kursi travel: banyak pesanan berbagi satu keberangkatan sampai kapasitas habis.
+    exclusive: boolean().notNull().default(true),
+    // Kecamatan lokasi layanan: satu-satunya data lokasi warga yang terlihat penyedia sebelum menerima.
+    districtId: integer().references(() => locations.id, { onDelete: 'set null' }),
+    // Rincian sesuai jenis: { problem, preferredDate, period } untuk servis, { people, racket } untuk lapangan, ...
+    details: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    // Aturan penting yang disetujui warga saat memesan (durasi minimal, pembatalan, DP).
+    rulesSnapshot: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    price: integer(), // harga tertera (rupiah) saat memesan
+    respondBy: timestamp({ withTimezone: true }),
+    respondedAt: timestamp({ withTimezone: true }),
+    completedAt: timestamp({ withTimezone: true }),
+    cancelledAt: timestamp({ withTimezone: true }),
+    remindedAt: timestamp({ withTimezone: true }), // pengingat ke warga sebelum jadwal
+    providerRemindedAt: timestamp({ withTimezone: true }), // pengingat ke penyedia yang belum menjawab
+    reviewRequestedAt: timestamp({ withTimezone: true }), // "Puas?" sudah dikirim
+    adminNote: text(),
+    // Hash token tautan Terima/Tolak untuk penyedia tanpa akun. Token aslinya hanya ada di pesan WA.
+    providerTokenHash: text().unique(),
+    ...timestamps
+  },
+  (t) => [
+    index('bookings_listing_status_idx').on(t.listingId, t.status),
+    index('bookings_citizen_idx').on(t.citizenId, t.createdAt),
+    index('bookings_status_respond_idx').on(t.status, t.respondBy),
+    index('bookings_unit_time_idx').on(t.unitId, t.startsAt),
+    check('bookings_time_pair', sql`(${t.startsAt} is null) = (${t.endsAt} is null)`),
+    check('bookings_time_range', sql`${t.startsAt} is null or ${t.startsAt} < ${t.endsAt}`),
+    check('bookings_seats', sql`${t.seats} >= 1`),
+    check('bookings_unit_has_time', sql`${t.unitId} is null or ${t.startsAt} is not null`)
+  ]
+);
+
+// Kontak dan alamat lengkap warga untuk satu pesanan. Hanya dibaca mesin Pesanan, dan baru dibuka ke
+// penyedia setelah pesanan diterima (UU PDP, PRD 8.5).
+export const bookingContacts = pgTable('booking_contacts', {
+  bookingId: integer()
+    .primaryKey()
+    .references(() => bookings.id, { onDelete: 'cascade' }),
+  name: text().notNull(),
+  phone: text().notNull(), // 62xxx
+  address: text(),
+  lat: doublePrecision(),
+  lng: doublePrecision(),
+  note: text() // patokan, mis. "pagar hijau dekat musala"
+});
+
+// Riwayat status pesanan: siapa, kapan, alasan.
+export const bookingEvents = pgTable(
+  'booking_events',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    bookingId: integer()
+      .notNull()
+      .references(() => bookings.id, { onDelete: 'cascade' }),
+    fromStatus: bookingStatus(),
+    toStatus: bookingStatus().notNull(),
+    actor: bookingActor().notNull(),
+    actorUserId: text().references(() => user.id, { onDelete: 'set null' }),
+    reason: text(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (t) => [index('booking_events_booking_idx').on(t.bookingId, t.createdAt)]
+);
+
+// Ulasan dari pesanan selesai. Bentuk akhir (puas/kurang puas atau bintang) masih terbuka (PRD 18 no. 3).
+export const reviews = pgTable(
+  'reviews',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    bookingId: integer()
+      .notNull()
+      .unique()
+      .references(() => bookings.id, { onDelete: 'cascade' }),
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    citizenId: text().references(() => user.id, { onDelete: 'set null' }),
+    satisfied: boolean().notNull(),
+    stars: smallint(),
+    comment: text(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (t) => [
+    index('reviews_listing_idx').on(t.listingId, t.createdAt),
+    check('reviews_stars', sql`${t.stars} is null or ${t.stars} between 1 and 5`)
+  ]
+);
+
+// ───────────────────────────── Warga ─────────────────────────────
+
+// Alamat tersimpan warga (Rumah, Kantor). Satu-satunya tempat koordinat perangkat warga boleh disimpan.
+export const savedAddresses = pgTable(
+  'saved_addresses',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    label: text().notNull(),
+    address: text().notNull(),
+    lat: doublePrecision(),
+    lng: doublePrecision(),
+    locationId: integer().references(() => locations.id, { onDelete: 'set null' }), // wilayah hasil pencocokan
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (t) => [
+    index('saved_addresses_user_idx').on(t.userId),
+    check('saved_addresses_lat_lng_pair', sql`(${t.lat} is null) = (${t.lng} is null)`)
+  ]
+);
+
+// ───────────────────────────── Notifikasi WhatsApp ─────────────────────────────
+
+// Semua pesan WA, keluar dan masuk. `params` tidak pernah memuat kode OTP.
+export const waMessages = pgTable(
+  'wa_messages',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    direction: waDirection().notNull(),
+    template: text(),
+    phone: text().notNull(),
+    status: waStatus().notNull().default('queued'),
+    mode: text().notNull(), // 'api' | 'fallback'
+    bookingId: integer().references(() => bookings.id, { onDelete: 'set null' }),
+    providerMessageId: text().unique(), // id pesan dari WhatsApp Cloud API
+    params: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    error: text(),
+    ...timestamps
+  },
+  (t) => [
+    index('wa_messages_booking_idx').on(t.bookingId),
+    index('wa_messages_phone_idx').on(t.phone, t.createdAt)
+  ]
+);
+
+// Kode OTP masuk warga. Hanya hash kode yang disimpan.
+export const waOtps = pgTable(
+  'wa_otps',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    phone: text().notNull(),
+    codeHash: text().notNull(),
+    attempts: integer().notNull().default(0),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    consumedAt: timestamp({ withTimezone: true }),
+    // Hash IP peminta (ipHashOf), hanya untuk batas permintaan per IP; null = pemanggil internal.
+    ipHash: text(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow()
+  },
+  (t) => [
+    index('wa_otps_phone_idx').on(t.phone, t.createdAt),
+    index('wa_otps_ip_hash_idx').on(t.ipHash, t.createdAt)
+  ]
+);
+
+// ───────────────────────────── Pengaturan & statistik ─────────────────────────────
+
+// Pengaturan yang diubah admin tanpa koding: template WA, batas waktu menjawab bawaan, ...
+export const appSettings = pgTable('app_settings', {
+  key: text().primaryKey(),
+  value: jsonb().notNull(),
+  updatedBy: text().references(() => user.id, { onDelete: 'set null' }),
+  updatedAt: timestamp({ withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date())
+});
+
+// Hitungan harian per listing untuk statistik mitra (dilihat, klik WA). Tanpa data pribadi.
+export const listingDailyStats = pgTable(
+  'listing_daily_stats',
+  {
+    listingId: integer()
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    day: date().notNull(),
+    views: integer().notNull().default(0),
+    waClicks: integer().notNull().default(0)
+  },
+  (t) => [primaryKey({ columns: [t.listingId, t.day] })]
+);
+
 // ───────────────────────────── Kamus istilah ─────────────────────────────
 
 // Kamus: kata Minang / sehari-hari -> arti dalam bahasa Indonesia. Dibaca chatbot sebagai
@@ -397,6 +822,9 @@ export const chatSessions = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     ipHash: text(),
     messageCount: integer().notNull().default(0),
+    // Niat terstruktur yang sedang berjalan (pintu, kategori, wilayah, waktu, jumlah, anggaran, ...), agar konteks
+    // terbawa dalam satu sesi (PRD 8.2). Tidak pernah memuat koordinat perangkat, nomor, atau alamat warga.
+    state: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow()
   },

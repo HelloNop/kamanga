@@ -2,7 +2,7 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { chatMessages, chatSessions } from '@/db/schema';
-import type { KamangaMessage, ListingsData } from './types';
+import type { ChatState, KamangaMessage, ListingsData, ProvidersData } from './types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -65,21 +65,47 @@ export async function saveAssistantMessage(
   route: 'template' | 'rules' | 'llm' | 'limit' | 'error'
 ) {
   const keep = parts.filter(
-    (p) => p.type === 'text' || p.type === 'data-listings' || p.type === 'data-chips'
+    (p) =>
+      p.type === 'text' ||
+      p.type === 'data-listings' ||
+      p.type === 'data-providers' ||
+      p.type === 'data-chips'
   );
   const text = keep
     .filter((p) => p.type === 'text')
     .map((p) => p.text ?? '')
     .join('\n')
     .trim();
-  const shown = (
-    keep.find((p) => p.type === 'data-listings')?.data as ListingsData | undefined
-  )?.items.map((i) => i.name);
+  const providers = keep.find((p) => p.type === 'data-providers')?.data as
+    | ProvidersData
+    | undefined;
+  const shown = [
+    ...((keep.find((p) => p.type === 'data-listings')?.data as ListingsData | undefined)?.items ??
+      []),
+    ...(providers?.items ?? [])
+  ].map((i) => i.name);
   // Teks yang dilihat model pada giliran berikutnya: balasan + nama usaha yang tadi ditampilkan.
   const content = shown?.length ? `${text}\n[Ditampilkan: ${shown.join('; ')}]` : text;
   await db
     .insert(chatMessages)
     .values({ sessionId, role: 'assistant', content: content || '(kosong)', parts: keep, route });
+}
+
+/** Niat sesi (PRD 8.2). Tidak memuat koordinat, nomor, atau alamat warga. */
+export async function loadState(sessionId: string): Promise<ChatState> {
+  const [s] = await db
+    .select({ state: chatSessions.state })
+    .from(chatSessions)
+    .where(eq(chatSessions.id, sessionId))
+    .limit(1);
+  return (s?.state ?? {}) as ChatState;
+}
+
+export async function saveState(sessionId: string, state: ChatState) {
+  await db
+    .update(chatSessions)
+    .set({ state: state as Record<string, unknown> })
+    .where(eq(chatSessions.id, sessionId));
 }
 
 export async function loadUiMessages(sessionId: string, limit = 40): Promise<KamangaMessage[]> {
@@ -89,13 +115,11 @@ export async function loadUiMessages(sessionId: string, limit = 40): Promise<Kam
     .where(eq(chatMessages.sessionId, sessionId))
     .orderBy(desc(chatMessages.id))
     .limit(limit);
-  return rows
-    .reverse()
-    .map((r) => ({
-      id: String(r.id),
-      role: r.role as 'user' | 'assistant',
-      parts: r.parts as KamangaMessage['parts']
-    }));
+  return rows.reverse().map((r) => ({
+    id: String(r.id),
+    role: r.role as 'user' | 'assistant',
+    parts: r.parts as KamangaMessage['parts']
+  }));
 }
 
 export async function sessionExists(sid: string | null | undefined) {

@@ -132,7 +132,7 @@
 .kmg .pub-search select {
   flex: 0 1 210px;
   min-width: 0;
-  height: 36px;
+  height: 44px;
   padding: 0 10px;
   border: 0;
   border-left: 1px solid var(--line);
@@ -166,7 +166,7 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  height: 38px;
+  height: 44px;
   padding: 0 16px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -673,4 +673,80 @@
   .kmg.pub-page .nav .hide-sm {
     display: none;
   }
+}
+
+/* ───── profil: jadwal kosong, aturan, tanya jawab, ulasan, tombol pesan ───── */
+.kmg .pd-day {
+  margin: 10px 0 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kmg .pd-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kmg .pd-slots a {
+  display: grid;
+  min-height: 48px;
+  min-width: 96px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.3;
+}
+.kmg .pd-slots a:hover {
+  border-color: var(--text);
+}
+.kmg .pd-slots small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.kmg .pd-rules,
+.kmg .pd-reviews {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+.kmg .pd-reviews {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.kmg .pd-reviews li {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+.kmg .pd-reviews p {
+  margin: 4px 0 0;
+}
+.kmg .pd-qa {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+.kmg .pd-qa dt {
+  font-weight: 600;
+}
+.kmg .pd-qa dd {
+  margin: 2px 0 0;
+  color: color-mix(in oklab, var(--text) 88%, var(--muted));
+}
+.kmg .pd-actions a.book {
+  border: 0;
+  background: #8e1b1b;
+  color: #fff;
+  font-weight: 600;
+}
+.kmg .pd-actions + .pd-actions {
+  margin-top: 8px;
 }

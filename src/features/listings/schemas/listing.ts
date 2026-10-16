@@ -29,6 +29,8 @@ export const listingFormSchema = z
     summary: z.string().max(200, 'Maksimal 200 karakter'),
     description: z.string().max(5000, 'Maksimal 5000 karakter'),
 
+    // provider: bisa dipesan; place: informasi saja (kafe, wisata, apotek 24 jam, IGD).
+    kind: z.enum(['provider', 'place']),
     primaryCategoryId: z.string().min(1, 'Pilih kategori utama'),
     extraCategoryIds: z.array(z.string()),
 
@@ -38,6 +40,13 @@ export const listingFormSchema = z
     lat: z.number().min(-90, 'Lat -90 sampai 90').max(90, 'Lat -90 sampai 90').optional(),
     lng: z.number().min(-180, 'Lng -180 sampai 180').max(180, 'Lng -180 sampai 180').optional(),
     areaIds: z.array(z.string()),
+    // false = usaha rumahan: publik hanya melihat kecamatan.
+    pointIsPublic: z.boolean(),
+    serviceRadiusKm: z
+      .number()
+      .positive('Radius harus lebih dari 0')
+      .max(200, 'Maksimal 200 km')
+      .optional(),
 
     whatsapp: z
       .string()
@@ -91,6 +100,7 @@ export const emptyListingForm: ListingFormValues = {
   slug: '',
   summary: '',
   description: '',
+  kind: 'provider',
   primaryCategoryId: '',
   extraCategoryIds: [],
   serviceModes: ['on_site'],
@@ -99,6 +109,8 @@ export const emptyListingForm: ListingFormValues = {
   lat: undefined,
   lng: undefined,
   areaIds: [],
+  pointIsPublic: true,
+  serviceRadiusKm: undefined,
   whatsapp: '',
   phone: '',
   instagram: '',

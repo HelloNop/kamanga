@@ -547,8 +547,23 @@ const HEADER = [
   'attributes',
   'status',
   'verification',
-  'source_url'
+  'source_url',
+  'kind',
+  'service_radius_km',
+  'point_public'
 ];
+// Kategori Tempat (informasi saja, tidak bisa dipesan).
+const PLACE_CATS = new Set([
+  'restaurant',
+  'lodging',
+  'nature-tourism',
+  'beach-tourism',
+  'cultural-tourism',
+  'culinary-tourism',
+  'family-recreation',
+  'pharmacy-24h',
+  'emergency-room'
+]);
 const q = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
 
 const rows: string[][] = [];
@@ -604,11 +619,366 @@ for (const spec of SPECS) {
       spec.attrs?.() ?? '',
       pick(STATUS),
       pick(VERIFY),
-      'dummy'
+      'dummy',
+      PLACE_CATS.has(spec.slug) ? 'tempat' : 'penyedia',
+      '',
+      ''
     ]);
   }
 }
-// Pastikan keywords tanpa duplikat sederhana
+
+// ───── Tahap 1: penyedia di Kota Padang untuk empat pintu ─────
+// Benih acak terpisah agar data dummy lama di atas tidak berubah (dipakai check:search).
+// Titik diletakkan dekat pusat kecamatannya agar Mesin Lokasi bisa mencocokkannya dengan poligon.
+let seed1 = 20261015;
+const r1 = () => {
+  seed1 = (seed1 + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed1 ^ (seed1 >>> 15), 1 | seed1);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const p1 = <T>(a: readonly T[]) => a[Math.floor(r1() * a.length)];
+const b1 = (lo: number, hi: number, step = 1000) =>
+  lo + Math.floor((r1() * (hi - lo + step)) / step) * step;
+const c1 = (p: number) => r1() < p;
+const yn = (p: number) => (c1(p) ? 'ya' : 'tidak');
+
+// Perkiraan pusat kecamatan Kota Padang [lat, lng].
+const PADANG: Record<string, [number, number]> = {
+  'padang-barat': [-0.951, 100.356],
+  'padang-timur': [-0.944, 100.379],
+  'padang-utara': [-0.91, 100.355],
+  'padang-selatan': [-0.975, 100.38],
+  nanggalo: [-0.898, 100.37],
+  kuranji: [-0.905, 100.415],
+  'koto-tangah': [-0.825, 100.35],
+  pauh: [-0.933, 100.44],
+  'lubuk-begalung': [-0.97, 100.4],
+  'lubuk-kilangan': [-0.96, 100.45],
+  'bungus-teluk-kabung': [-1.05, 100.4]
+};
+const KEC = Object.keys(PADANG);
+const SPORT_FAC = ['Kamar mandi', 'Tempat ganti', 'Parkir mobil', 'Musala', 'Kantin'];
+const some = (a: string[], min = 1) => {
+  const out = a.filter(() => c1(0.5));
+  return (out.length >= min ? out : a.slice(0, min)).join(';');
+};
+
+type T1 = {
+  slug: string;
+  n: number;
+  names: string[];
+  summary: string;
+  modes: string;
+  price?: [number, number, string];
+  keywords: string[];
+  attrs: () => string;
+  /** Rumahan/perorangan: titik privat, publik hanya melihat kecamatan. */
+  privatePoint?: number;
+  kind?: 'tempat';
+};
+const sport = (minDur = 60) =>
+  `min_duration=${minDur}|cancel_before=${p1([120, 720, 1440])}|dp_required=${yn(0.4)}|facilities=${some(SPORT_FAC, 2)}`;
+const T1_SPECS: T1[] = [
+  // Ka main
+  {
+    slug: 'padel-court',
+    n: 4,
+    names: ['Padel', 'Padel Club', 'Arena Padel'],
+    summary: 'Lapangan padel indoor, sewa per jam',
+    modes: 'di tempat',
+    price: [150000, 350000, 'per jam'],
+    keywords: ['padel', 'lapangan padel'],
+    attrs: () => {
+      const racket = c1(0.4);
+      return `min_duration=60|racket_included=${racket ? 'ya' : 'tidak'}${racket ? '' : `|racket_price=${b1(15000, 30000, 5000)}`}|cancel_before=${p1([720, 1440])}|dp_required=${yn(0.5)}|facilities=${some(SPORT_FAC, 2)}`;
+    }
+  },
+  {
+    slug: 'futsal-court',
+    n: 3,
+    names: ['Futsal', 'Arena Futsal', 'Lapangan Futsal'],
+    summary: 'Lapangan futsal vinyl dan rumput sintetis',
+    modes: 'di tempat',
+    price: [80000, 150000, 'per jam'],
+    keywords: ['futsal', 'lapangan futsal'],
+    attrs: () => sport()
+  },
+  {
+    slug: 'mini-soccer-field',
+    n: 2,
+    names: ['Mini Soccer', 'Lapangan Mini Soccer'],
+    summary: 'Lapangan mini soccer rumput sintetis',
+    modes: 'di tempat',
+    price: [300000, 600000, 'per jam'],
+    keywords: ['mini soccer', 'sepak bola mini'],
+    attrs: () => sport(120)
+  },
+  {
+    slug: 'badminton-court',
+    n: 3,
+    names: ['GOR Badminton', 'Badminton Hall', 'Lapangan Bulutangkis'],
+    summary: 'Lapangan badminton karpet, sewa per jam',
+    modes: 'di tempat',
+    price: [40000, 70000, 'per jam'],
+    keywords: ['badminton', 'bulutangkis'],
+    attrs: () => sport()
+  },
+  {
+    slug: 'billiard',
+    n: 2,
+    names: ['Billiard', 'Pool & Billiard'],
+    summary: 'Meja billiard, buka sampai dini hari',
+    modes: 'di tempat',
+    price: [30000, 50000, 'per jam'],
+    keywords: ['billiard', 'biliar'],
+    attrs: () => `min_duration=60|cancel_before=120|dp_required=tidak`
+  },
+  {
+    slug: 'karaoke',
+    n: 2,
+    names: ['Karaoke Keluarga', 'Family Karaoke'],
+    summary: 'Ruang karaoke keluarga per jam',
+    modes: 'di tempat',
+    price: [60000, 150000, 'per jam'],
+    keywords: ['karaoke', 'nyanyi'],
+    attrs: () =>
+      `room_capacity=${b1(6, 15, 1)}|min_duration=60|cancel_before=180|dp_required=${yn(0.3)}`
+  },
+  {
+    slug: 'gym',
+    n: 1,
+    names: ['Fitness Center', 'Gym'],
+    summary: 'Pusat kebugaran, kunjungan harian dan bulanan',
+    modes: 'di tempat',
+    price: [20000, 35000, 'per kunjungan'],
+    keywords: ['gym', 'fitness'],
+    attrs: () =>
+      `day_pass_price=${b1(20000, 35000, 5000)}|monthly_price=${b1(150000, 300000, 25000)}|women_area=${yn(0.5)}`
+  },
+  // Ka rawat diri
+  {
+    slug: 'barbershop',
+    n: 4,
+    names: ['Barbershop', 'Barber', 'Pangkas Rambut'],
+    summary: 'Potong rambut pria, cukur jenggot, cuci rambut',
+    modes: 'di tempat',
+    price: [25000, 60000, 'per orang'],
+    keywords: ['barbershop', 'pangkas rambut', 'cukur'],
+    attrs: () =>
+      `haircut_duration=30|beard_duration=15|wash_duration=10|reservation=${p1(['Perlu reservasi', 'Bisa walk-in', 'Reservasi atau walk-in'])}|late_tolerance=10|cancel_before=60|accepts_children=${yn(0.8)}`
+  },
+  {
+    slug: 'salon',
+    n: 2,
+    names: ['Salon', 'Salon Muslimah'],
+    summary: 'Salon rambut dan perawatan',
+    modes: 'di tempat',
+    price: [35000, 150000, 'per orang'],
+    keywords: ['salon', 'creambath'],
+    attrs: () =>
+      `treatments=${some(['Potong rambut', 'Creambath', 'Smoothing', 'Pewarnaan', 'Hair spa'], 2)}|women_only=${yn(0.5)}|cancel_before=120|dp_required=tidak`
+  },
+  {
+    slug: 'spa-massage',
+    n: 3,
+    names: ['Spa', 'Pijat Keluarga', 'Urut Tradisional'],
+    summary: 'Pijat dan spa, bisa dipanggil ke rumah',
+    modes: 'di tempat|panggilan',
+    price: [80000, 200000, 'per jam'],
+    keywords: ['pijat', 'urut', 'spa'],
+    attrs: () =>
+      `home_service=ya|therapist_gender=${p1(['Pria', 'Wanita', 'Pria dan wanita'])}|min_duration=60|cancel_before=120`,
+    privatePoint: 0.5
+  },
+  {
+    slug: 'reflexology',
+    n: 2,
+    names: ['Refleksi', 'Refleksi Kaki'],
+    summary: 'Pijat refleksi kaki dan badan',
+    modes: 'di tempat',
+    price: [60000, 120000, 'per jam'],
+    keywords: ['refleksi'],
+    attrs: () => `home_service=tidak|min_duration=60|cancel_before=60`
+  },
+  {
+    slug: 'facial-skincare',
+    n: 1,
+    names: ['Klinik Kecantikan', 'Skin Care'],
+    summary: 'Facial dan perawatan kulit',
+    modes: 'di tempat',
+    price: [100000, 350000, 'per orang'],
+    keywords: ['facial', 'perawatan wajah'],
+    attrs: () => `treatments=Facial, peeling, masker|cancel_before=1440|dp_required=ya`
+  },
+  // Ka uda anta
+  {
+    slug: 'intercity-travel',
+    n: 5,
+    names: ['Travel', 'Travel Express', 'Trans'],
+    summary: 'Travel antarkota berizin, jemput di alamat',
+    modes: 'panggilan',
+    price: [80000, 150000, 'per orang'],
+    keywords: ['travel', 'antar kota', 'pulang kampung'],
+    attrs: () =>
+      `pickup_type=${p1(['Jemput di alamat', 'Alamat atau titik kumpul'])}|vehicle_type=${p1(['Toyota Innova', 'Toyota Hiace', 'Mitsubishi Xpander'])}|max_luggage=1 koper dan 1 tas|accepts_parcels=${yn(0.7)}|cancel_before=180|permit_number=DUMMY-AJDP-${b1(100, 999, 1)}`
+  },
+  {
+    slug: 'parcel-delivery',
+    n: 2,
+    names: ['Titip Paket', 'Kirim Barang'],
+    summary: 'Titip paket ke kota-kota di Sumbar',
+    modes: 'panggilan',
+    price: [15000, 50000, 'per item'],
+    keywords: ['titip paket', 'kirim barang'],
+    attrs: () => `max_weight=${b1(10, 30, 5)}|same_day=${yn(0.6)}`
+  },
+  {
+    slug: 'moving-transport',
+    n: 2,
+    names: ['Angkutan Pindahan', 'Pickup Pindahan'],
+    summary: 'Angkut barang dan pindahan rumah dalam kota',
+    modes: 'panggilan',
+    price: [300000, 1500000, 'per kunjungan'],
+    keywords: ['pindahan', 'angkut barang'],
+    attrs: () => `vehicle=${p1(['Pickup', 'Engkel', 'Truk'])}|helpers_included=${yn(0.6)}`
+  },
+  // Ka servis
+  {
+    slug: 'ac-repair',
+    n: 4,
+    names: ['Servis AC', 'Teknik AC', 'Dingin AC'],
+    summary: 'Cuci, servis, dan pasang AC, datang ke rumah',
+    modes: 'panggilan',
+    price: [75000, 150000, 'per kunjungan'],
+    keywords: ['servis ac', 'cuci ac', 'ac tidak dingin'],
+    attrs: () =>
+      `brands=${c1(0.5) ? 'Semua merek' : some(['Daikin', 'Panasonic', 'LG', 'Sharp', 'Gree'], 2)}|visit_fee=${b1(30000, 75000, 5000)}|warranty=${p1([10080, 43200])}|after_hours=${yn(0.4)}`,
+    privatePoint: 0.5
+  },
+  {
+    slug: 'motorcycle-repair',
+    n: 2,
+    names: ['Bengkel Motor', 'Montir Panggilan'],
+    summary: 'Servis motor di bengkel atau panggilan',
+    modes: 'di tempat|panggilan',
+    price: [50000, 200000, 'per kunjungan'],
+    keywords: ['servis motor', 'bengkel onda'],
+    attrs: () =>
+      `visit_fee=${b1(20000, 50000, 5000)}|warranty=${p1([1440, 10080])}|after_hours=${yn(0.3)}`
+  },
+  {
+    slug: 'electronics-repair',
+    n: 2,
+    names: ['Servis HP', 'Servis Elektronik'],
+    summary: 'Servis HP, laptop, dan elektronik rumah',
+    modes: 'di tempat',
+    price: [50000, 500000, 'per kunjungan'],
+    keywords: ['servis hp', 'servis laptop'],
+    attrs: () => `visit_fee=0|warranty=${p1([10080, 43200])}|after_hours=tidak`
+  },
+  {
+    slug: 'cleaning',
+    n: 1,
+    names: ['Jasa Bersih Rumah'],
+    summary: 'Bersih-bersih rumah dan kantor, harian',
+    modes: 'panggilan',
+    price: [150000, 400000, 'per kunjungan'],
+    keywords: ['bersih rumah', 'cleaning service'],
+    attrs: () => `visit_fee=0|after_hours=tidak`
+  },
+  {
+    slug: 'laundry',
+    n: 2,
+    names: ['Laundry', 'Laundry Kiloan'],
+    summary: 'Cuci kiloan, antar jemput',
+    modes: 'di tempat|panggilan',
+    price: [7000, 12000, 'per item'],
+    keywords: ['laundry', 'cuci baju'],
+    attrs: () =>
+      `price_per_kg=${b1(6000, 10000, 1000)}|pickup_delivery=${yn(0.7)}|turnaround=${p1([1440, 2880])}`
+  },
+  // Tempat (informasi saja)
+  {
+    slug: 'pharmacy-24h',
+    n: 2,
+    names: ['Apotek', 'Apotek Sehat'],
+    summary: 'Apotek buka 24 jam',
+    modes: 'di tempat',
+    keywords: ['apotek', 'obat malam'],
+    attrs: () => '',
+    kind: 'tempat'
+  },
+  {
+    slug: 'emergency-room',
+    n: 2,
+    names: ['RS', 'Rumah Sakit Umum'],
+    summary: 'IGD 24 jam',
+    modes: 'di tempat',
+    keywords: ['igd', 'rumah sakit'],
+    attrs: () => '',
+    kind: 'tempat'
+  }
+];
+
+let n1 = 0;
+for (const spec of T1_SPECS) {
+  const used = new Set<string>();
+  for (let i = 0; i < spec.n; i++) {
+    n1++;
+    let name: string;
+    do name = `${p1(spec.names)} ${p1(OWNERS)}`;
+    while (used.has(name));
+    used.add(name);
+    const kec = p1(KEC);
+    const [clat, clng] = PADANG[kec];
+    const lat = (clat + (r1() - 0.5) * 0.008).toFixed(5);
+    const lng = (clng + (r1() - 0.5) * 0.008).toFixed(5);
+    const onCall = spec.modes.includes('panggilan');
+    // Area layanan penyedia panggilan: beberapa kecamatan, seluruh kota, atau radius dari markas.
+    const style = onCall ? p1(['kecamatan', 'kota', 'radius'] as const) : null;
+    const areas =
+      style === 'kecamatan'
+        ? [...new Set([kec, ...KEC.filter(() => c1(0.25))])].join('|')
+        : style === 'kota'
+          ? 'padang'
+          : '';
+    const radius = style === 'radius' ? String(p1([5, 8, 12])) : '';
+    let pmin = '',
+      pmax = '';
+    if (spec.price) {
+      const [lo, hi] = spec.price;
+      const a = b1(lo, hi, lo >= 100000 ? 10000 : 5000);
+      pmin = String(a);
+      pmax = String(Math.min(hi, a + b1(0, (hi - lo) / 2, lo >= 100000 ? 10000 : 5000)));
+    }
+    rows.push([
+      `dummy-padang-${spec.slug}-${i + 1}`,
+      `[DUMMY] ${name}`,
+      spec.slug,
+      spec.summary,
+      kec,
+      lat,
+      lng,
+      spec.modes,
+      areas,
+      `628001${String(n1).padStart(6, '0')}`,
+      c1(0.6) ? `@dummy_padang_${spec.slug.replace(/-/g, '_')}_${i + 1}` : '',
+      pmin,
+      pmax,
+      spec.price?.[2] ?? '',
+      spec.keywords.join('|'),
+      spec.attrs(),
+      'terbit',
+      // Sebagian besar kontak dicek agar bisa menerima pesanan (PRD 8.14); satu dari sepuluh belum.
+      n1 % 10 === 7 ? 'belum' : c1(0.3) ? 'dicek langsung' : 'kontak dicek',
+      'dummy',
+      spec.kind ?? 'penyedia',
+      radius,
+      spec.privatePoint && c1(spec.privatePoint) ? 'tidak' : ''
+    ]);
+  }
+}
 const csv = [HEADER, ...rows].map((r) => r.map(q).join(',')).join('\n') + '\n';
 writeFileSync(new URL('../../data/dummy-listings.csv', import.meta.url), csv);
 console.log(`ditulis data/dummy-listings.csv: ${rows.length} listing dummy`);

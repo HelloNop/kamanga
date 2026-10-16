@@ -146,14 +146,15 @@ export function toModelResult(o: Outcome) {
   };
 }
 
-/** Detail satu usaha untuk model AI. Hanya yang terbit; deskripsi bebas sengaja tidak disertakan (bisa memuat instruksi). */
+/** Detail satu usaha untuk model AI. Hanya yang terbit; deskripsi bebas sengaja tidak disertakan (bisa memuat instruksi).
+ *  Alamat penyedia rumahan (titik tidak publik) tidak disertakan. */
 export async function listingDetailForModel(id: number) {
   const { db } = await import('@/db');
   const { sql } = await import('drizzle-orm');
   const row = (
     (
       await db.execute(sql`
-    select l.id, l.name, l.address, l.price_note, l.instagram, l.website, l.maps_url, l.service_modes::text[] as modes,
+    select l.id, l.name, case when l.point_is_public then l.address end as address, l.price_note, l.instagram, l.website, l.maps_url, l.service_modes::text[] as modes,
            (l.opening_hours is not null) as has_hours, l.opening_hours, l.verification_level::text as verification,
            c.name as category, loc.name as location
     from listings l

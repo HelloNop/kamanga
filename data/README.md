@@ -4,6 +4,7 @@
 |---|---|---|
 | `lokasi-sumbar.csv` | Provinsi, 19 kota/kabupaten, sebutan populer ("Lubeg", "Bukiktinggi", "Pasa Raya"), tempat dikenal | Disusun tangan. Koordinat lima kota (Payakumbuh, Solok, Sawahlunto, Padang Panjang, Pariaman) hanya **perkiraan**, akurat sekitar 2 km. Perlu diisi/diperiksa lewat peta. |
 | `lokasi-sumbar-wilayah.csv` | 148 kecamatan dan 1.264 nagari/kelurahan | Dihasilkan dari data resmi, lihat di bawah. Tanpa koordinat. |
+| `wilayah/` | Poligon batas Kota Padang (11 kecamatan, 104 kelurahan) dengan kode Kemendagri | `cahyadsn/wilayah_boundaries` (MIT), lihat `wilayah/README.md`. Dimuat dengan `bun run wilayah:import-padang` (juga mengisi kode resmi dan titik tengah). |
 
 Memuat keduanya (aman diulang, hanya menambah/memperbarui): `bun run db:seed-reference`.
 Urutan penting: `lokasi-sumbar.csv` dulu, karena data resmi merujuk ke slug kota/kabupaten di dalamnya.
@@ -20,8 +21,8 @@ Urutan penting: `lokasi-sumbar.csv` dulu, karena data resmi merujuk ke slug kota
 ## Hal yang perlu diketahui
 
 - Nama resmi memakai ejaan Minang ("Guguak Panjang", "Lamposi Tigo Nagori", "Aie Pacah"). Ejaan umum disimpan sebagai sebutan lain agar tetap ditemukan.
-- Nama kecamatan unik di seluruh Sumbar, tetapi **54 nama nagari/kelurahan kembar** (136 lokasi, mis. "Koto Baru"). Chatbot harus meminta kecamatan/kotanya saat nama kembar muncul.
-- Koordinat kecamatan dan nagari belum ada. Pencarian jarak memakai koordinat listing, bukan koordinat lokasi.
+- Nama kecamatan unik di seluruh Sumbar, tetapi **54 nama nagari/kelurahan kembar** (136 lokasi, mis. "Koto Baru"). Menurut PRD 8.15, nama kembar diselesaikan dulu lewat cakupan layanan (selama hanya Padang, "Koto Baru" = Koto Baru di Padang), lokasi terakhir, dan alamat tersimpan; warga baru ditanya bila tetap ambigu.
+- Poligon, kode resmi, dan titik tengah baru ada untuk Kota Padang (wilayah layanan tahap 1). Wilayah lain cukup menambah berkas dari sumber yang sama.
 
 ## Perintah database (setara `artisan migrate` di Laravel)
 
@@ -31,7 +32,8 @@ Urutan penting: `lokasi-sumbar.csv` dulu, karena data resmi merujuk ke slug kota
 | `bun run db:migrate` | Menjalankan migrasi yang **belum** dijalankan. Tidak pernah menghapus data | **Ya** (dijalankan saat deploy) |
 | `bun run db:seed-reference` | Memuat kategori, kebutuhan, kamus, dan lokasi. Hanya menambah | Ya |
 | `bun run auth:create-admin` | Membuat/menaikkan akun admin dari `ADMIN_EMAIL` dan `ADMIN_PASSWORD` | Ya (isi variabel di server) |
-| `bun run db:seed-dummy` | Memuat 132 listing dummy (`[DUMMY]`, slug `dummy-...`) | **Tidak** |
+| `bun run wilayah:import-padang` | Memuat poligon wilayah Kota Padang (aman diulang) | Ya |
+| `bun run db:seed-dummy` | Memuat 185 listing dummy (`[DUMMY]`, slug `dummy-...`) beserta unit dan jam buka | **Tidak** |
 | `bun run db:clear-dummy` | Menghapus semua listing dummy | Tidak diperlukan |
 | `bun run db:fresh` | **Menghapus seluruh isi database**, migrasi ulang, data acuan, akun admin (setara `migrate:fresh --seed`) | **TIDAK. Menolak jalan** bila `NODE_ENV=production` atau host bukan lokal |
 | `bun run db:fresh:dummy` | `db:fresh` lalu data dummy | **TIDAK** (pengaman sama) |

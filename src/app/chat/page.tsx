@@ -6,20 +6,26 @@ import ChatView, { type Coverage, type PeekItem } from '@/features/chat/componen
 import { VERIFICATION_LABELS } from '@/features/listings/constants/listing-options';
 import { loadUiMessages, sessionExists } from '@/lib/kamanga-ai/chat-store';
 import { SESSION_COOKIE } from '@/lib/kamanga-ai/request';
+import { doorChips } from '@/lib/kamanga-ai/router';
 
 export const metadata: Metadata = {
   title: 'Kamanga AI',
-  description: 'Asisten untuk mencari jasa, tempat, wisata, dan usaha lokal di Sumatera Barat.'
+  description:
+    'Asisten urusan sehari-hari warga Padang: main, rawat diri, berangkat, servis, dan mencari tempat.'
 };
 
-export default async function Page() {
+export default async function Page({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
   const sid = (await cookies()).get(SESSION_COOKIE)?.value;
   const initialMessages = (await sessionExists(sid)) ? await loadUiMessages(sid!, 40) : [];
+  const q = (await searchParams).q;
+  const initialQuery = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 500) || null;
 
-  const needs = (
-    (await db.execute(sql`select name from needs where is_active order by sort_order, id limit 5`))
-      .rows as { name: string }[]
-  ).map((r) => r.name);
+  // Tombol awal: pintu yang aktif (data, bisa diubah admin).
+  const starters = (await doorChips()).slice(0, 6);
 
   const [c] = (
     await db.execute(sql`
@@ -57,5 +63,13 @@ export default async function Page() {
       .join(' · ')
   }));
 
-  return <ChatView initialMessages={initialMessages} starters={needs} coverage={c} peek={peek} />;
+  return (
+    <ChatView
+      initialMessages={initialMessages}
+      initialQuery={initialQuery}
+      starters={starters}
+      coverage={c}
+      peek={peek}
+    />
+  );
 }

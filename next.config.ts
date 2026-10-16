@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   output: process.env.BUILD_STANDALONE === 'true' ? 'standalone' : undefined,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
+  },
+  experimental: {
+    // Cache Turbopack di disk (.next) bisa membengkak sampai beberapa GB saat dev berjalan lama.
+    // ponytail: dimatikan karena disk laptop pengembang sempit; nyalakan lagi bila start dev terasa lambat.
+    turbopackFileSystemCacheForDev: false
   }
 };
 

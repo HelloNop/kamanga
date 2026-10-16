@@ -15,7 +15,7 @@ field component, and pages use them as one-liners inside `form.AppField`.
 | File | What it provides |
 | --- | --- |
 | `src/lib/form-context.ts` | `createFormHookContexts` — `fieldContext`, `formContext`, `useFieldContext`, `useFieldInvalid`, `BaseFieldProps` |
-| `src/components/forms/fields/*.tsx` | 16 field components, each the exact shadcn doc anatomy for its widget |
+| `src/components/forms/fields/*.tsx` | 14 field components, each the exact shadcn doc anatomy for its widget |
 | `src/components/forms/submit-button.tsx` | `SubmitButton` — disables while submitting (`form.Subscribe`) |
 | `src/lib/form.ts` | `createFormHook` — exports `useAppForm` / `withForm` with everything registered |
 
@@ -95,12 +95,10 @@ All render inside `form.AppField` as `field.XxxField`; every one takes
 | `CheckboxField` | `boolean` | Single checkbox (terms, consent) |
 | `SwitchField` | `boolean` | Label/description left, switch right |
 | `RadioGroupField` | `string` | `FieldSet` + `FieldLegend` semantics |
-| `SliderField` | `number` | `min`/`max`/`step` + value readout |
 | `ComboboxField` | `string` | Searchable select (Popover + Command) |
 | `DatePickerField` | `Date \| undefined` | Popover + Calendar, `disabledDates` |
 | `DateRangeField` | `DateRange \| undefined` | Two-month range calendar |
 | `OtpField` | `string` | 6-digit code (3 + 3) |
-| `ColorField` | `string` | Native picker + hex input |
 | `FileUploadField` | `File[]` | Wraps `FileUploader`, `maxSize`/`maxFiles` |
 | `CheckboxGroupField` | `string[]` | Needs `mode='array'` on the AppField |
 | `TagsField` | `string[]` | Needs `mode='array'`; Enter/Add pushes, badges remove |
@@ -183,38 +181,34 @@ Deep paths (`org.billing.address.city`), array sub-paths
 (`admins[0].prefs.notify`), and union-typed leaves all stay typed, and
 typechecking stays fast at 40+ fields.
 
-## Template-specific notes
+## Kamanga notes
 
 **Submitting with React Query.** `onSubmit` awaits the mutation; success/error
-handling lives on the mutation (see `features/products/components/product-form.tsx`):
+handling lives on the mutation (see `src/features/glossary/components/glossary-form.tsx`):
 
 ```tsx
 onSubmit: async ({ value }) => {
-  await createMutation.mutateAsync(value);
+  if (detail) await update.mutateAsync({ id: detail.id, values: value });
+  else await create.mutateAsync(value);
 };
 ```
 
-**Sheet / Dialog forms.** The submit button lives in the footer, outside the
-`<form>` element, connected via the HTML `form` attribute
-(`features/users/components/user-form-sheet.tsx`):
+**Sheet / Dialog forms.** Put the submit button in the footer, outside the
+`<form>` element, and connect it with the HTML `form` attribute:
 
 ```tsx
-<form id='user-form-sheet' onSubmit={…}>…</form>
+<form id='need-form' onSubmit={…}>…</form>
 <SheetFooter>
-  <Button type='submit' form='user-form-sheet'>Save</Button>
+  <Button type='submit' form='need-form'>Simpan</Button>
 </SheetFooter>
 ```
 
-**Multi-step forms.** `useFormStepper(stepSchemas, { fullSchema })` from
-`@/hooks/use-stepper` gates step navigation: `Next` validates the current
-step's schema and paints its errors; the final submit re-validates the whole
-schema and never submits invalid data. Route every submit through the gate —
-see `features/forms/components/multi-step-product-form.tsx`.
-
 **Number inputs.** `TextField type='number'` already converts at the edge;
-give required numbers a human message: `z.number({ error: 'Price is required' })`.
+give required numbers a human message: `z.number({ error: 'Harga wajib diisi' })`.
 
-**Caveats to know** (verified by stress testing):
+**User-facing text is Bahasa Indonesia** (labels, placeholders, Zod messages).
+
+**Caveats to know:**
 
 - `field.XxxField` components assert their value type via
   `useFieldContext<T>()` — the compiler checks the `name` path exists, but
@@ -222,22 +216,19 @@ give required numbers a human message: `z.number({ error: 'Price is required' })
   string path compiles and renders wrong values). Match widgets to the table
   above.
 - Rendering a field component outside `form.AppField` throws a clear error
-  (`fieldContext only works when within a fieldComponent…`) — it cannot fail
-  silently.
+  (`fieldContext only works when within a fieldComponent…`).
 - Two forms with identical field names mounted at once (a sheet over a page)
-  produce duplicate `id` attributes — the shadcn doc's `id={field.name}`
-  convention. Form *state* stays fully isolated; only label-target ids
-  collide. Rename fields or avoid simultaneous mounting if labels must stay
-  clickable in both.
-- Forgetting `mode='array'` on an AppField using `CheckboxGroupField` /
-  `TagsField` / `ToggleGroupField` still renders and updates — but keep the
-  convention: array mode gives TanStack correct per-item meta tracking.
+  produce duplicate `id` attributes. Rename fields or avoid simultaneous
+  mounting if labels must stay clickable in both.
+- Use `mode='array'` on an AppField with `CheckboxGroupField` / `TagsField` /
+  `ToggleGroupField`: array mode gives TanStack correct per-item meta tracking.
 
-## Examples in the dashboard
+## Examples in this repo
 
-| Page | Route | Demonstrates |
+| Form | File | Shows |
 | --- | --- | --- |
-| Basic Form | `/dashboard/forms/basic` | All 16 field components incl. array-mode groups, pickers, OTP, tags, upload |
-| Advanced | `/dashboard/forms/advanced` | Async validation, linked fields (`onChangeListenTo`), nested paths, raw `form.Field` object-row arrays, listener side effects |
-| Multi-Step | `/dashboard/forms/multi-step` | Per-step schemas, validation gate, review step |
-| Sheet Form | `/dashboard/forms/sheet-form` | Sheet + Dialog forms with external submit buttons |
+| Sign in / sign up | `src/features/auth/components/auth-forms.tsx` | Small forms, `TextField` only |
+| Category | `src/features/categories/components/category-form.tsx` | Dynamic attribute-schema rows with raw `form.Field` |
+| Listing | `src/features/listings/components/listing-form.tsx` | Large form, admin vs vendor submit paths, photo upload |
+| Need | `src/features/needs/components/need-form.tsx` | `TagsField` with `mode='array'` |
+| Location | `src/features/locations/components/location-form.tsx` | `ComboboxField` |

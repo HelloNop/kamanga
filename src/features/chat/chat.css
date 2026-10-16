@@ -189,7 +189,7 @@
 .kmg .btn-new {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   border-radius: 999px;
   text-decoration: none;
@@ -219,8 +219,8 @@
   display: none;
 }
 .kmg .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -412,7 +412,7 @@
 }
 .kmg .pill textarea::placeholder {
   color: var(--muted);
-  opacity: 0.8;
+  opacity: 1; /* kontras placeholder ≥ 4.5:1 */
 }
 .kmg .go {
   flex: none;
@@ -447,7 +447,7 @@
   max-width: 700px;
 }
 .kmg .chip {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 15px;
   border-radius: 999px;
   background: var(--bg);
@@ -741,8 +741,7 @@
     display: none;
   }
   .kmg .link-quiet.keep {
-    display: inline;
-    padding: 8px 4px;
+    padding: 0 6px;
   }
   .kmg .nav {
     padding-left: 16px;
@@ -763,7 +762,7 @@
   }
   /* "Percakapan baru" jadi tombol ikon bulat */
   .kmg .btn-new {
-    width: 40px;
+    width: 44px;
     padding: 0;
     justify-content: center;
   }
@@ -832,14 +831,16 @@
 
 /* tautan nav yang tetap tampil di layar sempit */
 .kmg .link-quiet.keep {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 /* tombol "Coba lagi" setelah gangguan */
 .kmg .retry {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -868,4 +869,127 @@
   height: 11px;
   border-radius: 2px;
   background: currentColor;
+}
+
+/* ───── kartu penyedia (pintu tahap 1): slot kosong, aksi, "belum pasti" ───── */
+.kmg .chip {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.kmg .chip:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.kmg .chip-strong {
+  border-color: var(--text);
+  font-weight: 600;
+}
+.kmg .chip-icon {
+  width: 16px;
+  height: 16px;
+}
+.kmg .slots {
+  margin-top: 12px;
+}
+.kmg .slot-day {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kmg .slot-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 6px;
+}
+.kmg .slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.kmg .slot:hover {
+  border-color: var(--text);
+}
+.kmg .slot b {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.kmg .slot span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.kmg .card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.kmg .card-actions .wa {
+  margin-top: 0;
+  min-height: 44px;
+}
+.kmg .btn-line {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.kmg .btn-line:hover {
+  border-color: var(--muted);
+}
+.kmg .note {
+  font-style: italic;
+}
+.kmg .uncertain {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+.kmg .uncertain h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.kmg .uncertain .meta {
+  margin: 0;
+}
+.kmg .notice {
+  margin: 0 auto 8px;
+  max-width: 700px;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Layar sangat sempit (360 px) saat percakapan berjalan: ajakan "Daftarkan usaha" untuk mitra disembunyikan
+   agar header tidak melebar; warga tetap punya Masuk dan Jelajah. */
+@media (max-width: 420px) {
+  .kmg .nav-right .cta {
+    display: none;
+  }
 }

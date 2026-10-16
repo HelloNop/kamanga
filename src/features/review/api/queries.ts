@@ -1,9 +1,10 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getPendingCount, getReviewDetail, getReviewQueue } from './service';
+import { getClaimQueue, getPendingCount, getReviewDetail, getReviewQueue } from './service';
 
 export const reviewKeys = {
   all: ['review'] as const,
   queue: () => [...reviewKeys.all, 'queue'] as const,
+  claims: () => [...reviewKeys.all, 'claims'] as const,
   count: () => [...reviewKeys.all, 'count'] as const,
   detail: (id: number) => [...reviewKeys.all, 'detail', id] as const
 };
@@ -22,3 +23,6 @@ export const pendingCountOptions = () =>
 
 export const reviewDetailOptions = (id: number) =>
   queryOptions({ queryKey: reviewKeys.detail(id), queryFn: () => getReviewDetail(id) });
+
+export const claimQueueOptions = () =>
+  queryOptions({ queryKey: reviewKeys.claims(), queryFn: () => getClaimQueue() });

@@ -71,6 +71,34 @@
       "when": 1791624457650,
       "tag": "0009_search_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791999101746,
+      "tag": "0010_postgis",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791999678310,
+      "tag": "0011_tahap1_fondasi",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792001412342,
+      "tag": "0012_chat_state",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792022753168,
+      "tag": "0013_otp_ip_hash",
+      "breakpoints": true
     }
   ]
 }

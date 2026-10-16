@@ -8,16 +8,19 @@ import { searchParamsCache } from '@/lib/searchparams';
 import { requireAdmin } from '@/lib/session';
 import { cn } from '@/lib/utils';
 
-export const metadata = { title: 'Listing' };
+export const metadata = { title: 'Penyedia & Tempat' };
 
 export default async function Page(props: { searchParams: Promise<SearchParams> }) {
   await requireAdmin();
-  searchParamsCache.parse(await props.searchParams);
+  const sp = await props.searchParams;
+  searchParamsCache.parse(sp);
+  // `kind` belum ada di searchParamsCache bersama; dibaca langsung.
+  const kind = typeof sp.kind === 'string' ? sp.kind : undefined;
 
   return (
     <PageContainer
-      pageTitle='Listing'
-      pageDescription='Kelola jasa, tempat, wisata, dan UMKM yang tampil di Kamanga.'
+      pageTitle='Penyedia & Tempat'
+      pageDescription='Penyedia bisa dipesan lewat Kamanga; Tempat hanya informasi (kafe, wisata, apotek 24 jam, IGD).'
       pageHeaderAction={
         <div className='flex gap-2'>
           <Link
@@ -35,7 +38,7 @@ export default async function Page(props: { searchParams: Promise<SearchParams> 
         </div>
       }
     >
-      <ListingListingPage />
+      <ListingListingPage kind={kind} />
     </PageContainer>
   );
 }
