@@ -18,7 +18,11 @@ Aturan:
 
 ## Halaman warga
 
-- `/chat` memakai token sendiri di bawah kelas `.kmg` (`src/features/chat/chat.css`) dan huruf Poppins (`--font-kmg`, dipasang di `src/app/chat/layout.tsx`).
-- `/jelajah` dan `/listing/[slug]` memakai token `.kmg` yang sama (`src/features/jelajah/jelajah.css`).
-- Halaman warga baru boleh memakai token sendiri dengan pola yang sama: semua selektor dibatasi di bawah satu kelas pembungkus agar tidak bocor ke panel.
+- Semua halaman warga memakai satu tampilan: token `.kmg` (`src/features/chat/chat.css`, terang dan gelap) dan huruf Poppins (`--font-kmg`, dari `src/app/chat/layout.tsx`).
+  - Beranda (chat), `/jelajah`, `/listing/[slug]`: pembungkus `kmg` (+ `pub-page` untuk jelajah/profil).
+  - Pintu, pesan, masuk, pesanan, akun: pembungkus `kmg warga`. `warga.css` berisi komponennya (`w-btn`, `w-box`, `w-chip`, ...), dan token lamanya (`--ink`, `--red`, `--paper`, ...) hanyalah alias ke token `.kmg`.
+  - Masuk/daftar mitra (`/auth`): pembungkus `kmg auth-page`; formulir shadcn memakai warna chat lewat pemetaan token di `.auth-main`.
+- Header semua halaman ini sama: `PublicHeader` (`src/features/jelajah/components/public-header.tsx`); beranda punya salinan di `ChatView` karena ada tombol percakapan baru.
+- Aksen merah hanya untuk teks berganti di beranda (`--rot`) dan aksi berbahaya (`--err`, `w-btn danger`).
+- Halaman warga baru: bungkus dengan `kmg warga` dan pakai komponen `warga.css`; semua selektor tetap di bawah kelas pembungkus agar tidak bocor ke panel.
 - Prototipe tampilan ada di `docs/design/`.

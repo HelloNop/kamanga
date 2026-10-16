@@ -171,7 +171,7 @@ export function DeleteAccount() {
   const [error, setError] = useState<string | null>(null);
   if (!open)
     return (
-      <button type='button' className='w-link' onClick={() => setOpen(true)}>
+      <button type='button' className='w-link danger' onClick={() => setOpen(true)}>
         Hapus akun dan data saya
       </button>
     );
@@ -210,7 +210,11 @@ export function DeleteAccount() {
         </p>
       )}
       <div className='w-actions'>
-        <button className='w-btn block' type='submit' disabled={busy || text.trim() !== 'HAPUS'}>
+        <button
+          className='w-btn danger block'
+          type='submit'
+          disabled={busy || text.trim() !== 'HAPUS'}
+        >
           {busy ? 'Menghapus…' : 'Hapus akun permanen'}
         </button>
         <button type='button' className='w-btn ghost block' onClick={() => setOpen(false)}>

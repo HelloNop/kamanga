@@ -1,29 +1,23 @@
-/* Halaman warga Kamanga: beranda, pintu, pesan, masuk, pesanan, akun.
-   Warna marawa (hitam, merah, kuning) di atas latar terang. Semua selektor di bawah .warga agar tidak bocor.
-   Kuning #B7791F kontrasnya < 4.5:1 di latar terang, jadi hanya untuk aksen (garis, ikon, bingkai), bukan teks kecil.
+/* Halaman warga Kamanga: pintu, pesan, masuk, pesanan, akun.
+   Dibungkus bersama .kmg (className='kmg warga'), jadi warna, huruf, dan mode gelap mengikuti tampilan chat
+   di beranda. Token lama (--ink, --red, --paper, ...) kini alias ke token .kmg agar komponen tidak perlu diubah.
    Mobile-first mulai 360 px, target sentuh minimal 44 px. */
 .warga {
-  --ink: #1c1917;
-  --red: #8e1b1b;
-  --red-hi: #a52323;
-  --gold: #b7791f;
-  --gold-soft: #f6ead3;
-  --paper: #fffaf3;
-  --card: #ffffff;
-  --muted: #57534e;
-  --line: #e6dccd;
-  --soft: #f5ede1;
-  --ok: #166534;
+  --ink: var(--text);
+  --on-ink: var(--bg); /* teks di atas latar --ink (tombol utama, lencana, status) */
+  --red: var(--text); /* aksen utama = warna teks, seperti tombol "Cari" di chat */
+  --red-hi: var(--muted);
+  --gold: var(--muted);
+  --gold-soft: var(--surface);
+  --paper: var(--bg);
+  --card: var(--bg);
+  --soft: var(--surface);
   --ok-soft: #e7f3ea;
   --warn: #8a4b0f;
   --warn-soft: #fbefdc;
-  --err: #8e1b1b;
+  --err: #a52323;
   --err-soft: #fbe9e7;
-  --wa: #166534;
-  --shadow: 0 1px 2px rgb(28 25 23 / 6%), 0 8px 24px -14px rgb(28 25 23 / 22%);
-  --marawa: linear-gradient(90deg, var(--ink) 0 33.3%, var(--red) 33.3% 66.6%, var(--gold) 66.6%);
-
-  color-scheme: light;
+  --field: #8a8a93; /* bingkai kolom isian dan pilihan: 3.4:1 di atas putih (WCAG 1.4.11) */
   min-height: 100dvh;
   background: var(--paper);
   color: var(--ink);
@@ -37,6 +31,14 @@
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+.dark .warga {
+  --ok-soft: #0f2a1a;
+  --warn: #fbbf24;
+  --warn-soft: #2a1f0a;
+  --err: #f08a80;
+  --err-soft: #2a1414;
+  --field: #6b6b75; /* 3.6:1 di atas latar gelap */
 }
 .warga *,
 .warga *::before,
@@ -79,56 +81,10 @@
 }
 
 /* ───── kerangka ───── */
-.warga .w-stripe {
-  height: 6px;
-  background: var(--marawa);
-}
-.warga .w-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 6px 16px;
-}
-.warga .w-brand {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--ink);
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-  text-decoration: none;
-}
-.warga .w-brand span {
-  color: var(--red);
-}
-.warga .w-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.warga .w-nav a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 12px;
-  border-radius: 999px;
-  color: var(--ink);
-  font-size: 0.92rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-.warga .w-nav a:hover {
-  background: var(--soft);
-}
 .warga .w-main {
   max-width: 720px;
   margin: 0 auto;
-  padding: 8px 16px 64px;
+  padding: 96px 16px 64px; /* ruang untuk header tetap (.kmg .nav, 76 px) + bayangannya */
 }
 .warga .w-back {
   display: inline-flex;
@@ -180,7 +136,7 @@
   padding: 2px 9px;
   border-radius: 999px;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -197,8 +153,8 @@
   color: var(--warn);
 }
 .warga .w-badge.red {
-  background: var(--red);
-  color: #fff;
+  background: var(--err);
+  color: var(--on-ink);
 }
 
 /* ───── tombol dan isian ───── */
@@ -212,7 +168,7 @@
   border: 0;
   border-radius: 999px;
   background: var(--red);
-  color: #fff;
+  color: var(--on-ink);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -238,6 +194,9 @@
 .warga .w-btn.dark {
   background: var(--ink);
 }
+.warga .w-btn.danger {
+  background: var(--err); /* aksi yang tidak bisa dibatalkan: hapus akun, batal pesanan */
+}
 .warga .w-btn.small {
   min-height: 44px;
   padding: 0 14px;
@@ -255,6 +214,9 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+}
+.warga .w-link.danger {
+  color: var(--err);
 }
 .warga .w-field {
   display: grid;
@@ -286,7 +248,7 @@
   width: 100%;
   min-height: 48px;
   padding: 10px 14px;
-  border: 1px solid #cfc3b2;
+  border: 1px solid var(--field);
   border-radius: 14px;
   background: var(--card);
 }
@@ -312,7 +274,7 @@
   gap: 6px;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid #cfc3b2;
+  border: 1px solid var(--field);
   border-radius: 999px;
   background: var(--card);
   color: var(--ink);
@@ -329,7 +291,7 @@
 .warga .w-chip:has(input:checked) {
   border-color: var(--ink);
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .warga .w-chip input {
   position: absolute;
@@ -522,7 +484,7 @@
 }
 .warga .w-slot:hover {
   background: var(--red);
-  color: #fff;
+  color: var(--on-ink);
 }
 .warga .w-slot b {
   font-size: 0.95rem;
@@ -548,16 +510,16 @@
   padding: 16px;
   border-radius: 18px;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
 }
 .warga .w-status.ok {
   background: var(--ok);
 }
 .warga .w-status.bad {
-  background: var(--red);
+  background: var(--err);
 }
 .warga .w-status.done {
-  background: #44403c;
+  background: var(--muted);
 }
 .warga .w-status b {
   font-size: 1.15rem;

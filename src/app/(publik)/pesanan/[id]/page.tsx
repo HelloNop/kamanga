@@ -8,7 +8,7 @@ import {
   CancelBooking,
   ReviewForm
 } from '@/features/warga/components/booking-actions';
-import { WargaHeader } from '@/features/warga/components/header';
+import { PublicHeader } from '@/features/jelajah/components/public-header';
 import { bookingItem, rulesLines, rupiah, STATUS_TEXT } from '@/features/warga/lib/format';
 import { formatDuration } from '@/features/listings/lib/format';
 import { booking, type BookingStatus, paths } from '@/lib/engines/contracts';
@@ -61,8 +61,8 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
   const rules = rulesLines(b.rulesSnapshot);
 
   return (
-    <div className='warga'>
-      <WargaHeader />
+    <div className='kmg warga'>
+      <PublicHeader />
       <main className='w-main'>
         <Link className='w-back' href={paths.citizenBookings()}>
           <Icons.chevronLeft size={18} aria-hidden='true' />

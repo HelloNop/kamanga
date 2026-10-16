@@ -11,7 +11,7 @@ import {
   listSavedAddresses
 } from '@/features/warga/api/repository';
 import { BookingForm, type DurationOption } from '@/features/warga/components/booking-form';
-import { WargaHeader } from '@/features/warga/components/header';
+import { PublicHeader } from '@/features/jelajah/components/public-header';
 import { buildRules, nextDays, rupiah } from '@/features/warga/lib/format';
 import { slotButtons } from '@/features/warga/lib/slots';
 import { paths, schedule, type Slot } from '@/lib/engines/contracts';
@@ -69,8 +69,8 @@ export default async function BookPage({ params, searchParams }: Props) {
 
   if (!t.bookable || !category)
     return (
-      <div className='warga'>
-        <WargaHeader />
+      <div className='kmg warga'>
+        <PublicHeader />
         <main className='w-main'>
           {back}
           <h1 className='w-title'>Belum bisa dipesan</h1>
@@ -162,8 +162,8 @@ export default async function BookPage({ params, searchParams }: Props) {
       : null;
 
   return (
-    <div className='warga'>
-      <WargaHeader />
+    <div className='kmg warga'>
+      <PublicHeader />
       <main className='w-main'>
         {back}
         <p className='w-card-cat'>{category.name}</p>

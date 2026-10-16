@@ -62,7 +62,7 @@ export function CancelBooking({ id, rules }: { id: number; rules: string | null 
         </p>
       )}
       <div className='w-actions'>
-        <button className='w-btn block' type='submit' disabled={busy}>
+        <button className='w-btn danger block' type='submit' disabled={busy}>
           {busy ? 'Membatalkan…' : 'Ya, batalkan'}
         </button>
         <button type='button' className='w-btn ghost block' onClick={() => setOpen(false)}>

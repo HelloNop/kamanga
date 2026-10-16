@@ -147,12 +147,16 @@
   padding: 16px clamp(16px, 4vw, 44px);
 }
 .kmg.is-chat .nav,
-.kmg.pub-page .nav {
+.kmg.pub-page .nav,
+.kmg.warga .nav,
+.kmg.auth-page .nav {
   /* latar penuh setinggi bilah, lalu memudar di bawahnya: isi yang digulir tidak tembus di balik header */
   background: var(--bg);
 }
 .kmg.is-chat .nav::after,
-.kmg.pub-page .nav::after {
+.kmg.pub-page .nav::after,
+.kmg.warga .nav::after,
+.kmg.auth-page .nav::after {
   content: '';
   position: absolute;
   left: 0;
@@ -161,6 +165,10 @@
   height: 40px;
   background: linear-gradient(to bottom, var(--bg), transparent);
   pointer-events: none;
+}
+/* Halaman warga: bayangan lebih pendek agar judul halaman di bawah header tidak ikut memudar. */
+.kmg.warga .nav::after {
+  height: 16px;
 }
 .kmg .brand {
   text-decoration: none;
@@ -619,6 +627,42 @@
   .kmg .dc-track > li {
     flex-basis: 210px;
   }
+}
+
+/* ───── masuk/daftar mitra (/auth): formulir shadcn memakai warna chat ───── */
+/* --muted di .kmg adalah warna teks, di shadcn warna latar: nilai chat disimpan dulu di --kmg-muted. */
+.kmg.auth-page {
+  --kmg-muted: var(--muted);
+}
+.kmg .auth-main {
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--bg);
+  --card-foreground: var(--text);
+  --popover: var(--bg);
+  --popover-foreground: var(--text);
+  --primary: var(--text);
+  --primary-hi: var(--text);
+  --primary-foreground: var(--bg);
+  --muted: var(--surface);
+  --muted-foreground: var(--kmg-muted);
+  --accent: var(--surface);
+  --accent-foreground: var(--text);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--text);
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 84px 16px 32px;
+}
+/* .kmg button { color/font: inherit } menimpa kelas Tailwind tombol shadcn; kembalikan ke nilai komponennya. */
+.kmg .auth-main button {
+  color: revert-layer;
+  font: revert-layer;
 }
 
 /* ───── percakapan ───── */

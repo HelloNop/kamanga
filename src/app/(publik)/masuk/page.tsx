@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCitizenProfile } from '@/features/warga/api/repository';
-import { WargaHeader } from '@/features/warga/components/header';
+import { PublicHeader } from '@/features/jelajah/components/public-header';
 import { SignIn } from '@/features/warga/components/sign-in';
 import { safeNext } from '@/features/warga/lib/format';
 import { getSession } from '@/lib/session';
@@ -23,8 +23,8 @@ export default async function SignInPage({
   if (profile?.privacyConsentAt) redirect(next);
 
   return (
-    <div className='warga'>
-      <WargaHeader />
+    <div className='kmg warga'>
+      <PublicHeader />
       <main className='w-main'>
         <h1 className='w-title'>Masuk</h1>
         <p className='w-lead'>Cukup nomor WhatsApp. Tanpa sandi.</p>

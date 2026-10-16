@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getCitizenProfile, listSavedAddresses } from '@/features/warga/api/repository';
 import { DeleteAccount, SavedAddresses, SignOut } from '@/features/warga/components/account';
-import { WargaHeader } from '@/features/warga/components/header';
+import { PublicHeader } from '@/features/jelajah/components/public-header';
 import { maskPhone } from '@/features/warga/lib/format';
 import { paths } from '@/lib/engines/contracts';
 import { requireCitizen } from '@/lib/session';
@@ -17,8 +17,8 @@ export default async function AccountPage() {
     listSavedAddresses(session.user.id)
   ]);
   return (
-    <div className='warga'>
-      <WargaHeader />
+    <div className='kmg warga'>
+      <PublicHeader />
       <main className='w-main'>
         <h1 className='w-title'>Akun</h1>
         {!profile?.privacyConsentAt && (

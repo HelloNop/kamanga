@@ -1,7 +1,7 @@
 // Pesanan warga: yang masih aktif dan riwayat (PRD 8.7).
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { WargaHeader } from '@/features/warga/components/header';
+import { PublicHeader } from '@/features/jelajah/components/public-header';
 import { bookingItem, STATUS_TEXT } from '@/features/warga/lib/format';
 import { ACTIVE_BOOKING_STATUSES, booking, type BookingView, paths } from '@/lib/engines/contracts';
 import { requireCitizen } from '@/lib/session';
@@ -43,8 +43,8 @@ export default async function BookingsPage() {
   const now = items.filter(active);
   const past = items.filter((b) => !active(b));
   return (
-    <div className='warga'>
-      <WargaHeader />
+    <div className='kmg warga'>
+      <PublicHeader />
       <main className='w-main'>
         <h1 className='w-title'>Pesanan saya</h1>
         {!items.length && (

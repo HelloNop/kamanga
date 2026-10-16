@@ -117,6 +117,8 @@ Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `
 - Beranda lama (grid pintu marawa) dan komponen `RotatingText` dihapus. Prototipe di `docs/design/beranda-chat.html` (server statis: konfigurasi `prototipe` di `.claude/launch.json`).
 - Uji: semua `check:*` lulus termasuk `check:e2e` 18/18 (bagian 17 kini memeriksa pengalihan `/chat`), `eval:chat` 95%; dicek di browser 360 px dan desktop.
 
+- Semua halaman warga (pintu, pesan, masuk, pesanan, akun) dan masuk/daftar mitra (`/auth`) kini memakai tampilan beranda: warna `/chat` terang/gelap, header `PublicHeader` yang sama (Masuk/Akun/Panel), tanpa garis marawa. Detail di `docs/themes.md`.
+
 ## Asumsi yang diambil lead
 
 - Lihat `docs/rencana-tahap1.md` bagian 2 (17 keputusan desain).
