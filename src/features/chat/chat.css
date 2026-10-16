@@ -471,6 +471,20 @@
 }
 
 /* ───── beranda: slider pintu dan contoh pertanyaan ───── */
+/* Teks berganti: lebih kecil dari judul, warna aksen merah (7.3:1 terang, 7.8:1 gelap). */
+.kmg {
+  --rot: #a52323;
+}
+.dark .kmg {
+  --rot: #f08a80;
+}
+.kmg .hero h1 .fade {
+  margin-top: 6px;
+  color: var(--rot);
+  font-size: 0.5em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
 .kmg .hero h1 .rot {
   display: inline-block;
   animation: kmg-rot-in 0.3s ease both;
