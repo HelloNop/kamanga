@@ -1426,9 +1426,10 @@ try {
       else assert.ok(home.text.includes(d.name), `pintu ${d.name} (${d.status}) tidak tampil`);
     }
     assert.match(home.text, /Kamanga hari ko/);
-    assert.match(home.text, /href="\/masuk/, 'tautan masuk warga di beranda');
-    const chat = await page('/chat', undefined, 200);
-    assert.match(chat.text, /href="\/masuk[^"]*">Masuk</, 'header chat: Masuk untuk warga');
+    assert.match(home.text, /href="\/masuk[^"]*">Masuk</, 'header beranda: Masuk untuk warga');
+    // Chat pindah ke beranda: alamat lama dialihkan, pesan ?q= ikut terbawa.
+    await page('/chat', undefined, 307, /^\/$/);
+    await page('/chat?q=servis%20ac', undefined, 307, /^\/\?q=servis%20ac$/);
   });
 
   // ───── halaman per peran ─────
@@ -1442,7 +1443,6 @@ try {
       '/pintu/ka-rawat-diri',
       '/pintu/ka-uda-anta',
       '/pintu/ka-servis',
-      '/chat',
       '/masuk'
     ])
       await page(p, undefined, 200);

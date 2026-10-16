@@ -13,12 +13,10 @@ import type {
   KamangaMessage,
   ProviderItem
 } from '@/lib/kamanga-ai/types';
+import { DoorSlider, type DoorTile } from './door-slider';
 import { ITIK_PATH, ITIK_VIEWBOX } from './motif-strokes';
 import { ThemeToggle } from './theme-toggle';
 import { paths } from '@/lib/engines/paths';
-
-export type Coverage = { cities: number; districts: number; villages: number };
-export type PeekItem = { id: number; name: string; meta: string };
 
 const transport = new DefaultChatTransport({
   api: '/api/chat',
@@ -241,16 +239,16 @@ function ProviderCard({
 export default function ChatView({
   initialMessages,
   initialQuery,
-  starters,
-  coverage,
-  peek
+  doors,
+  signedIn
 }: {
   initialMessages: KamangaMessage[];
-  /** Pesan pertama dari ?q= (beranda dan halaman pintu mengarah ke /chat?q=...). */
+  /** Pesan pertama dari ?q= (halaman pintu dan profil mengarah ke /?q=...). */
   initialQuery?: string | null;
-  starters: string[];
-  coverage: Coverage;
-  peek: PeekItem[];
+  /** Pintu aktif dan "segera" dari pengaturan admin, untuk slider di beranda. */
+  doors: DoorTile[];
+  /** Warga sudah masuk: header menautkan Akun, bukan Masuk. */
+  signedIn: boolean;
 }) {
   const { messages, sendMessage, setMessages, regenerate, stop, status } = useChat<KamangaMessage>({
     messages: initialMessages,
@@ -260,6 +258,8 @@ export default function ChatView({
   // Jawaban macet (tidak ada kabar apa pun terlalu lama): dihentikan dan ditawarkan coba lagi.
   const [stalled, setStalled] = useState(false);
   const [example, setExample] = useState(0);
+  // Teks berganti di bawah judul mengikuti pintu terdepan di slider (PRD 8.1).
+  const [front, setFront] = useState(doors.find((d) => !d.soon)?.name ?? 'Ka manga');
   // Pemberitahuan kecil di atas kolom tulis (izin lokasi ditolak, dsb.) dan petunjuk kolom tulis.
   const [notice, setNotice] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
@@ -429,7 +429,7 @@ export default function ChatView({
   useEffect(() => {
     if (!initialQuery || sentQuery.current) return;
     sentQuery.current = true;
-    window.history.replaceState(null, '', '/chat');
+    window.history.replaceState(null, '', '/');
     send(initialQuery);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery]);
@@ -451,7 +451,7 @@ export default function ChatView({
       </div>
 
       <header className='nav'>
-        <Link className='brand' href='/chat' aria-label='Kamanga, beranda'>
+        <Link className='brand' href='/' aria-label='Kamanga, beranda'>
           kamanga
         </Link>
         <div className='nav-right'>
@@ -471,9 +471,15 @@ export default function ChatView({
             Jelajah
           </Link>
           {/* Masuk warga (OTP WA). Pendaftaran usaha untuk mitra, dibedakan jelas di layar sempit. */}
-          <Link className='link-quiet keep' href={paths.citizenSignIn('/chat')}>
-            Masuk
-          </Link>
+          {signedIn ? (
+            <Link className='link-quiet keep' href='/akun'>
+              Akun
+            </Link>
+          ) : (
+            <Link className='link-quiet keep' href={paths.citizenSignIn('/')}>
+              Masuk
+            </Link>
+          )}
           <Link className='cta' href='/auth/sign-up' aria-label='Daftarkan usaha'>
             <span className='cta-long'>Daftarkan usaha</span>
             <span className='cta-short' aria-hidden='true'>
@@ -490,13 +496,16 @@ export default function ChatView({
               Kamanga AI<sup>Beta</sup>
             </div>
             <h1>
-              <Words text='Ka manga hari ini?' />
+              <Words text='Kamanga hari ko?' />
               <span className='fade'>
-                <Words text='Cukup ketik, Kamanga carikan.' from={4} />
+                <span key={front} className='rot'>
+                  {front}?
+                </span>
               </span>
             </h1>
           </section>
         )}
+        {!chatting && <DoorSlider doors={doors} onFront={setFront} />}
 
         {chatting && (
           <section className='thread' aria-live='polite' aria-label='Percakapan'>
@@ -661,9 +670,10 @@ export default function ChatView({
               </button>
             )}
           </form>
-          {!chatting && starters.length > 0 && (
-            <div className='chips' id='chips'>
-              {starters.map((s) => (
+          {!chatting && (
+            <div className='chips' id='chips' role='group' aria-label='Contoh pertanyaan'>
+              <span className='lbl'>Coba tanya</span>
+              {EXAMPLES.slice(0, 3).map((s) => (
                 <button key={s} type='button' className='chip' onClick={() => send(s)}>
                   {s}
                 </button>
@@ -676,24 +686,6 @@ export default function ChatView({
           </p>
         </div>
       </div>
-
-      {!chatting && coverage.cities > 0 && (
-        <aside className='coverage' aria-label='Cakupan data'>
-          <b>{coverage.cities} kota/kabupaten</b>
-          {coverage.districts.toLocaleString('id-ID')} kecamatan,{' '}
-          {coverage.villages.toLocaleString('id-ID')} nagari dan kelurahan di Sumatera Barat
-        </aside>
-      )}
-      {!chatting && peek.length === 3 && (
-        <div className='peek' aria-hidden='true'>
-          {peek.map((p) => (
-            <div key={p.id} className='mini'>
-              <b>{p.name}</b>
-              <span>{p.meta}</span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

@@ -317,19 +317,6 @@ for (const file of [
   }
 }
 
-// Teks berganti di beranda (dilaporkan tampak pucat): warna dan animasinya.
-{
-  const t = tokensOf(SCOPES[0]);
-  const rot = all.find((r) => r.selector === '.warga .w-rotate');
-  const c = rot?.decls.color ? parseColor(resolve(rot.decls.color, t)) : null;
-  const bg = parseColor(resolve(t['--paper'] ?? '', t));
-  if (c && bg)
-    console.log(
-      `Teks berganti beranda: ${resolve(rot!.decls.color, t)} di atas --paper = ${contrast(c, bg).toFixed(2)}:1; ` +
-        `animasi masuk ${all.find((r) => r.selector === '.warga .w-rotate span')?.decls.animation ?? '-'}`
-    );
-}
-
 for (const kind of ['kontras', 'sentuh', '360px']) {
   const list = problems.filter((p) => p.kind === kind);
   console.log(`\n${kind}: ${list.length} temuan`);

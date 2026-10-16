@@ -59,7 +59,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Q> 
           </h1>
           <p className='pub-sub'>
             Jasa, tempat, wisata, dan produk dari pelaku usaha setempat. Belum tahu mau cari apa?{' '}
-            <Link href='/chat'>Tanya Kamanga</Link>.
+            <Link href='/'>Tanya Kamanga</Link>.
           </p>
 
           <form className='pub-search' action='/jelajah' role='search'>
@@ -113,7 +113,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Q> 
             <div className='pub-empty-motif' aria-hidden='true' />
             <h2>Belum ada yang cocok</h2>
             <p>Coba kata lain atau kurangi filter. Kamanga juga bisa membantu mencarikan.</p>
-            <Link className='pub-btn' href='/chat'>
+            <Link className='pub-btn' href='/'>
               Tanya Kamanga
             </Link>
           </div>

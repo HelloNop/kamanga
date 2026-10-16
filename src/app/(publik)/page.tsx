@@ -1,83 +1,45 @@
-// Beranda "Kamanga hari ko?" (PRD 8.1). Pintu, urutan, ikon, dan status dari tabel doors (diatur admin).
-// Tanpa akun dan tanpa AI: kolom ketik bebas hanya meneruskan ke /chat.
+// Beranda "Kamanga hari ko?" (PRD 8.1): chat lebih dulu, pintu sebagai slider jalan pintas di atas kolom ketik.
+// Pintu, urutan, ikon, dan status dari tabel doors (diatur admin). Tanpa akun dan tanpa AI sampai warga mengirim.
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Icons } from '@/components/icons';
+import { cookies } from 'next/headers';
+import ChatView from '@/features/chat/components/chat-view';
 import { getHomeDoors } from '@/features/warga/api/repository';
-import { WargaHeader } from '@/features/warga/components/header';
-import { RotatingText } from '@/features/warga/components/rotating-text';
-import { paths } from '@/lib/engines/contracts';
+import { loadUiMessages, sessionExists } from '@/lib/kamanga-ai/chat-store';
+import { SESSION_COOKIE } from '@/lib/kamanga-ai/request';
+import { getSession, isCitizen } from '@/lib/session';
 
-export const metadata: Metadata = { title: { absolute: 'Kamanga hari ko?' } };
+export const metadata: Metadata = {
+  title: { absolute: 'Kamanga hari ko?' },
+  description:
+    'Asisten urusan sehari-hari warga Padang: main, rawat diri, berangkat, servis, dan mencari tempat.'
+};
 
-export default async function Home() {
-  const doors = await getHomeDoors();
-  const active = doors.filter((d) => d.status === 'active');
-  const rotating = active.map((d) => d.rotatingText || `${d.name.toLowerCase()}…`);
+export default async function Home({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const sid = (await cookies()).get(SESSION_COOKIE)?.value;
+  const [initialMessages, doors, session] = await Promise.all([
+    sessionExists(sid).then((ok) => (ok ? loadUiMessages(sid!, 40) : [])),
+    getHomeDoors(),
+    getSession()
+  ]);
+  const q = (await searchParams).q;
+  const initialQuery = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 500) || null;
+
   return (
-    <div className='warga'>
-      <WargaHeader />
-      <main className='w-main'>
-        <section className='w-hero'>
-          <h1>Kamanga hari ko?</h1>
-          <RotatingText items={rotating} />
-          <p className='sr-only'>Pilih kebutuhanmu: {active.map((d) => d.name).join(', ')}.</p>
-        </section>
-
-        <ul className='w-doors' aria-label='Pintu layanan'>
-          {doors.map((d) => {
-            const Icon = Icons[d.icon as keyof typeof Icons] ?? Icons.door;
-            const body = (
-              <>
-                <span className='w-door-icon' aria-hidden='true'>
-                  <Icon size={24} />
-                </span>
-                <b>{d.name}</b>
-                {d.description && <small>{d.description}</small>}
-              </>
-            );
-            return (
-              <li key={d.slug}>
-                {d.status === 'active' ? (
-                  <Link className='w-door' href={paths.door(d.slug)}>
-                    {body}
-                  </Link>
-                ) : (
-                  <div className='w-door is-soon' aria-disabled='true'>
-                    {body}
-                    <span className='w-badge'>Segera</span>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-
-        <form className='w-ask' action='/chat' method='get' role='search'>
-          <label htmlFor='w-ask'>Atau ceritakan saja…</label>
-          <div className='w-ask-row'>
-            <input
-              id='w-ask'
-              aria-label='Atau ceritakan saja…'
-              name='q'
-              type='text'
-              maxLength={500}
-              placeholder='mis. AC rumah ndak dingin, di Kuranji'
-              autoComplete='off'
-              required
-            />
-            <button className='w-btn small' type='submit'>
-              <Icons.send size={18} aria-hidden='true' />
-              <span>Kirim</span>
-            </button>
-          </div>
-        </form>
-
-        <nav className='w-foot' aria-label='Tautan lain'>
-          <Link href='/jelajah'>Jelajah semua usaha</Link>
-          <Link href='/auth/sign-up'>Daftarkan usaha</Link>
-        </nav>
-      </main>
-    </div>
+    <ChatView
+      initialMessages={initialMessages}
+      initialQuery={initialQuery}
+      doors={doors.map((d) => ({
+        slug: d.slug,
+        name: d.name,
+        icon: d.icon,
+        description: d.description,
+        soon: d.status !== 'active'
+      }))}
+      signedIn={isCitizen(session)}
+    />
   );
 }

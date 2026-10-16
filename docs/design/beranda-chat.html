@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beranda chat-first — prototipe Kamanga</title>
+<!-- Prototipe beranda chat-first. Gaya /chat disalin dari src/features/chat/chat.css (16 Okt 2026);
+     bagian baru ada di blok "Tambahan beranda". Data penyedia contoh dari listing dummy. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+html, body { margin: 0; }
+:root { --font-kmg: 'Poppins'; }
+/* Tampilan chat Kamanga (dari prototipe docs/design/chat-netral.html).
+   Netral seperti aplikasi AI chat pada umumnya, terang dan gelap mengikuti kelas .dark dari next-themes.
+   Satu-satunya unsur Minang: garis Itiak Pulang Patang di kubah. Semua selektor dibatasi di bawah .kmg agar tidak bocor ke halaman lain. */
+@property --kmg-a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.kmg {
+  --tex: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20233%20349%22%20width%3D%22233%22%20height%3D%22349%22%3E%3Cpath%20d%3D%22M942%2056.3%20926.4%2071.9%20908.2%2092.7%20894.6%20109.2%20847.2%20169.7%20838.5%20180%20826.1%20193.6%20809.5%20210%20793.4%20224%20775.9%20237.5%20752.8%20253.3%20751.2%20255%20753.7%20256.8%20760.3%20260.2%20772.3%20265.2%20783.2%20268.2%20790%20269.3%20797%20269.7%20809%20269.3%20816.6%20268%20828%20264.6%20840.5%20259%20849.4%20253.9%20860.7%20246.1%20876.9%20232.4%20887%20222.5%20900.5%20208%20913.9%20192.4%20942%20156.7%20M-233%2065%20-219.5%2052.1%20-206.4%2041.1%20-192.5%2031%20-176.3%2021.2%20-163.5%2015%20-156.4%2012.2%20-148.9%209.7%20-137.8%206.8%20-131.9%205.7%20-122%204.6%20-108%204.7%20-95.1%206.7%20-87.3%208.9%20-82.3%2010.8%20-76.8%2013.3%20-71.1%2016.6%20-64.2%2021.6%20-59.9%2025.4%20-55.1%2030.6%20-52.6%2034.1%20-49.5%2039%20-46.9%2044.4%20-45%2050.4%20-43.9%2055.1%20-44.4%2056.2%20-45.8%2056.2%20-62.1%2051.6%20-75%2049.6%20-85%2049.2%20-96%2049.6%20-107.9%2051.7%20-117.8%2054.6%20-126.4%2058%20-138.9%2064.6%20-147.9%2070.6%20-156.9%2077.6%20-167%2086.5%20-177.4%2097.2%20-184.9%20105.7%20-196.5%20120%20-233%20168.4%20M942%20169.4%20912%20208.4%20901%20221.4%20886.2%20236.7%20873.4%20247.9%20863%20255.5%20850.7%20263.2%20836.7%20270.2%20825.7%20274.2%20817%20276.4%20808%20277.5%20795%20277.3%20788.1%20276.4%20774.3%20273.2%20732.8%20259.8%20731.3%20259.8%20730.7%20261.1%20731.7%20267.9%20734.7%20278.9%20737.7%20286.8%20740.6%20292.9%20744.6%20299.9%20749.5%20307%20755%20313.5%20762.1%20320.4%20769.4%20326.1%20777.3%20331.1%20785.3%20335.1%20793.3%20338.1%20805.1%20341.2%20813%20342.4%20824.1%20343.1%20837.9%20342.3%20843.7%20341.2%20853.7%20338.2%20864.2%20333.7%20873.7%20328.2%20880.3%20323.8%20888.8%20317.3%20896.4%20310.9%20912.1%20295.6%20927.4%20278.9%20942%20261.3%20M-233%20181.1%20-188.7%20123.8%20-177.3%20110.2%20-166.8%2098.7%20-157.3%2089.3%20-148.8%2081.7%20-140.2%2075.3%20-127.7%2067.9%20-115.8%2062.7%20-107.6%2059.9%20-98.9%2057.8%20-92%2056.6%20-83%2055.8%20-76%2055.8%20-67.1%2056.7%20-61.4%2058%20-55.3%2059.8%20-50.3%2061.8%20-45.1%2064.6%20-37.6%2070.1%20-33.1%2074.6%20-29.8%2079.2%20-29.8%2079.8%20-31%2080.4%20-40.9%2081.7%20-49.8%2083.7%20-60.2%2087.3%20-70.4%2092.1%20-79.9%2097.6%20-89.9%20104.5%20-100%20112.5%20-110%20121.5%20-127.9%20139.6%20-146.9%20161.6%20-169.9%20190.6%20-208.7%20241.8%20-233%20272.4%20M108.5%206%20114%205.6%20125%205.6%20135.8%206.9%20143.8%208.7%20150.6%2011%20157.5%2014%20163.3%2017.2%20170.8%2022.6%20175.1%2026.4%20179.9%2031.6%20182.8%2035.7%20186.2%2041.3%20189.1%2048.3%20191%2055.4%20191%2056.8%20190.6%2057.2%20189.2%2057.2%20172.9%2052.6%20161%2050.7%20150%2050.2%20138.1%2050.7%20132.1%2051.7%20123.2%2053.7%20110.7%2058.1%2096.7%2065.2%2087.1%2071.6%2078.1%2078.6%2068%2087.5%2057.6%2098.2%2050.6%20106.1%2034.5%20126.1%209.8%20159.3%20-12.2%20187.3%20-23.1%20200.4%20-38.1%20217.4%20-50.5%20230%20-62.6%20240.9%20-76.2%20251.3%20-82.8%20255.7%20-89.8%20259.7%20-97.2%20263.3%20-103%20265.6%20-114.4%20269%20-122%20270.3%20-134%20270.7%20-141%20270.3%20-147.8%20269.2%20-158.7%20266.2%20-170.7%20261.2%20-179.6%20256.3%20-179.7%20255.6%20-178.2%20254.3%20-155.7%20238.9%20-137.6%20225%20-121.5%20211%20-104.9%20194.6%20-92.5%20181%20-83.8%20170.7%20-36.4%20110.2%20-16.4%2086.1%20-9.4%2078.1%201.8%2066.3%2016.6%2052.1%2024.7%2045.2%2036.6%2036.1%2051.1%2026.6%2062%2020.5%2074.3%2014.9%2086.1%2010.7%2097.2%207.8%20108.5%206Z%20M341.5%206%20347%205.6%20358%205.6%20368.8%206.9%20376.8%208.7%20383.6%2011%20390.5%2014%20396.3%2017.2%20403.8%2022.6%20408.1%2026.4%20412.9%2031.6%20415.8%2035.7%20419.2%2041.3%20422.1%2048.3%20424%2055.4%20424%2056.8%20423.6%2057.2%20422.2%2057.2%20405.9%2052.6%20394%2050.7%20383%2050.2%20371.1%2050.7%20365.1%2051.7%20356.2%2053.7%20343.7%2058.1%20329.7%2065.2%20320.1%2071.6%20311.1%2078.6%20301%2087.5%20290.6%2098.2%20283.6%20106.1%20267.5%20126.1%20242.8%20159.3%20220.8%20187.3%20209.9%20200.4%20194.9%20217.4%20182.5%20230%20170.4%20240.9%20156.8%20251.3%20150.2%20255.7%20143.2%20259.7%20135.8%20263.3%20130%20265.6%20118.6%20269%20111%20270.3%2099%20270.7%2092%20270.3%2085.2%20269.2%2074.3%20266.2%2062.3%20261.2%2053.4%20256.3%2053.3%20255.6%2054.8%20254.3%2077.3%20238.9%2095.4%20225%20111.5%20211%20128.1%20194.6%20140.5%20181%20143%20177.4%20145%20175.6%20149.2%20170.7%20196.6%20110.2%20216.6%2086.1%20223.6%2078.1%20234.8%2066.3%20249.6%2052.1%20257.7%2045.2%20269.6%2036.1%20284.1%2026.6%20295%2020.5%20307.3%2014.9%20319.1%2010.7%20330.2%207.8%20341.5%206Z%20M574.5%206%20580%205.6%20591%205.6%20601.8%206.9%20609.8%208.7%20616.6%2011%20623.5%2014%20629.3%2017.2%20636.8%2022.6%20641.1%2026.4%20645.9%2031.6%20648.8%2035.7%20652.2%2041.3%20655.1%2048.3%20657%2055.4%20657%2056.8%20656.6%2057.2%20655.2%2057.2%20638.9%2052.6%20627%2050.7%20616%2050.2%20604.1%2050.7%20598.1%2051.7%20589.2%2053.7%20576.7%2058.1%20562.7%2065.2%20553.1%2071.6%20544.1%2078.6%20534%2087.5%20523.6%2098.2%20516.6%20106.1%20500.5%20126.1%20475.8%20159.3%20453.8%20187.3%20442.9%20200.4%20427.9%20217.4%20415.5%20230%20403.4%20240.9%20389.8%20251.3%20383.2%20255.7%20376.2%20259.7%20368.8%20263.3%20363%20265.6%20351.6%20269%20344%20270.3%20332%20270.7%20325%20270.3%20318.2%20269.2%20307.3%20266.2%20295.3%20261.2%20286.4%20256.3%20286.3%20255.6%20287.8%20254.3%20310.3%20238.9%20328.4%20225%20344.5%20211%20361.1%20194.6%20373.5%20181%20376%20177.4%20378%20175.6%20382.2%20170.7%20429.6%20110.2%20449.6%2086.1%20456.6%2078.1%20467.8%2066.3%20482.6%2052.1%20490.7%2045.2%20502.6%2036.1%20517.1%2026.6%20528%2020.5%20540.3%2014.9%20552.1%2010.7%20563.2%207.8%20574.5%206Z%20M806.5%206%20812%205.6%20823%205.6%20833.8%206.9%20845.7%209.9%20854.9%2013.7%20861.3%2017.1%20862.9%2017%20863.3%2018.4%20869.4%2023.1%20874.1%2027.4%20878.3%2032.2%20882.4%2038.1%20885.2%2043.3%20887.1%2048.3%20889%2055.4%20889%2056.8%20888.6%2057.2%20887.2%2057.2%20870.9%2052.6%20859%2050.7%20848%2050.2%20836.1%2050.7%20830.1%2051.7%20821.2%2053.7%20808.7%2058.1%20794.7%2065.2%20785.1%2071.6%20776.1%2078.6%20766%2087.5%20755.6%2098.2%20748.6%20106.1%20732.5%20126.1%20707.8%20159.3%20685.8%20187.3%20674.9%20200.4%20659.9%20217.4%20647.5%20230%20635.4%20240.9%20621.8%20251.3%20615.2%20255.7%20608.2%20259.7%20600.8%20263.3%20595%20265.6%20583.6%20269%20576%20270.3%20564%20270.7%20557%20270.3%20550.2%20269.2%20539.3%20266.2%20527.3%20261.2%20518.4%20256.3%20518.3%20255.6%20519.8%20254.3%20542.3%20238.9%20560.4%20225%20576.5%20211%20593.1%20194.6%20605.5%20181%20614.2%20170.7%20661.6%20110.2%20681.6%2086.1%20688.6%2078.1%20699.8%2066.3%20714.6%2052.1%20722.7%2045.2%20734.6%2036.1%20749.1%2026.6%20760%2020.5%20772.3%2014.9%20784.1%2010.7%20795.2%207.8%20806.5%206Z%20M150.4%2057%20159%2056.8%20167.9%2057.7%20176.8%2059.8%20183.3%2062.2%20189.9%2065.6%20196.3%2070.2%20201.9%2075.6%20204.9%2079.6%20205.2%2080.8%20204%2081.4%20194.1%2082.7%20185.2%2084.7%20174.8%2088.3%20164.6%2093.1%20155.1%2098.6%20145.1%20105.5%20135%20113.5%20125%20122.5%20107.1%20140.6%2088.1%20162.6%2065.1%20191.6%2019.8%20251.3%20-3.6%20279.9%20-18.4%20296.2%20-29.4%20307.1%20-39.4%20316%20-48.4%20323.1%20-57.3%20329.2%20-66.8%20334.7%20-76.5%20338.9%20-84.1%20341.3%20-93.1%20343.3%20-99%20343.8%20-106.9%20344.1%20-119%20343.3%20-126.7%20342.1%20-136.9%20339.4%20-145.7%20336.1%20-153.7%20332.1%20-161%20327.5%20-168.4%20321.9%20-176%20314.5%20-181.9%20307.4%20-186.4%20300.9%20-189.4%20295.9%20-194.2%20285.7%20-197.3%20276.8%20-199.3%20268.9%20-200.3%20263%20-200.2%20261.3%20-199.7%20260.8%20-198.2%20260.8%20-166.7%20271.2%20-155.9%20274.4%20-142.9%20277.4%20-132%20278.5%20-121%20278.4%20-113.2%20277.2%20-106.1%20275.4%20-94.3%20271.2%20-79.7%20263.8%20-65.7%20254.9%20-52.7%20244.8%20-44.3%20237.2%20-30%20222.4%20-18.1%20208.3%2046.3%20124.8%2058.6%20110.1%2068.2%2099.7%2077.7%2090.3%2085.7%2083.2%2094.2%2076.7%20102.8%2071.4%20110.7%2067.2%20119.2%2063.7%20131.3%2059.9%20141.2%2057.9%20150.4%2057Z%20M383.4%2057%20392%2056.8%20400.9%2057.7%20409.8%2059.8%20416.3%2062.2%20422.9%2065.6%20429.3%2070.2%20434.9%2075.6%20437.9%2079.6%20438.2%2080.8%20437%2081.4%20427.1%2082.7%20418.2%2084.7%20407.8%2088.3%20397.6%2093.1%20388.1%2098.6%20378.1%20105.5%20368%20113.5%20358%20122.5%20340.1%20140.6%20321.1%20162.6%20298.1%20191.6%20252.8%20251.3%20229.4%20279.9%20214.6%20296.2%20203.6%20307.1%20193.6%20316%20184.6%20323.1%20175.7%20329.2%20166.2%20334.7%20156.5%20338.9%20148.9%20341.3%20139.9%20343.3%20134%20343.8%20126.1%20344.1%20114%20343.3%20106.3%20342.1%2096.1%20339.4%2087.3%20336.1%2079.3%20332.1%2072%20327.5%2064.6%20321.9%2057%20314.5%2051.1%20307.4%2046.6%20300.9%2043.6%20295.9%2038.8%20285.7%2035.7%20276.8%2033.7%20268.9%2032.7%20263%2032.8%20261.3%2033.3%20260.8%2034.8%20260.8%2066.3%20271.2%2077.1%20274.4%2090.1%20277.4%20101%20278.5%20112%20278.4%20119.8%20277.2%20126.9%20275.4%20138.7%20271.2%20153.3%20263.8%20167.3%20254.9%20180.3%20244.8%20188.7%20237.2%20203%20222.4%20214.9%20208.3%20279.3%20124.8%20291.6%20110.1%20301.2%2099.7%20310.7%2090.3%20318.7%2083.2%20327.2%2076.7%20335.8%2071.4%20343.7%2067.2%20352.2%2063.7%20364.3%2059.9%20374.2%2057.9%20383.4%2057Z%20M616.4%2057%20625%2056.8%20633.9%2057.7%20642.8%2059.8%20649.3%2062.2%20655.9%2065.6%20662.3%2070.2%20667.9%2075.6%20670.9%2079.6%20671.2%2080.8%20670%2081.4%20660.1%2082.7%20651.2%2084.7%20640.8%2088.3%20630.6%2093.1%20621.1%2098.6%20611.1%20105.5%20601%20113.5%20591%20122.5%20573.1%20140.6%20554.1%20162.6%20531.1%20191.6%20485.8%20251.3%20462.4%20279.9%20447.6%20296.2%20436.6%20307.1%20426.6%20316%20417.6%20323.1%20408.7%20329.2%20399.2%20334.7%20389.5%20338.9%20381.9%20341.3%20372.9%20343.3%20367%20343.8%20359.1%20344.1%20347%20343.3%20339.3%20342.1%20329.1%20339.4%20320.3%20336.1%20312.3%20332.1%20305%20327.5%20297.6%20321.9%20290%20314.5%20284.1%20307.4%20279.6%20300.9%20276.6%20295.9%20271.8%20285.7%20268.7%20276.8%20266.7%20268.9%20265.7%20263%20265.8%20261.3%20266.3%20260.8%20267.8%20260.8%20299.3%20271.2%20310.1%20274.4%20323.1%20277.4%20334%20278.5%20345%20278.4%20352.8%20277.2%20359.9%20275.4%20371.7%20271.2%20386.3%20263.8%20400.3%20254.9%20413.3%20244.8%20421.7%20237.2%20436%20222.4%20447.9%20208.3%20512.3%20124.8%20524.6%20110.1%20534.2%2099.7%20543.7%2090.3%20551.7%2083.2%20560.2%2076.7%20568.8%2071.4%20576.7%2067.2%20585.2%2063.7%20597.3%2059.9%20607.2%2057.9%20616.4%2057Z%20M848.4%2057%20857%2056.8%20865.9%2057.7%20874.8%2059.8%20881.3%2062.2%20887.9%2065.6%20894.3%2070.2%20899.9%2075.6%20902.9%2079.6%20903.2%2080.8%20902%2081.4%20892.1%2082.7%20883.2%2084.7%20872.8%2088.3%20862.6%2093.1%20853.1%2098.6%20843.1%20105.5%20833%20113.5%20823%20122.5%20805.1%20140.6%20786.1%20162.6%20763.1%20191.6%20717.8%20251.3%20694.4%20279.9%20679.6%20296.2%20668.6%20307.1%20658.6%20316%20649.6%20323.1%20640.7%20329.2%20631.2%20334.7%20621.5%20338.9%20613.9%20341.3%20604.9%20343.3%20599%20343.8%20591.1%20344.1%20579%20343.3%20571.3%20342.1%20561.1%20339.4%20552.3%20336.1%20544.3%20332.1%20537%20327.5%20529.6%20321.9%20522%20314.5%20516.1%20307.4%20511.6%20300.9%20508.6%20295.9%20503.8%20285.7%20500.7%20276.8%20498.7%20268.9%20497.7%20263%20497.8%20261.3%20498.3%20260.8%20499.8%20260.8%20516.3%20266.2%20518.9%20266.1%20519.1%20266.9%20520.1%20267.5%20542.1%20274.4%20555.1%20277.4%20566%20278.5%20577%20278.4%20584.8%20277.2%20591.9%20275.4%20603.7%20271.2%20618.3%20263.8%20632.3%20254.9%20645.3%20244.8%20653.7%20237.2%20668%20222.4%20679.9%20208.3%20744.3%20124.8%20756.6%20110.1%20766.2%2099.7%20775.7%2090.3%20783.7%2083.2%20792.2%2076.7%20800.8%2071.4%20808.7%2067.2%20817.2%2063.7%20829.3%2059.9%20839.2%2057.9%20848.4%2057Z%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%224.8%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E%0A");
+  --bg: #ffffff;
+  --surface: #f4f4f5;
+  --text: #18181b;
+  --muted: #5f5f68;
+  --line: #e2e2e6;
+  --motif-hover: rgba(24, 24, 27, 0.2);
+  --motif-top: rgba(24, 24, 27, 0.03);
+  --motif: rgba(24, 24, 27, 0.075);
+  --motif-lo: rgba(24, 24, 27, 0.045);
+  --ok: #15803d;
+  --wa: #15803d;
+  --wa-text: #ffffff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 30px -12px rgba(0, 0, 0, 0.14);
+  --f: var(--font-kmg), 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.dark .kmg {
+  --bg: #101012;
+  --surface: #19191d;
+  --text: #f4f4f5;
+  --muted: #a3a3ad;
+  --line: #2c2c32;
+  --motif-hover: rgba(244, 244, 245, 0.22);
+  --motif-top: rgba(244, 244, 245, 0.035);
+  --motif: rgba(244, 244, 245, 0.085);
+  --motif-lo: rgba(244, 244, 245, 0.05);
+  --ok: #4ade80;
+  --wa: #4ade80;
+  --wa-text: #052e16;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+}
+.kmg,
+.kmg * {
+  box-sizing: border-box;
+}
+.kmg button,
+.kmg input {
+  font: inherit;
+  color: inherit;
+}
+.kmg :focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+.kmg .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ───── latar: kubah lembut bergaris Itiak Pulang Patang ───── */
+.kmg .bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.7s,
+    transform 0.7s;
+}
+.kmg.is-chat .bg {
+  opacity: 0.5;
+  transform: translateY(18%);
+}
+.kmg .planet {
+  position: absolute;
+  left: 50%;
+  top: 150px;
+  width: min(158vw, 2300px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.kmg .planet::after {
+  /* garis motif memudar ke bawah; warnanya mengikuti tema */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: blur(1.4px);
+  background: linear-gradient(
+    to bottom,
+    var(--motif-top) 0,
+    var(--motif) 160px,
+    var(--motif-lo) 400px,
+    transparent 760px
+  );
+  -webkit-mask: var(--tex) 0 0 / auto 92px repeat;
+  mask: var(--tex) 0 0 / auto 92px repeat;
+}
+.kmg .planet::before {
+  /* senter motif: sedikit lebih jelas di sekitar kursor */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: blur(1.4px);
+  opacity: var(--lit, 0);
+  transition: opacity 0.5s;
+  background: radial-gradient(
+    circle 240px at var(--mx, 50%) var(--my, -300px),
+    var(--motif-hover),
+    transparent 70%
+  );
+  -webkit-mask: var(--tex) 0 0 / auto 92px repeat;
+  mask: var(--tex) 0 0 / auto 92px repeat;
+}
+
+/* ───── navigasi ───── */
+.kmg .nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 16px clamp(16px, 4vw, 44px);
+}
+.kmg.is-chat .nav,
+.kmg.pub-page .nav {
+  /* latar penuh setinggi bilah, lalu memudar di bawahnya: isi yang digulir tidak tembus di balik header */
+  background: var(--bg);
+}
+.kmg.is-chat .nav::after,
+.kmg.pub-page .nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+  pointer-events: none;
+}
+.kmg .brand {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  justify-self: start;
+}
+.kmg .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end;
+}
+.kmg .link-quiet {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 8px 8px;
+}
+.kmg .link-quiet:hover {
+  color: var(--text);
+}
+.kmg .cta,
+.kmg .btn-new {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+.kmg .cta:hover,
+.kmg .btn-new:hover,
+.kmg .icon-btn:hover {
+  border-color: var(--muted);
+}
+.kmg .btn-new {
+  font-size: 0.88rem;
+  gap: 6px;
+}
+.kmg .btn-new-icon {
+  display: none;
+  width: 18px;
+  height: 18px;
+}
+.kmg .cta-short {
+  display: none;
+}
+.kmg .icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  padding: 0;
+}
+.kmg .icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.kmg .icon-btn .sun,
+.dark .kmg .icon-btn .moon {
+  display: none;
+}
+.dark .kmg .icon-btn .sun {
+  display: block;
+}
+
+/* ───── kerangka dan layar awal ───── */
+.kmg .shell {
+  position: relative;
+  z-index: 2;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 84px 20px 12vh;
+}
+.kmg.is-chat .shell {
+  justify-content: flex-start;
+  padding: 76px 0 0;
+  align-items: stretch;
+}
+.kmg .hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.kmg .orb-label {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 18px;
+  position: relative;
+  color: var(--muted);
+}
+.kmg .orb-label sup {
+  position: absolute;
+  top: -6px;
+  right: -38px;
+  font-size: 0.58rem;
+  line-height: 1.5;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--bg);
+}
+.kmg h1 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  font-size: clamp(2rem, 5.6vw, 3.6rem);
+}
+.kmg h1 .fade {
+  display: block;
+  color: var(--muted);
+}
+.kmg .w {
+  /* judul muncul kata demi kata, dari kabur ke tajam */
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(8px);
+  animation: kmg-wordin 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: calc(var(--w, 0) * 80ms + 120ms);
+}
+@keyframes kmg-wordin {
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+.kmg .rise {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: kmg-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes kmg-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───── kolom tulis berbentuk pil ───── */
+.kmg .composer-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 34px;
+}
+.kmg.is-chat .composer-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  margin: 0;
+  padding: 36px 16px 14px;
+  background: linear-gradient(to top, var(--bg) 55%, transparent);
+}
+.kmg .pill {
+  position: relative;
+  width: min(660px, 100%);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 8px 8px 22px;
+  border-radius: 31px; /* seperti pil bila satu baris; tetap rapi saat kolom tumbuh */
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+.kmg .pill:focus-within {
+  border-color: var(--muted);
+}
+.kmg .pill::before {
+  /* cahaya berputar di tepi kolom tulis saat aktif atau sedang berpikir */
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+  background: conic-gradient(
+    from var(--kmg-a),
+    transparent 0 50%,
+    var(--muted) 72%,
+    var(--text) 86%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: kmg-putar 3.4s linear infinite;
+}
+.kmg .pill:focus-within::before,
+.kmg .pill.busy::before {
+  opacity: 1;
+}
+.kmg .pill.busy::before {
+  animation-duration: 1.7s;
+}
+@keyframes kmg-putar {
+  to {
+    --kmg-a: 360deg;
+  }
+}
+.kmg .pill textarea {
+  flex: 1;
+  min-width: 0;
+  /* satu baris = 46px (setinggi tombol). Tumbuh ke bawah bila teks panjang, diatur dari komponen. */
+  height: 46px;
+  max-height: 168px;
+  padding: 9px 0;
+  border: 0;
+  border-radius: 0; /* tanpa ini, aturan :focus-visible (radius 999px) memotong teks berlapis saat fokus */
+  outline: 0;
+  resize: none;
+  overflow-y: auto;
+  background: transparent;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  caret-color: var(--text);
+}
+.kmg .pill textarea::placeholder {
+  color: var(--muted);
+  opacity: 1; /* kontras placeholder ≥ 4.5:1 */
+}
+.kmg .go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--text);
+  color: var(--bg);
+  border: 0;
+  transition: opacity 0.2s;
+}
+.kmg .go:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.kmg .go svg {
+  width: 16px;
+  height: 16px;
+}
+.kmg .chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+  max-width: 700px;
+}
+.kmg .chip {
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 0.86rem;
+  transition: border-color 0.2s;
+}
+.kmg .chip:hover {
+  border-color: var(--muted);
+}
+.kmg .privacy {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-align: center;
+  max-width: 560px;
+  margin: 16px auto 0;
+}
+.kmg.is-chat .privacy {
+  margin-top: 8px;
+}
+
+/* ───── lencana cakupan dan intip hasil ───── */
+.kmg .coverage {
+  position: fixed;
+  right: clamp(16px, 3vw, 44px);
+  bottom: 26vh;
+  z-index: 3;
+  width: 206px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.kmg .coverage b {
+  display: block;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.kmg .peek {
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(820px, 90vw);
+  height: 15vh;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  padding: 14px 18px;
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+.kmg .peek .mini {
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  min-width: 0;
+}
+.kmg .peek .mini b {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.kmg .peek .mini span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+@media (max-width: 900px) {
+  .kmg .coverage {
+    display: none;
+  }
+}
+@media (max-width: 760px), (max-height: 760px) {
+  .kmg .peek {
+    display: none;
+  }
+}
+
+/* ───── percakapan ───── */
+.kmg .thread {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px 160px;
+  flex: 1;
+}
+.kmg .thread-inner {
+  width: min(720px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.kmg .msg {
+  display: flex;
+  gap: 12px;
+  scroll-margin-top: 88px; /* di bawah bilah atas saat digulir ke atas layar */
+}
+.kmg .msg.user {
+  justify-content: flex-end;
+}
+.kmg .avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.kmg .bubble {
+  border-radius: 20px;
+  padding: 10px 16px;
+  max-width: min(100%, 560px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.kmg .msg.user .bubble {
+  background: var(--surface);
+}
+.kmg .msg.bot .bubble {
+  padding-left: 0;
+  padding-top: 6px;
+}
+.kmg .bubble.streaming::after {
+  /* kursor kedip saat jawaban masih mengalir */
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.17em;
+  background: var(--text);
+  animation: kmg-kedip 1s steps(1) infinite;
+}
+@keyframes kmg-kedip {
+  50% {
+    opacity: 0;
+  }
+}
+.kmg .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.kmg .fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: kmg-rise 0.5s ease forwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.kmg .card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  background: var(--bg);
+}
+.kmg .card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.kmg .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-top: 8px;
+}
+.kmg .tag {
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.kmg .tag.ok {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.kmg .tag.ok::before {
+  content: '✓ ';
+}
+.kmg .meta {
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.kmg .meta b {
+  color: var(--text);
+  font-weight: 600;
+}
+.kmg .wa {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--wa-text);
+  background: var(--wa);
+}
+.kmg .think {
+  /* status menunggu: tiga butir motif kecil, tanpa tulisan */
+  display: flex;
+  align-items: center;
+  min-height: 34px; /* setinggi avatar, supaya butir motif tepat di tengahnya */
+}
+.kmg .itik-dots {
+  /* pengganti titik-titik menunggu: tiga motif Itiak Pulang Patang kecil yang melompat bergantian */
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text);
+}
+.kmg .itik-dots svg {
+  width: 14px;
+  height: 10px;
+  overflow: visible;
+  /* garis ganda seperti motif aslinya, dengan isian tipis agar terbaca di ukuran kecil */
+  fill: currentColor;
+  fill-opacity: 0.12;
+  stroke: currentColor;
+  stroke-width: 16;
+  stroke-linejoin: round;
+  opacity: 0.4;
+  animation: kmg-loncat 1.2s ease-in-out infinite;
+}
+@keyframes kmg-loncat {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@media (max-width: 760px) {
+  .kmg .planet {
+    top: 310px;
+    width: 260vw;
+  }
+  .kmg .planet::after,
+  .kmg .planet::before {
+    -webkit-mask-size: auto 72px;
+    mask-size: auto 72px;
+  }
+  .kmg .planet::after {
+    background: linear-gradient(
+      to bottom,
+      var(--motif-top) 0,
+      var(--motif) 70px,
+      var(--motif-lo) 220px,
+      transparent 460px
+    );
+  }
+  .kmg .orb-label {
+    margin-bottom: 14px;
+  }
+  .kmg .go {
+    padding: 0 16px;
+  }
+  .kmg .composer-wrap {
+    margin-top: 26px;
+  }
+  .kmg .pill {
+    padding-left: 18px;
+  }
+}
+@media (max-width: 520px) {
+  .kmg .link-quiet {
+    display: none;
+  }
+  .kmg .link-quiet.keep {
+    padding: 0 6px;
+  }
+  .kmg .nav {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .kmg .nav-right {
+    gap: 6px;
+  }
+  .kmg .cta {
+    padding: 0 14px;
+    font-size: 0.84rem;
+  }
+  .kmg .cta-long {
+    display: none;
+  }
+  .kmg .cta-short {
+    display: inline;
+  }
+  /* "Percakapan baru" jadi tombol ikon bulat */
+  .kmg .btn-new {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .kmg .btn-new-text {
+    display: none;
+  }
+  .kmg .btn-new-icon {
+    display: block;
+  }
+  .kmg .brand {
+    font-size: 1.1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kmg,
+  .kmg *,
+  .kmg *::before,
+  .kmg *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .kmg .itik-dots svg {
+    opacity: 0.8;
+  }
+  .kmg .rise,
+  .kmg .fade-in,
+  .kmg .w {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ───── foto dan tautan pada kartu ───── */
+.kmg .card .thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 0 0 12px;
+  background: var(--surface);
+}
+.kmg .card-link {
+  color: inherit;
+  text-decoration: none;
+}
+.kmg .card {
+  position: relative;
+  transition: border-color 0.2s;
+}
+.kmg .card:has(.card-link):hover {
+  border-color: var(--muted);
+}
+.kmg .card-link::after {
+  /* seluruh kartu bisa diklik; tombol WhatsApp tetap di atasnya */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+}
+.kmg .card .wa {
+  position: relative;
+  z-index: 1;
+}
+
+/* tautan nav yang tetap tampil di layar sempit */
+.kmg .link-quiet.keep {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* tombol "Coba lagi" setelah gangguan */
+.kmg .retry {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.kmg .retry:hover {
+  border-color: var(--muted);
+}
+
+/* tombol "Berhenti" saat Kamanga sedang menjawab */
+.kmg .go.stop {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+.kmg .go.stop:hover {
+  border-color: var(--muted);
+}
+.kmg .stop-icon {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+/* ───── kartu penyedia (pintu tahap 1): slot kosong, aksi, "belum pasti" ───── */
+.kmg .chip {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.kmg .chip:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.kmg .chip-strong {
+  border-color: var(--text);
+  font-weight: 600;
+}
+.kmg .chip-icon {
+  width: 16px;
+  height: 16px;
+}
+.kmg .slots {
+  margin-top: 12px;
+}
+.kmg .slot-day {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kmg .slot-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 6px;
+}
+.kmg .slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.kmg .slot:hover {
+  border-color: var(--text);
+}
+.kmg .slot b {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.kmg .slot span {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.kmg .card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.kmg .card-actions .wa {
+  margin-top: 0;
+  min-height: 44px;
+}
+.kmg .btn-line {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.kmg .btn-line:hover {
+  border-color: var(--muted);
+}
+.kmg .note {
+  font-style: italic;
+}
+.kmg .uncertain {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+.kmg .uncertain h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.kmg .uncertain .meta {
+  margin: 0;
+}
+.kmg .notice {
+  margin: 0 auto 8px;
+  max-width: 700px;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Layar sangat sempit (360 px) saat percakapan berjalan: ajakan "Daftarkan usaha" untuk mitra disembunyikan
+   agar header tidak melebar; warga tetap punya Masuk dan Jelajah. */
+@media (max-width: 420px) {
+  .kmg .nav-right .cta {
+    display: none;
+  }
+}
+
+
+/* ───── Tambahan beranda (prototipe) — memakai token warna /chat ───── */
+.kmg [hidden] { display: none !important; }
+.kmg textarea { font: inherit; color: inherit; }
+.kmg .hero h1 .rot { display: inline-block; transition: opacity .25s ease, transform .25s ease; }
+.kmg .hero h1 .rot.out { opacity: 0; transform: translateY(6px); }
+
+/* Slider pintu: berputar terus; kartu berikutnya terlihat sebagian sebagai isyarat geser. */
+.kmg .dc { position: relative; z-index: 2; width: 100%; max-width: 760px; margin: 18px auto; }
+.kmg .dc-track { display: flex; gap: 10px; margin: 0; padding: 4px 2px 6px; list-style: none;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent);
+          mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent); }
+.kmg .dc-track::-webkit-scrollbar { display: none; }
+.kmg .dc-track > li { flex: 0 0 min(64%, 230px); scroll-snap-align: start; }
+.kmg .dcard { position: relative; display: flex; flex-direction: column; gap: 3px; height: 100%; min-height: 124px;
+  padding: 14px 14px 16px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface);
+  color: var(--text); text-decoration: none; text-align: left; transition: border-color .15s ease, transform .15s ease; }
+.kmg a.dcard:hover { border-color: var(--muted); }
+.kmg a.dcard:active { transform: scale(.98); }
+.kmg a.dcard:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.kmg .dc-ic { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+  margin-bottom: 8px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); font-size: 20px; }
+.kmg .dcard b { font-size: 1rem; font-weight: 600; }
+.kmg .dcard small { color: var(--muted); font-size: .8125rem; line-height: 1.35; }
+.kmg .dcard.soon { background: transparent; border-style: dashed; }
+.kmg .soon-tag { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 999px;
+  background: var(--text); color: var(--bg); font-size: .6875rem; font-weight: 600; }
+.kmg .dc-pause { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--bg);
+  color: var(--muted); font-size: 18px; cursor: pointer; }
+.kmg .dc-pause:hover { color: var(--text); }
+.kmg .home { margin: 16px auto 0; max-width: 760px; }
+.kmg .lbl { display: block; margin: 0 0 8px; color: var(--muted); font-size: .8125rem; font-weight: 500; }
+.kmg .examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.kmg .examples .lbl { width: 100%; text-align: center; margin: 0; }
+.kmg.is-chat .home, .kmg.is-chat .dc { display: none; }
+@media (min-width: 721px) { .kmg .dc-track > li { flex-basis: 210px; } }
+
+</style>
+</head>
+<body>
+<div class="kmg" id="kmg"><div class="bg" aria-hidden="true"><div class="planet"></div></div><header class="nav"><a class="brand" aria-label="Kamanga, beranda" href="#">kamanga</a><div class="nav-right"><button type="button" class="icon-btn" aria-label="Ganti tema terang atau gelap" title="Ganti tema terang atau gelap"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tabler-icon tabler-icon-moon moon" aria-hidden="true"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tabler-icon tabler-icon-sun sun" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path></svg></button><button type="button" class="btn-new" id="btn-new" aria-label="Percakapan baru" hidden><i class="ti ti-plus btn-new-icon" aria-hidden="true"></i><span class="btn-new-text">Percakapan baru</span></button><a class="link-quiet keep" href="/jelajah">Jelajah</a><a class="link-quiet keep" href="#">Masuk</a><a class="cta" aria-label="Daftarkan usaha" href="/auth/sign-up"><span class="cta-long">Daftarkan usaha</span><span class="cta-short" aria-hidden="true">Mitra</span></a></div></header><div class="shell">
+<section class="hero" id="hero"><div class="orb-label rise" style="animation-delay:.05s">Kamanga AI<sup>Beta</sup></div>
+<h1><span class="w" style="--w:0">Kamanga</span> <span class="w" style="--w:1">hari</span> <span class="w" style="--w:2">ko?</span>
+<span class="fade"><span class="w rot" style="--w:3" id="rot">Ka main?</span></span></h1></section>
+<section class="dc rise" id="dc" aria-label="Pintu layanan" style="animation-delay:.2s">
+<ul class="dc-track" id="dc-track"><li><a class="dcard" href="#ka-main"><span class="dc-ic"><i class="ti ti-ball-football" aria-hidden="true"></i></span><b>Ka main</b><small>Lapangan, billiard, karaoke, gym</small></a></li><li><a class="dcard" href="#ka-rawat-diri"><span class="dc-ic"><i class="ti ti-scissors" aria-hidden="true"></i></span><b>Ka rawat diri</b><small>Barbershop, salon, spa, pijat</small></a></li><li><a class="dcard" href="#ka-uda-anta"><span class="dc-ic"><i class="ti ti-bus" aria-hidden="true"></i></span><b>Ka uda anta</b><small>Travel antarkota, titip paket</small></a></li><li><a class="dcard" href="#ka-servis"><span class="dc-ic"><i class="ti ti-tool" aria-hidden="true"></i></span><b>Ka servis</b><small>AC, motor, mobil, tukang, laundry</small></a></li><li><div class="dcard soon" aria-disabled="true"><span class="dc-ic"><i class="ti ti-key" aria-hidden="true"></i></span><b>Ka manyewa</b><small>Sewa motor, mobil, tenda</small><span class="soon-tag">Segera</span></div></li><li><div class="dcard soon" aria-disabled="true"><span class="dc-ic"><i class="ti ti-compass" aria-hidden="true"></i></span><b>Ka jalan-jalan</b><small>Ide main dan wisata</small><span class="soon-tag">Segera</span></div></li></ul>
+<button type="button" class="dc-pause" id="dc-pause" aria-label="Jeda geser pintu" aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i></button></section>
+<section class="thread" id="thread" hidden aria-live="polite" aria-label="Percakapan"><div class="thread-inner"><div data-msg="961" class="msg fade-in user"><div><div class="bubble">Ado lapangan padel kosong nanti malam dakek Lubeg? Barampek kami.</div></div></div><div data-msg="962" class="msg fade-in bot"><div class="avatar">K</div><div class="stack"><div class="bubble">Ini lapangan padel yang masih ada jadwal kosong malam ini dekat Lubuk Begalung, Padang, untuk 4 orang. Pilih jam untuk memesan.</div><article class="card pcard fade-in" style="--i:1"><h3>[DUMMY] Padel Singgalang</h3><div class="row"><span class="tag">Lapangan Padel</span><span class="tag ok">Kontak dicek</span></div><p class="meta">Lubuk Kilangan, Padang · 6,5 km</p><p class="meta"><b>Rp340.000 - Rp350.000 per jam</b></p><div class="slots"><p class="slot-day">Jam kosong · Jumat, 16 Okt</p><ul class="slot-grid" aria-label="Jam kosong [DUMMY] Padel Singgalang"><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 18.00–19.00, Rp350.000" href="#"><b>18.00</b><span>Rp350.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 19.00–20.00, Rp350.000" href="#"><b>19.00</b><span>Rp350.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 20.00–21.00, Rp350.000" href="#"><b>20.00</b><span>Rp350.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 21.00–22.00, Rp350.000" href="#"><b>21.00</b><span>Rp350.000</span></a></li></ul></div><div class="card-actions"><a class="btn-line" href="#">Lihat profil</a><button type="button" class="btn-line" aria-label="Tanya soal [DUMMY] Padel Singgalang">Tanya</button></div></article><article class="card pcard fade-in" style="--i:2"><h3>[DUMMY] Arena Padel Bundo Kanduang</h3><div class="row"><span class="tag">Lapangan Padel</span><span class="tag ok">Dicek langsung</span></div><p class="meta">Nanggalo, Padang · 11 km</p><p class="meta"><b>Rp280.000 - Rp300.000 per jam</b></p><div class="slots"><p class="slot-day">Jam kosong · Jumat, 16 Okt</p><ul class="slot-grid" aria-label="Jam kosong [DUMMY] Arena Padel Bundo Kanduang"><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 18.00–19.00, Rp300.000" href="#"><b>18.00</b><span>Rp300.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 19.00–20.00, Rp300.000" href="#"><b>19.00</b><span>Rp300.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 20.00–21.00, Rp300.000" href="#"><b>20.00</b><span>Rp300.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 21.00–22.00, Rp300.000" href="#"><b>21.00</b><span>Rp300.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 22.00–23.00, Rp280.000" href="#"><b>22.00</b><span>Rp280.000</span></a></li></ul></div><div class="card-actions"><a class="btn-line" href="#">Lihat profil</a><button type="button" class="btn-line" aria-label="Tanya soal [DUMMY] Arena Padel Bundo Kanduang">Tanya</button></div></article><article class="card pcard fade-in" style="--i:3"><h3>[DUMMY] Padel Club Uni Ani</h3><div class="row"><span class="tag">Lapangan Padel</span><span class="tag ok">Kontak dicek</span></div><p class="meta">Kuranji, Padang · 10 km</p><p class="meta"><b>Rp180.000 - Rp200.000 per jam</b></p><div class="slots"><p class="slot-day">Jam kosong · Jumat, 16 Okt</p><ul class="slot-grid" aria-label="Jam kosong [DUMMY] Padel Club Uni Ani"><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 18.00–19.00, Rp200.000" href="#"><b>18.00</b><span>Rp200.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 19.00–20.00, Rp200.000" href="#"><b>19.00</b><span>Rp200.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 20.00–21.00, Rp200.000" href="#"><b>20.00</b><span>Rp200.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 21.00–22.00, Rp200.000" href="#"><b>21.00</b><span>Rp200.000</span></a></li><li><a class="slot" aria-label="Pesan Jumat, 16 Okt · 22.00–23.00, Rp180.000" href="#"><b>22.00</b><span>Rp180.000</span></a></li></ul></div><div class="card-actions"><a class="btn-line" href="#">Lihat profil</a><button type="button" class="btn-line" aria-label="Tanya soal [DUMMY] Padel Club Uni Ani">Tanya</button></div></article></div></div></div></section>
+<div class="composer-wrap rise" style="animation-delay:.32s"><form class="pill" autoComplete="off"><textarea id="kmg-input" aria-label="Pesan untuk Kamanga" rows="1" maxLength="500" placeholder="padel nanti malam dakek Lubeg"></textarea><button class="go" type="submit">Cari<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button></form>
+<div class="home" id="home">
+<div class="examples" role="group" aria-label="Contoh pertanyaan"><span class="lbl">Coba tanya</span><button type="button" class="chip ex">Padel nanti malam dakek Lubeg</button><button type="button" class="chip ex">AC ndak dingin di Kuranji</button><button type="button" class="chip ex">Travel ka Bukittinggi besok pagi</button></div>
+</div>
+<p class="privacy">Percakapan dicatat tanpa nama untuk memperbaiki layanan. Jangan mengirim data pribadi. Konfirmasi harga dan ketersediaan langsung ke penyedia.</p></div></div>
+</div>
+<script>
+const root = document.getElementById('kmg');
+const html = document.documentElement;
+const dark = matchMedia('(prefers-color-scheme: dark)');
+html.classList.toggle('dark', dark.matches);
+document.querySelector('.icon-btn').addEventListener('click', () => html.classList.toggle('dark'));
+
+// Teks berganti di bawah judul (PRD 8.1) mengikuti kartu pintu yang sedang di depan slider.
+const rot = document.getElementById('rot');
+function showRot(name) {
+  if (rot.textContent === name + '?') return;
+  rot.classList.add('out');
+  setTimeout(() => { rot.textContent = name + '?'; rot.classList.remove('out'); }, 200);
+}
+// Slider pintu: geser otomatis tiap 4 detik; sampai di kartu terakhir, kembali ke kartu pertama lalu lanjut lagi.
+// Digeser manual: berhenti di ujung seperti biasa. Disentuh/diarahkan = berhenti sebentar; setelah warga
+// menggeser sendiri, geser otomatis jalan lagi 6 detik kemudian. Tombol jeda menghentikannya sampai diputar lagi.
+// Warga yang memilih kurangi gerak: tidak bergerak sendiri.
+const track = document.getElementById('dc-track');
+const pauseBtn = document.getElementById('dc-pause');
+const step = () => track.children[0].getBoundingClientRect().width + 10;
+let stopped = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let holding = false, resumeAt = 0;
+function tick() {
+  if (stopped || holding || Date.now() < resumeAt || document.hidden || root.classList.contains('is-chat')) return;
+  const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+  track.scrollTo({ left: atEnd ? 0 : track.scrollLeft + step(), behavior: 'smooth' });
+}
+setInterval(tick, 4000);
+function rest() { resumeAt = Date.now() + 6000; }
+['pointerenter', 'focusin', 'touchstart'].forEach((ev) => track.addEventListener(ev, () => (holding = true), { passive: true }));
+['pointerleave', 'focusout', 'touchend'].forEach((ev) => track.addEventListener(ev, () => { holding = false; rest(); }, { passive: true }));
+track.addEventListener('wheel', rest, { passive: true });
+function setStopped(v) {
+  stopped = v;
+  pauseBtn.setAttribute('aria-pressed', String(v));
+  pauseBtn.setAttribute('aria-label', v ? 'Putar geser pintu' : 'Jeda geser pintu');
+  pauseBtn.innerHTML = `<i class="ti ti-player-${v ? 'play' : 'pause'}" aria-hidden="true"></i>`;
+}
+setStopped(stopped);
+pauseBtn.addEventListener('click', () => setStopped(!stopped));
+
+// Judul berganti mengikuti kartu terdepan (paling dekat ke tepi kiri).
+let settle = null;
+track.addEventListener('scroll', () => {
+  clearTimeout(settle);
+  settle = setTimeout(() => {
+    const i = Math.min(Math.round(track.scrollLeft / step()), track.children.length - 1);
+    showRot(track.children[i].querySelector('b').textContent);
+  }, 140);
+}, { passive: true });
+
+// Prototipe: pertanyaan apa pun menampilkan contoh jawaban padel dari /chat sungguhan.
+const input = document.getElementById('kmg-input');
+const thread = document.getElementById('thread');
+const hero = document.getElementById('hero');
+const btnNew = document.getElementById('btn-new');
+const firstBubble = thread.querySelector('.msg.user .bubble');
+// Tinggi kolom ketik mengikuti isi (seperti di /chat).
+const fit = () => { input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px'; };
+input.addEventListener('input', fit); fit();
+function ask(text) {
+  if (!text.trim()) return input.focus();
+  firstBubble.textContent = text.trim();
+  root.classList.add('is-chat');
+  hero.hidden = true; thread.hidden = false; btnNew.hidden = false;
+  input.value = ''; input.placeholder = 'Tulis pertanyaan lanjutan...';
+  scrollTo({ top: 0 });
+}
+document.querySelector('.pill').addEventListener('submit', (e) => { e.preventDefault(); ask(input.value); });
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input.value); } });
+document.querySelectorAll('.chip.ex').forEach((b) => b.addEventListener('click', () => ask(b.textContent)));
+btnNew.addEventListener('click', () => {
+  root.classList.remove('is-chat');
+  hero.hidden = false; thread.hidden = true; btnNew.hidden = true;
+  input.placeholder = 'padel nanti malam dakek Lubeg';
+});
+document.querySelectorAll('a.dcard').forEach((a) => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  alert('Di aplikasi: membuka ' + a.querySelector('b').textContent + ' (/pintu/' + a.hash.slice(1) + ')');
+}));
+</script>
+</body>
+</html>

@@ -17,7 +17,8 @@ Tanpa browser: alur diuji lewat mesin (kontrak), server action dan halaman lewat
 | R2, R3, R5 | **Diperbaiki** | Target sentuh chat dan /jelajah 44 px; placeholder chat tanpa transparansi. |
 | R4 | **Diperbaiki** | Terbukti di browser (402 px). Ajakan "Daftarkan usaha" disembunyikan di ≤ 420 px; tautan header rata tengah 44 px. |
 | R6 | Bukan masalah | Pucat hanya saat animasi muncul (8.71:1). |
-| R7, R8, R9, R10, R11 | Terbuka | Dicatat di `docs/PROGRESS.md` (masalah terbuka). |
+| R7, R8, R9, R10 | Terbuka | Dicatat di `docs/PROGRESS.md` (masalah terbuka). |
+| R11 | **Diperbaiki** | Batas OTP per IP, wajib header Origin, hitungan batas dikunci (migrasi `0013_otp_ip_hash.sql`). |
 
 Setelah perbaikan: `check:e2e` 18/18 tanpa temuan, `check:tampilan` 0 temuan, semua `check:*` lulus, lint 0 galat.
 

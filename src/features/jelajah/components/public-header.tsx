@@ -8,7 +8,7 @@ export function PublicHeader() {
         kamanga
       </Link>
       <div className='nav-right'>
-        <Link className='link-quiet keep hide-sm' href='/chat'>
+        <Link className='link-quiet keep hide-sm' href='/'>
           Tanya Kamanga
         </Link>
         <Link className='link-quiet keep' href='/jelajah'>

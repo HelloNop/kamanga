@@ -79,7 +79,7 @@ export function UserMenu() {
             {isAdmin ? <Icons.circleCheck /> : <Icons.workspace />}
             {isAdmin ? 'Antrean review' : 'Listing saya'}
           </DropdownMenuItem>
-          <DropdownMenuItem className={item} onClick={() => window.open('/chat', '_blank')}>
+          <DropdownMenuItem className={item} onClick={() => window.open('/', '_blank')}>
             <Icons.chat /> Lihat seperti warga
             <Icons.arrowUpRight className='ml-auto' />
           </DropdownMenuItem>

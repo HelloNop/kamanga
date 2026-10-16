@@ -31,6 +31,6 @@ export const paths = {
   citizenSignIn: (next?: string) => `/masuk${next ? `?next=${encodeURIComponent(next)}` : ''}`,
   /** Profil publik listing. */
   listing: (slug: string) => `/listing/${slug}`,
-  /** Chat bebas, opsional dengan pesan pertama. */
-  chat: (q?: string) => `/chat${q ? `?q=${encodeURIComponent(q)}` : ''}`
+  /** Chat bebas di beranda, opsional dengan pesan pertama. */
+  chat: (q?: string) => `/${q ? `?q=${encodeURIComponent(q)}` : ''}`
 };

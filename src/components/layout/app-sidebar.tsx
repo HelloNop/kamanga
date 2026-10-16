@@ -127,7 +127,7 @@ export default function AppSidebar() {
         {/* Mengisi ruang kosong agar kartu di bawah menempel ke dasar, dengan jarak minimal saat konten panjang. */}
         <div aria-hidden='true' className='min-h-6 flex-1 group-data-[collapsible=icon]:hidden' />
         <Link
-          href='/chat'
+          href='/'
           target='_blank'
           className='relative mx-4 mb-4 block shrink-0 overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#1c3f54,var(--primary)_55%,var(--primary-hi))] p-4 text-white group-data-[collapsible=icon]:hidden'
         >

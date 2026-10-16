@@ -163,83 +163,7 @@
   font-size: 0.9rem;
 }
 
-/* ───── beranda ───── */
-.warga .w-hero {
-  padding: 28px 0 8px;
-}
-.warga .w-hero h1 {
-  font-size: clamp(2rem, 10vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-}
-.warga .w-rotate {
-  display: block;
-  min-height: 1.6em;
-  margin-top: 6px;
-  color: var(--red);
-  font-size: clamp(1.15rem, 5vw, 1.5rem);
-  font-weight: 600;
-}
-.warga .w-rotate span {
-  display: inline-block;
-  animation: w-in 0.4s ease both;
-}
-@keyframes w-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .warga .w-rotate span {
-    animation: none;
-  }
-}
-.warga .w-doors {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 22px 0 0;
-  padding: 0;
-  list-style: none;
-}
-@media (min-width: 600px) {
-  .warga .w-doors {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-.warga .w-door {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  height: 100%;
-  min-height: 112px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--card);
-  color: var(--ink);
-  text-decoration: none;
-  box-shadow: var(--shadow);
-  transition:
-    border-color 0.15s,
-    transform 0.15s;
-}
-.warga a.w-door:hover {
-  border-color: var(--red);
-  transform: translateY(-2px);
-}
-.warga .w-door b {
-  font-size: 1.02rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-.warga .w-door small {
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.35;
-}
+/* ───── ikon pintu (halaman pintu) dan lencana status ───── */
 .warga .w-door-icon {
   display: grid;
   place-items: center;
@@ -248,14 +172,6 @@
   border-radius: 12px;
   background: var(--gold-soft);
   color: var(--red);
-}
-.warga .w-door.is-soon {
-  background: var(--soft);
-  box-shadow: none;
-}
-.warga .w-door.is-soon .w-door-icon {
-  background: #ede4d6;
-  color: var(--muted);
 }
 .warga .w-badge {
   display: inline-flex;
@@ -267,11 +183,6 @@
   color: #fff;
   font-size: 0.72rem;
   font-weight: 600;
-}
-.warga .w-door .w-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
 }
 .warga .w-badge.ok {
   background: var(--ok-soft);
@@ -288,49 +199,6 @@
 .warga .w-badge.red {
   background: var(--red);
   color: #fff;
-}
-.warga .w-ask {
-  margin-top: 28px;
-}
-.warga .w-ask label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-.warga .w-ask-row {
-  display: flex;
-  gap: 8px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--card);
-  box-shadow: var(--shadow);
-}
-.warga .w-ask-row:focus-within {
-  border-color: var(--ink);
-}
-.warga .w-ask-row input {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 0;
-  background: transparent;
-  outline: none;
-}
-.warga .w-foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin-top: 36px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-  font-size: 0.9rem;
-}
-.warga .w-foot a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
 }
 
 /* ───── tombol dan isian ───── */

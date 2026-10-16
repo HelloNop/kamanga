@@ -67,7 +67,7 @@ Temuan untuk Gelombang 4:
 Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `tests/tampilan.check.ts`, dan `docs/laporan-uji.md`; lead memperbaiki temuannya (tabel "Status perbaikan" di laporan uji).
 
 - Temuan kritis K1 (pengambilalihan akun warga lewat daftar email dengan nomor orang lain) diperbaiki di `src/lib/auth.ts` + `isCitizen()`; uji `check:auth`.
-- S1–S4, R1–R5 diperbaiki; R6 bukan masalah; R7–R11 terbuka (lihat di bawah).
+- S1–S4, R1–R5 diperbaiki; R6 bukan masalah; R11 diperbaiki sesudah tahap 1; R7–R10 terbuka (lihat di bawah).
 - Hasil akhir: typecheck lulus; lint 0 galat; 20 script `check:*` lulus, termasuk `check:e2e` 18/18 (empat alur warga sampai ulasan, anti-bentrok bersamaan, privasi, keamanan, hapus akun) dan `check:tampilan` 0 temuan; `eval:chat` 95%.
 
 ## Laporan untuk pemilik
@@ -108,6 +108,14 @@ Status: **selesai** (15 Okt 2026). agent-penguji menulis `tests/e2e.check.ts`, `
 - Batas OTP per IP, wajib header Origin, hitungan batas dikunci (temuan R11; migrasi `0013_otp_ip_hash.sql`).
 - Alur klaim usaha: mitra mengklaim listing yang diinput tim (`/mitra/klaim`), verifikasi kode lewat WA usaha, antrean klaim di `/dashboard/review`. Uji `check:klaim`.
 - Semua uji lulus setelah digabung: 21 script `check:*` termasuk `check:e2e` 18/18.
+
+## Beranda chat-first (16 Okt 2026)
+
+- Beranda `/` kini adalah chat (desain `/chat`), PRD 8.1 diperbarui. `/chat` dan `/chat?q=...` dialihkan ke `/` dan `/?q=...`; `paths.chat()` ikut menunjuk ke beranda.
+- Slider pintu di atas kolom ketik (`src/features/chat/components/door-slider.tsx`): data dari tabel `doors`, geser otomatis 4 detik, kembali ke kartu pertama di ujung, berhenti saat disentuh, jalan lagi 6 detik setelah digeser, tombol jeda/putar, diam bila "kurangi gerak". Judul "Kamanga hari ko?" berganti mengikuti pintu aktif terdepan.
+- "Coba tanya" menggantikan tombol pintu di chat; kartu intip dan lencana cakupan wilayah dibuang. Header menautkan Akun bila warga sudah masuk.
+- Beranda lama (grid pintu marawa) dan komponen `RotatingText` dihapus. Prototipe di `docs/design/beranda-chat.html` (server statis: konfigurasi `prototipe` di `.claude/launch.json`).
+- Uji: semua `check:*` lulus termasuk `check:e2e` 18/18 (bagian 17 kini memeriksa pengalihan `/chat`), `eval:chat` 95%; dicek di browser 360 px dan desktop.
 
 ## Asumsi yang diambil lead
 

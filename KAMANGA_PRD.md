@@ -98,7 +98,7 @@ Aturan pembagian **[DIPUTUSKAN]**:
 - Pintu baru hanya dibuat bila niatnya benar-benar berbeda dari semua pintu yang ada.
 - Satu penyedia boleh muncul di beberapa pintu bila punya beberapa kategori (contoh: salon yang juga menyediakan rias acara tampil di Ka rawat diri dan, nanti, di Kabaralek). Datanya tetap satu.
 - Kategori yang belum punya pintu tetap boleh diisi datanya dan tetap ditemukan lewat chat bebas (contoh: MUA/rias acara, freelancer desain dan website).
-- Beranda menampilkan maksimal sekitar 6 pintu. Pintu yang datanya belum cukup disembunyikan, tetapi kategorinya tetap bisa ditemukan lewat chat.
+- Pintu di beranda tampil sebagai slider (lihat 8.1), jadi jumlahnya boleh bertambah tanpa membuat beranda panjang. Pintu yang datanya belum cukup disembunyikan, tetapi kategorinya tetap bisa ditemukan lewat chat.
 
 ### 6.2 Jenis pintu
 - **Pintu tunggal**: satu kebutuhan, satu jenis penyedia. Dibangun lebih dulu.
@@ -169,19 +169,25 @@ Nama pintu adalah pengaturan di dashboard admin dan bisa diganti tanpa koding. S
 
 ## 8. Kebutuhan fungsional
 
-### 8.1 Beranda
+### 8.1 Beranda **[DIPUTUSKAN]**
 
-**Tujuan:** warga langsung paham apa yang bisa dibantu, tanpa kesan "chat AI kosong".
+**Tujuan:** warga bisa langsung bercerita (chat lebih dulu) dan tetap langsung paham apa yang bisa dibantu, tanpa kesan "chat AI kosong".
 
-- Judul "Kamanga hari ko?" dengan teks berganti di bawahnya (ka servis… ka main… ka uda anta…).
-- Grid tombol pintu yang **aktif**. Pintu yang belum siap tidak ditampilkan, atau ditampilkan dengan tanda "Segera" sesuai pengaturan admin.
-- Kolom ketik bebas di bagian bawah ("Atau ceritakan saja…").
+- Beranda adalah chat: kolom ketik ada di halaman pertama, dan jawaban muncul di halaman yang sama (tanpa pindah halaman). Alamat lama `/chat` dialihkan ke beranda.
+- Judul "Kamanga hari ko?" dengan teks berganti di bawahnya yang mengikuti pintu terdepan di slider (Ka main? Ka servis? ...).
+- **Slider pintu** di atas kolom ketik, bukan grid, supaya tetap rapi bila pintu bertambah. Kartu berikutnya terlihat sebagian sebagai isyarat geser. Pintu "segera" tampil di ujung dengan tanda "Segera".
+  - Geser otomatis pelan (sekitar 4 detik per kartu); sampai di kartu terakhir, kembali ke kartu pertama. Digeser manual berhenti di ujung.
+  - Berhenti selama disentuh atau diarahkan; jalan lagi beberapa detik setelah warga selesai menggeser.
+  - Ada tombol jeda/putar (WCAG 2.2.2). Warga yang memilih "kurangi gerak" tidak melihat slider bergerak sendiri.
+- Contoh pertanyaan siap ketuk di bawah kolom ketik ("Coba tanya"), agar warga tahu bentuk kalimat yang dipahami.
 - Tautan masuk/akun di pojok atas.
-- Tampil baik di layar 360 px ke atas; target sentuh minimal 44 px.
+- Warna dan gaya mengikuti tampilan chat (netral, terang/gelap).
+- Tampil baik di layar 360 px ke atas, kolom ketik terlihat tanpa menggulir di ponsel; target sentuh minimal 44 px.
 
 **Kriteria diterima**
 - Urutan, nama, ikon, dan status setiap pintu diambil dari pengaturan admin, bukan ditulis di kode.
-- Beranda bisa dibuka tanpa akun dan tanpa memanggil AI.
+- Beranda bisa dibuka tanpa akun dan tanpa memanggil AI; AI baru mungkin dipanggil setelah warga mengirim pesan (lihat 8.2).
+- `/chat` dan `/chat?q=...` dialihkan ke beranda dengan pesan yang sama.
 
 ### 8.2 Chat bebas dan pemahaman bahasa
 
@@ -640,7 +646,7 @@ Larangan tetap: tidak ada urutan berbayar yang mengalahkan relevansi; tidak menj
 
 | Risiko | Mitigasi |
 |---|---|
-| Warga menganggap Kamanga chat AI umum | Beranda berbasis pintu, jawaban selalu berujung aksi, penolakan sopan untuk permintaan di luar layanan |
+| Warga menganggap Kamanga chat AI umum | Beranda chat dengan slider pintu dan contoh pertanyaan sejak layar pertama, jawaban selalu berujung aksi, penolakan sopan untuk permintaan di luar layanan |
 | Data penyedia sedikit atau basi | Fokus Padang dan 4 pintu; tim input data awal; pengingat ke penyedia untuk memperbarui; pintu kosong disembunyikan |
 | Penyedia tidak membalas pesanan | Batas waktu + tawaran penyedia lain; pengingat; penyedia yang sering tidak membalas diturunkan |
 | Jadwal bentrok dengan pesanan di luar Kamanga | Blokir manual yang mudah dari HP; tahan sementara; constraint database |

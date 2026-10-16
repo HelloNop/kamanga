@@ -18,7 +18,7 @@ export default function NotFound() {
         <Button onClick={() => router.back()} variant='default' size='lg'>
           Kembali
         </Button>
-        <Button onClick={() => router.push('/chat')} variant='ghost' size='lg'>
+        <Button onClick={() => router.push('/')} variant='ghost' size='lg'>
           Ke beranda
         </Button>
       </div>
